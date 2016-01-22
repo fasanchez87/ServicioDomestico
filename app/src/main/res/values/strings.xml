@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">ServicioDomestico</string>
+    <string name="action_settings">Configuracion</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Clave</string>
+    <string name="btn_sign_up">Registro</string>
+    <string name="err_msg_name">Enter your full name</string>
+    <string name="err_msg_email">Por favor, digite un email valido</string>
+    <string name="err_msg_password">Por favor, digite su clave</string>
+    <string name="title_activity_registro">Registro</string>
+</resources>
