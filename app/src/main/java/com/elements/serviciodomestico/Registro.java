@@ -18,6 +18,8 @@ public class Registro extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //hola git
+        getSupportActionBar().hide();
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
 
     }
