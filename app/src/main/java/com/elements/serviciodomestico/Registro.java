@@ -18,7 +18,14 @@ public class Registro extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //sdadsasd
+        getSupportActionBar().hide();
+
+        String fontPath = "fonts/Raleway-Medium.ttf";
+
+
+
+
+
 
 
 

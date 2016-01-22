@@ -150,7 +150,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="40dp"
                 android:background="@drawable/css_buttons"
-                android:text="Login"
+                android:text="Iniciar Sesión"
                 android:textColor="@android:color/white" />
 
             <Space
@@ -238,7 +238,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="Validando usuario, espere un momento..."
+                    android:text="Validando"
                     android:id="@+id/textViewProgressBar"
                     android:textColor="#FFFFFF"
                     android:layout_alignParentBottom="true"

@@ -59,7 +59,7 @@ public class Login extends AppCompatActivity
 
         setSupportActionBar(toolbar);
         getSupportActionBar().hide();
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(false);
 
         String fontPath = "fonts/Raleway-Medium.ttf";
 

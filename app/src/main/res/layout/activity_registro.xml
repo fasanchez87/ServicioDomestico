@@ -30,17 +30,19 @@
 
     </android.support.design.widget.AppBarLayout>
 
-
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="top"
+        android:gravity="bottom">
 
         <LinearLayout
+            android:id="@+id/linearInicio"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="?attr/actionBarSize"
-            android:layout_alignParentTop="true"
             android:layout_centerVertical="true"
             android:orientation="vertical">
 
@@ -63,19 +65,155 @@
                 android:layout_width="match_parent"
                 android:layout_height="20dp" />
 
-            <TextView
-                android:id="@+id/textViewDescripcionLogin"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="#ffffff"
-                android:textSize="15dip"/>
+
 
         </LinearLayout>
 
     </RelativeLayout>
+
+
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:descendantFocusability="beforeDescendants"
+        android:focusableInTouchMode="true">
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:orientation="vertical"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        >
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="1dp" />
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/input_layout_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColorHint="#FFFFFF">
+
+        <EditText
+            android:id="@+id/input_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nombre"
+            android:inputType="textEmailAddress"
+            android:backgroundTint="#ffffff"
+            android:textColorHint="#FFFFFF"
+            android:textColor="#ffffff"/>
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/input_layout_passwordfdf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColorHint="#FFFFFF"/>
+
+
+
+        <EditText
+            android:id="@+id/input_passwfdffffrd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="#FFFFFF"
+            android:textColor="#ffffff"
+            android:backgroundTint="#ffffff"
+            android:hint="Apellido"
+            android:inputType="textPassword"
+            />
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/input_layout_passddfsfsfworfdfd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="#FFFFFF"/>
+
+            <EditText
+                android:id="@+id/input_paxxxxssword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColorHint="#FFFFFF"
+                android:textColor="#ffffff"
+                android:backgroundTint="#ffffff"
+                android:hint="Email"
+                android:inputType="textPassword"
+                />
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/input_layout_paadfsdfsdfssword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="#FFFFFF"/>
+
+            <EditText
+                android:id="@+id/input_passworbvdgd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColorHint="#FFFFFF"
+                android:textColor="#ffffff"
+                android:backgroundTint="#ffffff"
+                android:hint="Digite su clave"
+                android:inputType="textPassword"
+                />
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/input_layout_xzzzpassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="#FFFFFF"/>
+
+            <EditText
+                android:id="@+id/input_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColorHint="#FFFFFF"
+                android:textColor="#ffffff"
+                android:backgroundTint="#ffffff"
+                android:hint="Confirmar clave"
+                android:inputType="textPassword"
+                />
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/input_layout_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="#FFFFFF"/>
+
+
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="40dp" />
+
+    </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_signup"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/css_buttons"
+            android:text="Iniciar Sesión"
+            android:textColor="@android:color/white"
+            android:layout_alignParentBottom="true"/>
+
+
+
+    </RelativeLayout>
+
+
+
+
 
 </android.support.design.widget.CoordinatorLayout>
 
