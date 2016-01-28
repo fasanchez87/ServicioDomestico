@@ -35,7 +35,6 @@ public class Registro extends AppCompatActivity
     TextInputLayout textInputLayoutAñoTarjetaCreditoUser;
     TextInputLayout textInputLayoutCVVTarjetaCreditoUser;
 
-
     EditText EditTextNameUser;
     EditText EditTextApellidoUser;
     EditText EditTextEmailUser;
@@ -49,6 +48,8 @@ public class Registro extends AppCompatActivity
 
     ProgressBar progressBarRegistroUsuario;
 
+    private String nameFranquicia;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -61,11 +62,13 @@ public class Registro extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+        nameFranquicia = "";
+
         textInputLayoutNameUser = (TextInputLayout) findViewById(R.id.input_layout_nombre_registro);
         textInputLayoutApellidoUser = (TextInputLayout) findViewById(R.id.input_layout_apellido_registro);
         textInputLayoutEmailUser = (TextInputLayout) findViewById(R.id.input_layout_email_registro);
         textInputLayoutClaveUser = (TextInputLayout) findViewById(R.id.input_layout_clave_registro);
-        //textInputLayoutNumeroTarjetaCreditoUser = (TextInputLayout) findViewById(R.id.input_layout_numero_tarjeta_registro);
+        textInputLayoutNumeroTarjetaCreditoUser = (TextInputLayout) findViewById(R.id.input_layout_numero_tarjeta_registro);
         textInputLayoutMesTarjetaCreditoUser = (TextInputLayout) findViewById(R.id.input_layout_mes_tarjeta_credito_registro);
         textInputLayoutAñoTarjetaCreditoUser = (TextInputLayout) findViewById(R.id.input_layout_año_tarjeta_credito_registro);
         textInputLayoutCVVTarjetaCreditoUser = (TextInputLayout) findViewById(R.id.input_layout_cvv_tarjeta_credito_registro);
@@ -100,16 +103,27 @@ public class Registro extends AppCompatActivity
         EditTextAñoTarjetaCreditoUser.addTextChangedListener(new RevisorText(EditTextAñoTarjetaCreditoUser));
         EditTextCVVTarjetaCreditoUser.addTextChangedListener(new RevisorText(EditTextCVVTarjetaCreditoUser));
 
-        EditTextNumeroTarjetaCreditoUser.setText("377813200654045");
+        textInputLayoutNumeroTarjetaCreditoUser.setHintAnimationEnabled(false);
+        EditTextNumeroTarjetaCreditoUser.setHint("Número tarjeta de crédito");
+
+
+        //EditTextNumeroTarjetaCreditoUser.setText("377813200654045");
         EditTextNameUser.setText("377813200654045");
                 EditTextApellidoUser.setText("377813200654045");
         EditTextEmailUser.setText("sdsdsd@gfgfg.com");
                 EditTextClaveUser.setText("377813200654045");
 
+        EditTextCVVTarjetaCreditoUser.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    EditTextCVVTarjetaCreditoUser.setText("");
+                }
+            }
 
+        });
     }
-
 
     private void Registro()
     {
@@ -143,7 +157,43 @@ public class Registro extends AppCompatActivity
             return;
         }
 
+        if (!validateMesCreditCard()) {
+            return;
+        }
 
+        if (!validateAñoCreditCard())
+        {
+            return;
+        }
+
+        if (!validateCVVCreditCard())
+        {
+            return;
+        }
+
+        if (!validateCVVFranquiciaCreditCard())
+        {
+            return;
+        }
+
+        Toast toast =
+                Toast.makeText(getApplicationContext(),
+                        "make RESt.", Toast.LENGTH_SHORT);
+        toast.show();
+
+
+
+
+    }
+
+    public String getNameFranquicia()
+    {
+        return nameFranquicia;
+    }
+
+    public void setNameFranquicia(String nameFranquicia)
+    {
+        this.nameFranquicia = nameFranquicia;
     }
 
     private boolean validateName()
@@ -186,7 +236,7 @@ public class Registro extends AppCompatActivity
 
         if (email.isEmpty() || !isValidEmail(email))
         {
-            textInputLayoutEmailUser.setError(getString(R.string.err_msg_email));//cambiar a edittext en register!!
+            EditTextEmailUser.setError(getString(R.string.err_msg_email));//cambiar a edittext en register!!
             requestFocus(EditTextEmailUser);
             return false;
         }
@@ -229,11 +279,11 @@ public class Registro extends AppCompatActivity
     {
 
         String numberCard = EditTextNumeroTarjetaCreditoUser.getText().toString();
-
+        textInputLayoutNumeroTarjetaCreditoUser.setHintAnimationEnabled(true);
 
         if (EditTextNumeroTarjetaCreditoUser.getText().toString().trim().isEmpty())
         {
-            EditTextNumeroTarjetaCreditoUser.setError("Número de tarjeta invalido");
+            textInputLayoutNumeroTarjetaCreditoUser.setError("Número de tarjeta invalido");
             requestFocus(EditTextNumeroTarjetaCreditoUser);
             return false;
         }
@@ -241,7 +291,146 @@ public class Registro extends AppCompatActivity
 
         else
         {
-            textInputLayoutNameUser.setErrorEnabled(false);
+            textInputLayoutNumeroTarjetaCreditoUser.setErrorEnabled(false);
+            //EditTextNumeroTarjetaCreditoUser.setError("");
+        }
+
+        return true;
+    }
+
+    private boolean validateAñoCreditCard()
+    {
+
+        String numberCard = EditTextAñoTarjetaCreditoUser.getText().toString();
+
+        if (EditTextAñoTarjetaCreditoUser.getText().toString().trim().isEmpty())
+        {
+            textInputLayoutAñoTarjetaCreditoUser.setError("Año no valido");
+            requestFocus(EditTextAñoTarjetaCreditoUser);
+            return false;
+        }
+
+        else
+        {
+            textInputLayoutAñoTarjetaCreditoUser.setErrorEnabled(false);
+        }
+
+        return true;
+    }
+
+    private boolean validateMesCreditCard()
+    {
+
+        String mesCard = EditTextMesTarjetaCreditoUser.getText().toString();
+
+
+        if ((EditTextMesTarjetaCreditoUser.getText().toString().trim().isEmpty()) ||
+                (Integer.parseInt(mesCard.toString()) >= 13 )  )
+        {
+            textInputLayoutMesTarjetaCreditoUser.setError("Mes no valido");
+            requestFocus(EditTextMesTarjetaCreditoUser);
+            return false;
+        }
+
+        else
+        {
+            textInputLayoutMesTarjetaCreditoUser.setErrorEnabled(false);
+        }
+
+        return true;
+    }
+
+    private boolean validateCVVCreditCard()
+    {
+
+        String cvvCard = EditTextCVVTarjetaCreditoUser.getText().toString();
+
+        if (EditTextCVVTarjetaCreditoUser.getText().toString().trim().isEmpty())
+        {
+            textInputLayoutCVVTarjetaCreditoUser.setError("Código de seguridad invalido");
+            requestFocus(EditTextCVVTarjetaCreditoUser);
+            return false;
+        }
+
+        else
+        {
+            textInputLayoutCVVTarjetaCreditoUser.setErrorEnabled(false);
+        }
+
+        return true;
+    }
+
+    private boolean validateCVVFranquiciaCreditCard()
+    {
+
+        String cvvCard = EditTextCVVTarjetaCreditoUser.getText().toString();
+
+        nameFranquicia = getNameFranquicia();
+
+        if(nameFranquicia.equals("amex"))
+        {
+            nameFranquicia="";
+
+            if (EditTextCVVTarjetaCreditoUser.getText().toString().trim().length() < 4)
+            {
+                textInputLayoutCVVTarjetaCreditoUser.setError("Código de seguridad invalido");
+                requestFocus(EditTextCVVTarjetaCreditoUser);
+                return false;
+            }
+
+            else
+            {
+                textInputLayoutNumeroTarjetaCreditoUser.setErrorEnabled(false);
+            }
+        }
+
+        else
+
+        if(nameFranquicia.equals("visa"))
+        {
+
+            if (EditTextCVVTarjetaCreditoUser.getText().toString().trim().length() < 3)
+            {
+                textInputLayoutCVVTarjetaCreditoUser.setError("Código de seguridad invalido");
+                requestFocus(EditTextCVVTarjetaCreditoUser);
+                return false;
+            }
+        }
+
+        else
+
+        if(nameFranquicia.equals("master"))
+        {
+            nameFranquicia="";
+
+            if (EditTextCVVTarjetaCreditoUser.getText().toString().trim().length() < 3)
+            {
+                textInputLayoutCVVTarjetaCreditoUser.setError("Código de seguridad invalido");
+                requestFocus(EditTextCVVTarjetaCreditoUser);
+                return false;
+            }
+
+            else
+            {
+                textInputLayoutNumeroTarjetaCreditoUser.setErrorEnabled(false);
+            }
+        }
+
+        else
+
+        if(nameFranquicia.equals("generica"))
+        {
+            if (EditTextCVVTarjetaCreditoUser.getText().toString().trim().length() < 3)
+            {
+                textInputLayoutCVVTarjetaCreditoUser.setError("Código de seguridad invalido");
+                requestFocus(EditTextCVVTarjetaCreditoUser);
+                return false;
+            }
+        }
+
+        else
+        {
+            textInputLayoutCVVTarjetaCreditoUser.setErrorEnabled(false);
         }
 
         return true;
@@ -250,13 +439,13 @@ public class Registro extends AppCompatActivity
     private boolean validateCardAlgorithmLuhn()
     {
 
-        String numberCard = EditTextNumeroTarjetaCreditoUser.getText().toString();
-        numberCard = numberCard.replaceAll("\\s+","");
+        String numberCard = EditTextNumeroTarjetaCreditoUser.getText().toString().replaceAll("\\s+", "");
+        Log.w("Error Tarjeta: ",numberCard);
 
-
-        if ( !validarTarjetaAlgoritmoLuhn( numberCard ) )
+        if ( !validateCardNumber(numberCard) )
         {
-            EditTextNumeroTarjetaCreditoUser.setError("Número de tarjeta invalido");
+            textInputLayoutNumeroTarjetaCreditoUser.setHintAnimationEnabled(true);
+            textInputLayoutNumeroTarjetaCreditoUser.setError("Número de tarjeta invalido");
             requestFocus(EditTextNumeroTarjetaCreditoUser);
             return false;
         }
@@ -264,71 +453,42 @@ public class Registro extends AppCompatActivity
 
         else
         {
-            textInputLayoutNameUser.setErrorEnabled(false);
+            textInputLayoutNumeroTarjetaCreditoUser.setErrorEnabled(false);
         }
 
         return true;
     }
 
+    public boolean validateCardNumber(String cardNumber)
+    {
+        int sum = 0, digit, addend = 0;
+        boolean doubled = false;
 
-
-    public boolean validarTarjetaAlgoritmoLuhn( String numberCard ) {
-
-
-        //numberCard = "377565656655665";
-
-        //if (numberCard.length() == 15) {
-            char[] c = numberCard.toCharArray();
-            int[] cint = new int[numberCard.length()];
-            for (int i = 0; i < numberCard.length(); i++) {
-                if (i % 2 == 1) {
-                    cint[i] = Integer.parseInt(String.valueOf(c[i])) * 2;
-                    if (cint[i] > 9)
-                        cint[i] = 1 + cint[i] % 10;
-                } else
-                    cint[i] = Integer.parseInt(String.valueOf(c[i]));
+        for (int i = cardNumber.length () - 1; i >= 0; i--)
+        {
+            digit = Integer.parseInt (cardNumber.substring (i, i + 1));
+            if (doubled) {
+                addend = digit * 2;
+                if (addend > 9)
+                {
+                    addend -= 9;
+                }
             }
-
-            int sum = 0;
-
-            for (int i = 0; i < numberCard.length(); i++) {
-                sum += cint[i];
-            }
-
-            if (sum % 10 == 0)
-                //result.setText("Card is Valid");
-
-                return true;
-
 
             else
-                //result.setText("Card is Invalid");
-            Log.w("Error Tarjeta: ","Card is Valid_1");
-
-            return false;
-
-       // }
-
-      //  else
-        //    Log.w("Error Tarjeta: ","Card is Valid_3");
-         //   return false;
-    }
-
-    public void validateFranquiciasIcon()
-    {
-
-        String numberCard = EditTextNumeroTarjetaCreditoUser.getText().toString();
-
-
-
+            {
+                addend = digit;
+            }
+            sum += addend;
+            doubled = !doubled;
+        }
+        return (sum % 10) == 0;
     }
 
     private static boolean isValidEmail(String email)
     {
         return !TextUtils.isEmpty(email) && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
-
-
 
     private void requestFocus(View view)
     {
@@ -354,8 +514,6 @@ public class Registro extends AppCompatActivity
 
         public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
         {
-
-
         }
 
         public void afterTextChanged(Editable editable)
@@ -383,11 +541,20 @@ public class Registro extends AppCompatActivity
 
                 case R.id.edit_text_numero_tarjeta_registro:
                     validateNumberCreditCard();
-                    //validateFranquiciasIcon();
                     break;
 
-            }
+                case R.id.edit_text_mes_tarjeta_credito_registro:
+                    validateMesCreditCard();
+                    break;
 
+                case R.id.edit_text_año_tarjeta_credito_registro:
+                validateAñoCreditCard();
+                break;
+
+                case R.id.edit_text_cvv_tarjeta_credito_registro:
+                    validateCVVCreditCard();
+                    break;
+            }
 
             // Remove spacing char
             if (editable.length() > 0 && (editable.length() % 5) == 0)
@@ -411,6 +578,8 @@ public class Registro extends AppCompatActivity
 
             //Validar tipos de tarjeta de credito.
 
+            //American Express:
+
             if(EditTextNumeroTarjetaCreditoUser.getText().toString().length() > 1 &&
                  (EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("34") ||
                   EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("37"))
@@ -419,16 +588,58 @@ public class Registro extends AppCompatActivity
 
                 EditTextNumeroTarjetaCreditoUser.setCompoundDrawablesWithIntrinsicBounds( R.mipmap.icon_amex, 0, 0, 0);
                 EditTextNumeroTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(18)});
+                EditTextCVVTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(4)});
+                setNameFranquicia("");
+                setNameFranquicia("amex");
+            }
+
+           else
+
+            //Visa
+
+            if(EditTextNumeroTarjetaCreditoUser.getText().toString().length() > 0 &&
+                    (EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 1).equals("4")))
+            {
+
+                EditTextNumeroTarjetaCreditoUser.setCompoundDrawablesWithIntrinsicBounds( R.mipmap.logo_visa, 0, 0, 0);
+                EditTextNumeroTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(19)});
+                EditTextCVVTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
+                setNameFranquicia("");
+                setNameFranquicia("visa");
+
+            }
+
+
+            //MasterCard
+
+            else
+
+            if(EditTextNumeroTarjetaCreditoUser.getText().toString().length() > 1 &&
+                    (EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("51") ||
+                            EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("52") ||
+                            EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("53") ||
+                            EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("54") ||
+                            EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("55")
+                    ))
+            {
+
+                EditTextNumeroTarjetaCreditoUser.setCompoundDrawablesWithIntrinsicBounds( R.mipmap.logo_master, 0, 0, 0);
+                EditTextNumeroTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(19)});
+                EditTextCVVTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
+                setNameFranquicia("");
+                setNameFranquicia("master");
+
             }
 
             else
             {
                 EditTextNumeroTarjetaCreditoUser.setCompoundDrawablesWithIntrinsicBounds( R.mipmap.logo_tarjeta_x, 0, 0, 0);
                 EditTextNumeroTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(19)});
+                EditTextCVVTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
+                setNameFranquicia("");
+                setNameFranquicia("generica");
+
             }
-
-
-
 
         }
     }
