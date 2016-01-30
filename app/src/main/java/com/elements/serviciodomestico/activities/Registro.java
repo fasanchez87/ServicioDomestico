@@ -1,5 +1,8 @@
 package com.elements.serviciodomestico.activities;
 
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -9,8 +12,11 @@ import android.text.Html;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.format.Formatter;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -20,6 +26,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.elements.serviciodomestico.R;
+import com.elements.serviciodomestico.sharedPreferences.gestionSharedPreferences;
+
 /**
  * Created by FABiO on 23/01/2016.
  */
@@ -30,25 +38,25 @@ public class Registro extends AppCompatActivity
     TextInputLayout textInputLayoutApellidoUser;
     TextInputLayout textInputLayoutEmailUser;
     TextInputLayout textInputLayoutClaveUser;
-    TextInputLayout textInputLayoutNumeroTarjetaCreditoUser;
-    TextInputLayout textInputLayoutMesTarjetaCreditoUser;
-    TextInputLayout textInputLayoutAñoTarjetaCreditoUser;
-    TextInputLayout textInputLayoutCVVTarjetaCreditoUser;
+    TextInputLayout textInputLayoutDocumentoUser;
 
     EditText EditTextNameUser;
     EditText EditTextApellidoUser;
     EditText EditTextEmailUser;
     EditText EditTextClaveUser;
-    EditText EditTextNumeroTarjetaCreditoUser;
-    EditText EditTextMesTarjetaCreditoUser;
-    EditText EditTextAñoTarjetaCreditoUser;
-    EditText EditTextCVVTarjetaCreditoUser;
+    EditText EditTextDocumentoUser;
 
     Button botonRegistroUsuario;
 
-    ProgressBar progressBarRegistroUsuario;
-
     private String nameFranquicia;
+
+    private gestionSharedPreferences sharedPreferences;
+
+    private String nombreUsuario;
+    private String apellidoUsuario;
+    private String emailUsuario;
+    private String documentoUsuario;
+    private String claveUsuario;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -62,49 +70,39 @@ public class Registro extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+        sharedPreferences = new gestionSharedPreferences(getApplicationContext());
+
         nameFranquicia = "";
 
         textInputLayoutNameUser = (TextInputLayout) findViewById(R.id.input_layout_nombre_registro);
         textInputLayoutApellidoUser = (TextInputLayout) findViewById(R.id.input_layout_apellido_registro);
         textInputLayoutEmailUser = (TextInputLayout) findViewById(R.id.input_layout_email_registro);
         textInputLayoutClaveUser = (TextInputLayout) findViewById(R.id.input_layout_clave_registro);
-        textInputLayoutNumeroTarjetaCreditoUser = (TextInputLayout) findViewById(R.id.input_layout_numero_tarjeta_registro);
-        textInputLayoutMesTarjetaCreditoUser = (TextInputLayout) findViewById(R.id.input_layout_mes_tarjeta_credito_registro);
-        textInputLayoutAñoTarjetaCreditoUser = (TextInputLayout) findViewById(R.id.input_layout_año_tarjeta_credito_registro);
-        textInputLayoutCVVTarjetaCreditoUser = (TextInputLayout) findViewById(R.id.input_layout_cvv_tarjeta_credito_registro);
+        textInputLayoutDocumentoUser = (TextInputLayout) findViewById(R.id.input_layout_documento_registro);
+
 
         EditTextNameUser = (EditText) findViewById(R.id.edit_text_nombre_registro);
         EditTextApellidoUser = (EditText) findViewById(R.id.edit_text_apellido_registro);
         EditTextEmailUser = (EditText) findViewById(R.id.edit_text_email_registro);
         EditTextClaveUser = (EditText) findViewById(R.id.edit_text_clave_registro);
-        EditTextNumeroTarjetaCreditoUser = (EditText) findViewById(R.id.edit_text_numero_tarjeta_registro);
-        EditTextMesTarjetaCreditoUser = (EditText) findViewById(R.id.edit_text_mes_tarjeta_credito_registro);
-        EditTextAñoTarjetaCreditoUser = (EditText) findViewById(R.id.edit_text_año_tarjeta_credito_registro);
-        EditTextCVVTarjetaCreditoUser = (EditText) findViewById(R.id.edit_text_cvv_tarjeta_credito_registro);
+        EditTextDocumentoUser = (EditText) findViewById(R.id.edit_text_documento_registro);
 
-        botonRegistroUsuario = (Button) findViewById(R.id.btn_registro);
+
+        botonRegistroUsuario = (Button) findViewById(R.id.btn_siguiente);
         botonRegistroUsuario.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                Registro();
+                intentToActivityPago();
             }
         });
-
-        progressBarRegistroUsuario = (ProgressBar) findViewById(R.id.progressBarRegistro);
 
         EditTextNameUser.addTextChangedListener(new RevisorText(EditTextNameUser));
         EditTextApellidoUser.addTextChangedListener(new RevisorText(EditTextApellidoUser));
         EditTextEmailUser.addTextChangedListener(new RevisorText(EditTextEmailUser));
         EditTextClaveUser.addTextChangedListener(new RevisorText(EditTextClaveUser));
-        EditTextNumeroTarjetaCreditoUser.addTextChangedListener(new RevisorText(EditTextNumeroTarjetaCreditoUser));
-        EditTextMesTarjetaCreditoUser.addTextChangedListener(new RevisorText(EditTextMesTarjetaCreditoUser));
-        EditTextAñoTarjetaCreditoUser.addTextChangedListener(new RevisorText(EditTextAñoTarjetaCreditoUser));
-        EditTextCVVTarjetaCreditoUser.addTextChangedListener(new RevisorText(EditTextCVVTarjetaCreditoUser));
-
-        textInputLayoutNumeroTarjetaCreditoUser.setHintAnimationEnabled(false);
-        EditTextNumeroTarjetaCreditoUser.setHint("Número tarjeta de crédito");
+        EditTextDocumentoUser.addTextChangedListener(new RevisorText(EditTextDocumentoUser));
 
 
         //EditTextNumeroTarjetaCreditoUser.setText("377813200654045");
@@ -113,78 +111,74 @@ public class Registro extends AppCompatActivity
         EditTextEmailUser.setText("sdsdsd@gfgfg.com");
                 EditTextClaveUser.setText("377813200654045");
 
-        EditTextCVVTarjetaCreditoUser.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    EditTextCVVTarjetaCreditoUser.setText("");
-                }
-            }
-
-        });
     }
 
-    private void Registro()
+    private boolean ValidarFormulario()
     {
         if (!validateName())
         {
-            return;
+            return false;
         }
 
         if (!validateApellido())
         {
-            return;
+            return false;
         }
 
         if (!validateEmail())
         {
-            return;
+            return false;
         }
 
         if (!validateClave())
         {
-            return;
+            return false;
         }
 
-        if (!validateNumberCreditCard())
+        if (!validateDocumento())
         {
-            return;
+            return false;
         }
 
-        if (!validateCardAlgorithmLuhn())
-        {
-            return;
-        }
-
-        if (!validateMesCreditCard()) {
-            return;
-        }
-
-        if (!validateAñoCreditCard())
-        {
-            return;
-        }
-
-        if (!validateCVVCreditCard())
-        {
-            return;
-        }
-
-        if (!validateCVVFranquiciaCreditCard())
-        {
-            return;
-        }
-
-        Toast toast =
-                Toast.makeText(getApplicationContext(),
-                        "make RESt.", Toast.LENGTH_SHORT);
-        toast.show();
-
-
-
+        return true;
 
     }
+
+    private String getDireccionIP()
+    {
+        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+        String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+        return ip;
+    }
+
+    public void intentToActivityPago()
+    {
+        if(ValidarFormulario())
+        {
+
+            nombreUsuario = EditTextNameUser.getText().toString();
+            apellidoUsuario = EditTextApellidoUser.getText().toString();
+            emailUsuario = EditTextEmailUser.getText().toString();
+            documentoUsuario = EditTextDocumentoUser.getText().toString();
+            claveUsuario = EditTextClaveUser.getText().toString();
+
+            sharedPreferences.putString("nombresUsuario",nombreUsuario);
+            sharedPreferences.putString("apellidosUsuario",apellidoUsuario);
+            sharedPreferences.putString("emailUsuario",emailUsuario);
+            sharedPreferences.putString("documentoUsuario",documentoUsuario);
+            sharedPreferences.putString("claveUsuario",claveUsuario);
+            sharedPreferences.putString("direccionIp", getDireccionIP());
+            sharedPreferences.putString("sistemaOperativo", "Android");
+            sharedPreferences.putString("tipoUsuario", "C");
+
+            Intent intent = new Intent(Registro.this, Pago.class);
+            startActivity(intent);
+            //overridePendingTransition(R.anim.right_in, R.anim.right_in);
+            finish();
+
+        }
+    }
+
 
     public String getNameFranquicia()
     {
@@ -198,6 +192,9 @@ public class Registro extends AppCompatActivity
 
     private boolean validateName()
     {
+
+
+
         if (EditTextNameUser.getText().toString().trim().isEmpty())
         {
             textInputLayoutNameUser.setError(getString(R.string.err_msg_name));
@@ -236,7 +233,7 @@ public class Registro extends AppCompatActivity
 
         if (email.isEmpty() || !isValidEmail(email))
         {
-            EditTextEmailUser.setError(getString(R.string.err_msg_email));//cambiar a edittext en register!!
+            textInputLayoutEmailUser.setError(getString(R.string.err_msg_email));//cambiar a edittext en register!!
             requestFocus(EditTextEmailUser);
             return false;
         }
@@ -275,214 +272,30 @@ public class Registro extends AppCompatActivity
         return true;
     }
 
-    private boolean validateNumberCreditCard()
+    private boolean validateDocumento()
     {
-
-        String numberCard = EditTextNumeroTarjetaCreditoUser.getText().toString();
-        textInputLayoutNumeroTarjetaCreditoUser.setHintAnimationEnabled(true);
-
-        if (EditTextNumeroTarjetaCreditoUser.getText().toString().trim().isEmpty())
+        if (EditTextDocumentoUser.getText().toString().trim().isEmpty())
         {
-            textInputLayoutNumeroTarjetaCreditoUser.setError("Número de tarjeta invalido");
-            requestFocus(EditTextNumeroTarjetaCreditoUser);
+            textInputLayoutDocumentoUser.setError("Por favor, dígite numero de documento");
+            requestFocus(EditTextDocumentoUser);
             return false;
         }
 
-
         else
+
+        if(EditTextDocumentoUser.getText().toString().trim().length() < 5)
         {
-            textInputLayoutNumeroTarjetaCreditoUser.setErrorEnabled(false);
-            //EditTextNumeroTarjetaCreditoUser.setError("");
-        }
-
-        return true;
-    }
-
-    private boolean validateAñoCreditCard()
-    {
-
-        String numberCard = EditTextAñoTarjetaCreditoUser.getText().toString();
-
-        if (EditTextAñoTarjetaCreditoUser.getText().toString().trim().isEmpty())
-        {
-            textInputLayoutAñoTarjetaCreditoUser.setError("Año no valido");
-            requestFocus(EditTextAñoTarjetaCreditoUser);
+            textInputLayoutDocumentoUser.setError("El documento debe tener al menos 5 digitos");
+            requestFocus(EditTextDocumentoUser);
             return false;
         }
 
         else
         {
-            textInputLayoutAñoTarjetaCreditoUser.setErrorEnabled(false);
+            textInputLayoutDocumentoUser.setErrorEnabled(false);
         }
 
         return true;
-    }
-
-    private boolean validateMesCreditCard()
-    {
-
-        String mesCard = EditTextMesTarjetaCreditoUser.getText().toString();
-
-
-        if ((EditTextMesTarjetaCreditoUser.getText().toString().trim().isEmpty()) ||
-                (Integer.parseInt(mesCard.toString()) >= 13 )  )
-        {
-            textInputLayoutMesTarjetaCreditoUser.setError("Mes no valido");
-            requestFocus(EditTextMesTarjetaCreditoUser);
-            return false;
-        }
-
-        else
-        {
-            textInputLayoutMesTarjetaCreditoUser.setErrorEnabled(false);
-        }
-
-        return true;
-    }
-
-    private boolean validateCVVCreditCard()
-    {
-
-        String cvvCard = EditTextCVVTarjetaCreditoUser.getText().toString();
-
-        if (EditTextCVVTarjetaCreditoUser.getText().toString().trim().isEmpty())
-        {
-            textInputLayoutCVVTarjetaCreditoUser.setError("Código de seguridad invalido");
-            requestFocus(EditTextCVVTarjetaCreditoUser);
-            return false;
-        }
-
-        else
-        {
-            textInputLayoutCVVTarjetaCreditoUser.setErrorEnabled(false);
-        }
-
-        return true;
-    }
-
-    private boolean validateCVVFranquiciaCreditCard()
-    {
-
-        String cvvCard = EditTextCVVTarjetaCreditoUser.getText().toString();
-
-        nameFranquicia = getNameFranquicia();
-
-        if(nameFranquicia.equals("amex"))
-        {
-            nameFranquicia="";
-
-            if (EditTextCVVTarjetaCreditoUser.getText().toString().trim().length() < 4)
-            {
-                textInputLayoutCVVTarjetaCreditoUser.setError("Código de seguridad invalido");
-                requestFocus(EditTextCVVTarjetaCreditoUser);
-                return false;
-            }
-
-            else
-            {
-                textInputLayoutNumeroTarjetaCreditoUser.setErrorEnabled(false);
-            }
-        }
-
-        else
-
-        if(nameFranquicia.equals("visa"))
-        {
-
-            if (EditTextCVVTarjetaCreditoUser.getText().toString().trim().length() < 3)
-            {
-                textInputLayoutCVVTarjetaCreditoUser.setError("Código de seguridad invalido");
-                requestFocus(EditTextCVVTarjetaCreditoUser);
-                return false;
-            }
-        }
-
-        else
-
-        if(nameFranquicia.equals("master"))
-        {
-            nameFranquicia="";
-
-            if (EditTextCVVTarjetaCreditoUser.getText().toString().trim().length() < 3)
-            {
-                textInputLayoutCVVTarjetaCreditoUser.setError("Código de seguridad invalido");
-                requestFocus(EditTextCVVTarjetaCreditoUser);
-                return false;
-            }
-
-            else
-            {
-                textInputLayoutNumeroTarjetaCreditoUser.setErrorEnabled(false);
-            }
-        }
-
-        else
-
-        if(nameFranquicia.equals("generica"))
-        {
-            if (EditTextCVVTarjetaCreditoUser.getText().toString().trim().length() < 3)
-            {
-                textInputLayoutCVVTarjetaCreditoUser.setError("Código de seguridad invalido");
-                requestFocus(EditTextCVVTarjetaCreditoUser);
-                return false;
-            }
-        }
-
-        else
-        {
-            textInputLayoutCVVTarjetaCreditoUser.setErrorEnabled(false);
-        }
-
-        return true;
-    }
-
-    private boolean validateCardAlgorithmLuhn()
-    {
-
-        String numberCard = EditTextNumeroTarjetaCreditoUser.getText().toString().replaceAll("\\s+", "");
-        Log.w("Error Tarjeta: ",numberCard);
-
-        if ( !validateCardNumber(numberCard) )
-        {
-            textInputLayoutNumeroTarjetaCreditoUser.setHintAnimationEnabled(true);
-            textInputLayoutNumeroTarjetaCreditoUser.setError("Número de tarjeta invalido");
-            requestFocus(EditTextNumeroTarjetaCreditoUser);
-            return false;
-        }
-
-
-        else
-        {
-            textInputLayoutNumeroTarjetaCreditoUser.setErrorEnabled(false);
-        }
-
-        return true;
-    }
-
-    public boolean validateCardNumber(String cardNumber)
-    {
-        int sum = 0, digit, addend = 0;
-        boolean doubled = false;
-
-        for (int i = cardNumber.length () - 1; i >= 0; i--)
-        {
-            digit = Integer.parseInt (cardNumber.substring (i, i + 1));
-            if (doubled) {
-                addend = digit * 2;
-                if (addend > 9)
-                {
-                    addend -= 9;
-                }
-            }
-
-            else
-            {
-                addend = digit;
-            }
-            sum += addend;
-            doubled = !doubled;
-        }
-        return (sum % 10) == 0;
     }
 
     private static boolean isValidEmail(String email)
@@ -539,109 +352,41 @@ public class Registro extends AppCompatActivity
                     validateClave();
                     break;
 
-                case R.id.edit_text_numero_tarjeta_registro:
-                    validateNumberCreditCard();
+                case R.id.edit_text_documento_registro:
+                    validateDocumento();
                     break;
-
-                case R.id.edit_text_mes_tarjeta_credito_registro:
-                    validateMesCreditCard();
-                    break;
-
-                case R.id.edit_text_año_tarjeta_credito_registro:
-                validateAñoCreditCard();
-                break;
-
-                case R.id.edit_text_cvv_tarjeta_credito_registro:
-                    validateCVVCreditCard();
-                    break;
-            }
-
-            // Remove spacing char
-            if (editable.length() > 0 && (editable.length() % 5) == 0)
-            {
-                final char c = editable.charAt(editable.length() - 1);
-                if (space == c)
-                {
-                    editable.delete(editable.length() - 1, editable.length());
-                }
-            }
-            // Insert char where needed.
-            if (editable.length() > 0 && (editable.length() % 5) == 0)
-            {
-                char c = editable.charAt(editable.length() - 1);
-                // Only if its a digit where there should be a space we insert a space
-                if (Character.isDigit(c) && TextUtils.split(editable.toString(), String.valueOf(space)).length <= 3)
-                {
-                    editable.insert(editable.length() - 1, String.valueOf(space));
-                }
-            }
-
-            //Validar tipos de tarjeta de credito.
-
-            //American Express:
-
-            if(EditTextNumeroTarjetaCreditoUser.getText().toString().length() > 1 &&
-                 (EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("34") ||
-                  EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("37"))
-               )
-            {
-
-                EditTextNumeroTarjetaCreditoUser.setCompoundDrawablesWithIntrinsicBounds( R.mipmap.icon_amex, 0, 0, 0);
-                EditTextNumeroTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(18)});
-                EditTextCVVTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(4)});
-                setNameFranquicia("");
-                setNameFranquicia("amex");
-            }
-
-           else
-
-            //Visa
-
-            if(EditTextNumeroTarjetaCreditoUser.getText().toString().length() > 0 &&
-                    (EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 1).equals("4")))
-            {
-
-                EditTextNumeroTarjetaCreditoUser.setCompoundDrawablesWithIntrinsicBounds( R.mipmap.logo_visa, 0, 0, 0);
-                EditTextNumeroTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(19)});
-                EditTextCVVTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
-                setNameFranquicia("");
-                setNameFranquicia("visa");
-
-            }
-
-
-            //MasterCard
-
-            else
-
-            if(EditTextNumeroTarjetaCreditoUser.getText().toString().length() > 1 &&
-                    (EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("51") ||
-                            EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("52") ||
-                            EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("53") ||
-                            EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("54") ||
-                            EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("55")
-                    ))
-            {
-
-                EditTextNumeroTarjetaCreditoUser.setCompoundDrawablesWithIntrinsicBounds( R.mipmap.logo_master, 0, 0, 0);
-                EditTextNumeroTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(19)});
-                EditTextCVVTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
-                setNameFranquicia("");
-                setNameFranquicia("master");
-
-            }
-
-            else
-            {
-                EditTextNumeroTarjetaCreditoUser.setCompoundDrawablesWithIntrinsicBounds( R.mipmap.logo_tarjeta_x, 0, 0, 0);
-                EditTextNumeroTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(19)});
-                EditTextCVVTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
-                setNameFranquicia("");
-                setNameFranquicia("generica");
-
             }
 
         }
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case android.R.id.home:
+                Intent intent = new Intent(Registro.this, Login.class);
+                startActivity(intent);
+                finish();
+                //overridePendingTransition(R.anim.left_out, R.anim.left_in);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if (keyCode == KeyEvent.KEYCODE_BACK)
+        {
+            Intent intent = new Intent(Registro.this, Login.class);
+            startActivity(intent);
+            finish();
+            //overridePendingTransition(R.anim.left_out, R.anim.left_in);
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 
 }

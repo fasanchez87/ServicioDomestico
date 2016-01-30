@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -98,7 +99,7 @@ public class Login extends AppCompatActivity
             {
                 Intent intent = new Intent(Login.this, Registro.class);
                 startActivity(intent);
-                overridePendingTransition(R.anim.left_in, R.anim.left_out);
+               // overridePendingTransition(R.anim.left_in, R.anim.left_out);
                 finish();            }
         });
 
@@ -455,5 +456,18 @@ public class Login extends AppCompatActivity
 
             }
         }
+    }
+
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if (keyCode == KeyEvent.KEYCODE_BACK)
+        {
+
+            finish();
+            //overridePendingTransition(R.anim.left_out, R.anim.left_in);
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 }

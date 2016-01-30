@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".activities.Registro"
-    android:background="@color/colorBlanco">
+    tools:context="com.elements.serviciodomestico.activities.Pago">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -21,7 +20,6 @@
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
-
 
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -42,141 +40,104 @@
             android:descendantFocusability="beforeDescendants"
             android:focusableInTouchMode="true">
 
-            <Space
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/input_layout_numero_tarjeta_registro"
                 android:layout_width="match_parent"
-                android:layout_height="1dp" />
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/colorAccent"
+                >
 
+                <EditText
+                    android:id="@+id/edit_text_numero_tarjeta_registro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:digits="01234 56789"
+                    android:backgroundTint="@color/colorAccent"
+                    android:textColorHint="@color/colorAccent"
+                    android:textColor="@color/colorAccent"
+                    android:drawablePadding="10dp"
+                    android:drawableLeft="@mipmap/logo_tarjeta_x"
+                    android:maxLength="19"
+                    />
 
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="20dp" />
-
+            </android.support.design.widget.TextInputLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal" >
 
-
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/input_layout_nombre_registro"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColorHint="@color/colorAccent"
-                android:layout_weight="1">
-
-
-                <EditText
-                    android:id="@+id/edit_text_nombre_registro"
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/input_layout_mes_tarjeta_credito_registro"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Nombre"
-                    android:inputType="text"
-                    android:backgroundTint="@color/colorAccent"
                     android:textColorHint="@color/colorAccent"
-                    android:textColor="@color/colorAccent"/>
-            </android.support.design.widget.TextInputLayout>
+                    android:layout_weight="4">
 
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/input_layout_apellido_registro"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColorHint="@color/colorAccent"
-                android:layout_weight="1">
+                    <EditText
+                        android:id="@+id/edit_text_mes_tarjeta_credito_registro"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="MM"
+                        android:maxLength="2"
+                        android:inputType="number"
+                        android:backgroundTint="@color/colorAccent"
+                        android:textColorHint="@color/colorAccent"
+                        android:textColor="@color/colorAccent"
+                        />
+                </android.support.design.widget.TextInputLayout>
 
-                <EditText
-                    android:id="@+id/edit_text_apellido_registro"
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/input_layout_año_tarjeta_credito_registro"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Apellido"
-                    android:inputType="text"
-                    android:backgroundTint="@color/colorAccent"
                     android:textColorHint="@color/colorAccent"
-                    android:textColor="@color/colorAccent"/>
-            </android.support.design.widget.TextInputLayout>
+                    android:layout_weight="4">
 
+                    <EditText
+                        android:id="@+id/edit_text_año_tarjeta_credito_registro"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="AAAA"
+                        android:maxLength="4"
+                        android:inputType="number"
+                        android:backgroundTint="@color/colorAccent"
+                        android:textColorHint="@color/colorAccent"
+                        android:textColor="@color/colorAccent"
+                        />
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/input_layout_cvv_tarjeta_credito_registro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColorHint="@color/colorAccent"
+                    android:layout_weight="3">
+
+                    <EditText
+                        android:id="@+id/edit_text_cvv_tarjeta_credito_registro"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="CVV"
+                        android:maxLength="4"
+                        android:inputType="number"
+                        android:backgroundTint="@color/colorAccent"
+                        android:textColorHint="@color/colorAccent"
+                        android:textColor="@color/colorAccent"
+                        />
+                </android.support.design.widget.TextInputLayout>
 
             </LinearLayout>
 
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/input_layout_email_registro"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColorHint="@color/colorAccent">
-
-                <EditText
-                    android:id="@+id/edit_text_email_registro"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Email"
-                    android:inputType="textEmailAddress"
-                    android:backgroundTint="@color/colorAccent"
-                    android:textColorHint="@color/colorAccent"
-                    android:textColor="@color/colorAccent"/>
-            </android.support.design.widget.TextInputLayout>
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/input_layout_documento_registro"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColorHint="@color/colorAccent">
-
-                <EditText
-                    android:id="@+id/edit_text_documento_registro"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Número documento"
-                    android:inputType="number"
-                    android:backgroundTint="@color/colorAccent"
-                    android:textColorHint="@color/colorAccent"
-                    android:textColor="@color/colorAccent"
-                    />
-            </android.support.design.widget.TextInputLayout>
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="10dp" />
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/input_layout_clave_registro"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColorHint="@color/colorAccent">
-
-
-                <EditText
-                    android:id="@+id/edit_text_clave_registro"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Clave"
-                    android:inputType="textPassword"
-                    android:backgroundTint="@color/colorAccent"
-                    android:textColorHint="@color/colorAccent"
-                    android:textColor="@color/colorAccent"
-                    />
-            </android.support.design.widget.TextInputLayout>
-
-
-
 
             <Button
-                android:id="@+id/btn_siguiente"
+                android:id="@+id/btn_registro"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/css_buttons"
-                android:text="siguiente"
+                android:text="regístrate"
                 android:textColor="@android:color/white"
                 android:layout_alignParentBottom="true"
                 />
@@ -199,7 +160,9 @@
                     android:orientation="vertical"
                     android:paddingLeft="20dp"
                     android:paddingRight="20dp"
-                    android:layout_marginBottom="30dp"
+                    android:layout_marginBottom="90dp"
+
+
                     >
 
                     <ProgressBar
@@ -214,6 +177,19 @@
                         android:visibility="gone"
                         />
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:text="Validando"
+                        android:id="@+id/textViewProgressBarTarjetaCredito"
+                        android:textColor="@color/colorAccent"
+                        android:layout_alignParentBottom="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_gravity="center"
+                        android:layout_above="@id/progressBar"
+                        android:visibility="gone"/>
+
                 </LinearLayout>
 
             </RelativeLayout>
@@ -224,7 +200,15 @@
 
         </LinearLayout>
 
-    </android.support.v4.widget.NestedScrollView>
+
+
+
+
+
+
+
+        </android.support.v4.widget.NestedScrollView>
+
+
 
 </android.support.design.widget.CoordinatorLayout>
-

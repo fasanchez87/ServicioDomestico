@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.elements.serviciodomestico">
 
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -28,6 +29,10 @@
         <activity
             android:name=".activities.ValidarEmail"
             android:label="@string/title_activity_validar_email"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.Pago"
+            android:label="@string/title_activity_pago"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

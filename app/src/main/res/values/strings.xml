@@ -10,6 +10,7 @@
     <string name="err_msg_password">Por favor, digite su clave</string>
     <string name="err_msg_password_length">Su clave debe tener al menos 5 caracteres</string>
 
-    <string name="title_activity_registro">Registro</string>
+    <string name="title_activity_registro">Regístrate</string>
     <string name="title_activity_validar_email">ValidarEmail</string>
+    <string name="title_activity_pago">Pago</string>
 </resources>
