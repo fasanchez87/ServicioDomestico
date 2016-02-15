@@ -9,4 +9,9 @@
     <color name="colorBotonPresionado">#E17FE1</color>
     <color name="colorBlanco">#FFFFFF</color>
     <color name="colorRojoErrores">#f40202</color>
+    <color name="colorLetra">#f8919090</color>
+    <color name="descripcionLetra">#999999</color>
+    <color name="title">#222222</color>
+
+
 </resources>

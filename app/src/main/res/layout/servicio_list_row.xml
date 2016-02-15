@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:clickable="true"
+    android:background="?android:attr/selectableItemBackground"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textViewIDServicio"
+        android:textColor="@color/title"
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/textViewNombreServicio"
+        android:textColor="@color/title"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="MANICURE"
+        android:layout_toStartOf="@+id/checkBoxServicio" />
+
+    <TextView
+        android:id="@+id/textViewDescServicio"
+        android:layout_below="@id/textViewNombreServicio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Arreglo de uñas de las manos.SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
+        android:layout_weight="1"
+        android:ellipsize="none"
+        android:maxLines="100"
+        android:scrollHorizontally="false"
+        android:layout_toStartOf="@+id/checkBoxServicio" />
+
+    <TextView
+        android:id="@+id/textViewValorServicio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="17,000 COP"
+        android:layout_below="@+id/textViewDescServicio"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/checkBoxServicio" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:id="@+id/checkBoxServicio"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignBottom="@+id/textViewValorServicio" />
+
+</RelativeLayout>

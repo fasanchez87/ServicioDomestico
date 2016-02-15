@@ -195,7 +195,7 @@
                         android:layout_gravity="center"
                         android:indeterminateTint="@color/colorAccent"
                         android:indeterminateTintMode="src_atop"
-                        android:visibility="visible" />
+                        android:visibility="gone" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -208,7 +208,7 @@
                         android:layout_centerHorizontal="true"
                         android:layout_gravity="center"
                         android:layout_above="@id/progressBar"
-                        android:visibility="visible"/>
+                        android:visibility="gone"/>
 
 
                 </LinearLayout>
