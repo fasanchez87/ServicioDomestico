@@ -93,9 +93,6 @@ public class Login extends AppCompatActivity
 
         String fontPath = "fonts/Raleway-Medium.ttf";
 
-
-
-
         // text view label
 
         textOlvidoClave = (TextView) findViewById(R.id.textViewRecordarClaveLogin);
@@ -110,8 +107,6 @@ public class Login extends AppCompatActivity
                 // overridePendingTransition(R.anim.left_in, R.anim.left_out);
                 finish();            }
         });
-
-
 
         textRegistro.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v)
@@ -228,6 +223,9 @@ public class Login extends AppCompatActivity
                                     String apellidos = response.getString("apellidosUsuario");
                                     String nombreUsuario = (nombre+" "+apellidos);
                                     String emailUser = response.getString("emailUsuario");
+                                    String tipoUsuario = response.getString("tipoUsuario");
+                                    String serialUsuario = response.getString("serialUsuario");
+
 
                                     sharedPreferences.putString("nombreUsuario",nombreUsuario);
                                     sharedPreferences.putString("emailUser",emailUser);
@@ -245,9 +243,11 @@ public class Login extends AppCompatActivity
                                                 //{
                                                     Intent intent = new Intent(Login.this, Gestion.class);
                                                     startActivity(intent);
-                                                    sharedPreferences.putBoolean("GuardarSesion",true);
+                                    sharedPreferences.putBoolean("GuardarSesion", true);
                                                     sharedPreferences.putString("email", emailUser);
                                                     sharedPreferences.putString("clave",claveUser);
+                                    sharedPreferences.putString("tipoUsuario", tipoUsuario);
+                                    sharedPreferences.putString("serialUsuario", serialUsuario);
                                                     finish();
 
                                     //}

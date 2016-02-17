@@ -1,5 +1,6 @@
 package com.elements.beya.fragments;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -30,6 +31,8 @@ import com.elements.beya.R;
 import com.elements.beya.beans.Proveedor;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -60,10 +63,6 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
     double mLatitude = 0;
     double mLongitude = 0;
-
-
-
-
 
     Button buttonFindCoach;
 
@@ -106,48 +105,63 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         mGoogleMap = ((SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map)).getMap();
 
-        mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
-        mGoogleMap.getUiSettings().setCompassEnabled(true);
-        mGoogleMap.setMyLocationEnabled(true);
-        if (ActivityCompat.checkSelfPermission(this.getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getActivity(),
-                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+
+        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this.getActivity().getBaseContext());
+
+
+        if (status != ConnectionResult.SUCCESS) { // Google Play Services are not available
+
+            int requestCode = 10;
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status, this.getActivity(), requestCode);
+            dialog.show();
             return;
 
-        }
+        } else
 
-
-
-        LocationManager locationManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
-
-        // Creating a criteria object to retrieve provider
-        Criteria criteria = new Criteria();
-
-        // Getting the name of the best provider
-        String provider = locationManager.getBestProvider(criteria, true);
-
-        // Getting Current Location From GPS
-        Location location = locationManager.getLastKnownLocation(provider);
-
-        if(location!=null)
         {
-            onLocationChanged(location);
+
+
+            mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
+            mGoogleMap.getUiSettings().setCompassEnabled(true);
+            mGoogleMap.setMyLocationEnabled(true);
+
+            if (ActivityCompat.checkSelfPermission(this.getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) !=
+                    PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getActivity(),
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+
+            }
+
+
+            LocationManager locationManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
+
+            // Creating a criteria object to retrieve provider
+            Criteria criteria = new Criteria();
+
+            // Getting the name of the best provider
+            String provider = locationManager.getBestProvider(criteria, true);
+
+            // Getting Current Location From GPS
+            Location location = locationManager.getLastKnownLocation(provider);
+
+            if (location != null) {
+                onLocationChanged(location);
+            }
+
+            locationManager.requestLocationUpdates(provider, 80000, 0, this);
+
+
+            cargarProveedoresServicios();
+
+
         }
-
-        locationManager.requestLocationUpdates(provider, 80000, 0, this);
-
-
-        cargarProveedoresServicios();
-
-
 
     }
 
