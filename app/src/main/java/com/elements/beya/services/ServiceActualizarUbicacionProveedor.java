@@ -68,7 +68,8 @@ public class ServiceActualizarUbicacionProveedor extends Service {
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId)
+    {
         // TODO Auto-generated method stub
         if (mTimer != null) {
             mTimer.cancel();
@@ -87,6 +88,8 @@ public class ServiceActualizarUbicacionProveedor extends Service {
         // TODO Auto-generated method stub
         super.onDestroy();
         mTimer.cancel();
+        _webServiceUpdatePositionProvider(gestion.getLocation(4.102533, -76.202582, 10000),
+                sharedPreferences.getString("serialUsuario") , sharedPreferences.getString("statusOnline"));
         Toast.makeText(this, "Servicio destruido", Toast.LENGTH_SHORT).show();
     }
 
@@ -101,7 +104,8 @@ public class ServiceActualizarUbicacionProveedor extends Service {
                 public void run() {
                     // display toast
 
-                    _webServiceLogin(gestion.getLocation(4.102533, -76.202582, 10000), sharedPreferences.getString("serialUsuario"));
+                    _webServiceUpdatePositionProvider(gestion.getLocation(4.102533, -76.202582, 10000),
+                            sharedPreferences.getString("serialUsuario") , sharedPreferences.getString("statusOnline"));
 
                     Toast.makeText(getApplicationContext(), gestion.getLocation(4.102533, -76.202582, 10000),
                             Toast.LENGTH_SHORT).show();
@@ -118,7 +122,7 @@ public class ServiceActualizarUbicacionProveedor extends Service {
 
     }
 
-    private void _webServiceLogin(String locationUser, final String serialUser) {
+    private void _webServiceUpdatePositionProvider(String locationUser, final String serialUser, final String statusOnline) {
         _urlWebService = "http://52.72.85.214/ws/ActualizarUbicacionEsteticista";
 
         String[] parts = locationUser.split(":");
@@ -293,6 +297,7 @@ public class ServiceActualizarUbicacionProveedor extends Service {
                 headers.put("serialUsuario", serialUser);
                 headers.put("latitudUsuario", latitudUsuario);
                 headers.put("longitudUsuario", longitudUsuario);
+                headers.put("statusOnline", statusOnline);
 
                 return headers;
             }

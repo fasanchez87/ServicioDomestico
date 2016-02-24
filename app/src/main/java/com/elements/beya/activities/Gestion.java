@@ -2,11 +2,9 @@
 package com.elements.beya.activities;
 
 import android.app.AlertDialog;
-import android.app.Service;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,10 +17,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.elements.beya.R;
 import com.elements.beya.fragments.SolicitarServicio;
@@ -40,6 +36,11 @@ public class Gestion extends AppCompatActivity
     private TextView textViewemailUser;
     String name, email, tipoUsuario;
     SwitchCompat switchActivarLocation;
+
+    //GUARDAR OPCION SELECTED SWITCH.
+    private boolean isCheckedSwitch = false;
+
+    private String statusOnline = "0";  // 0 is OffLine; 1 is Online.
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -66,28 +67,47 @@ public class Gestion extends AppCompatActivity
         Menu menu = navigationView.getMenu();
 
         MenuItem item = menu.findItem(R.id.nav_activar_geolocalizacion);
+
+        //EVENTO DEL SWITCH BUTTON.
         switchActivarLocation = (SwitchCompat) MenuItemCompat.getActionView(item);
         switchActivarLocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
 
+                statusOnline = "";
 
+                if (isChecked)
+                {
                     //SERVICIO EN BACKGROUND PARA ACTUALIZAR LA UBICACION DEL PROVEEDOR.
+                    isCheckedSwitch = true;
+
                     Log.e("CHECKED", "onCheckedChanged" + isChecked);
+                    statusOnline = "1";
+                    sharedPreferences.putString("statusOnline",statusOnline );
                     startService(new Intent(getBaseContext(), ServiceActualizarUbicacionProveedor.class));
-                } else {
+                }
+
+                else
+                {
+                    isCheckedSwitch = false;// PENDIENTE
+                    statusOnline = "0";
                     Log.e("CHECKED", "onCheckedChanged" + isChecked);
                     stopService(new Intent(getBaseContext(), ServiceActualizarUbicacionProveedor.class));
+                    sharedPreferences.putString("statusOnline", statusOnline );
                 }
             }
         });
 
 
-        if (!tipoUsuario.equals("E")) {
+        if (!tipoUsuario.equals("E"))
+        {
             menu.getItem(1).setVisible(false);
-        } else if (tipoUsuario.equals("E")) {
-            menu.getItem(0).getSubMenu().getItem(1).setVisible(false);
+        }
+
+        else if (tipoUsuario.equals("E"))
+        {
+            menu.getItem(0).getSubMenu().getItem(2).setVisible(false);
             Log.e("LEA :::: ", menu.getItem(0).getTitle().toString());
         }
 
@@ -213,12 +233,12 @@ public class Gestion extends AppCompatActivity
                                 //overridePendingTransition(R.anim.left_out, R.anim.left_in);
                             }
                         }).setNegativeButton("NO", new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
 
-                            }
-                        }).show();
+                    }
+                }).show();
 
             default:
                 fragmentClass = SolicitarServicio.class;
@@ -227,7 +247,7 @@ public class Gestion extends AppCompatActivity
 
         try
         {
-              fragment = (Fragment) fragmentClass.newInstance();
+            fragment = (Fragment) fragmentClass.newInstance();
         }
         catch (Exception e)
         {
@@ -248,30 +268,5 @@ public class Gestion extends AppCompatActivity
 
 
 
-   /* public class ServicioActualizarUbicacionEsteticista extends Service
-    {
 
-        @Override
-        public IBinder onBind(Intent arg0)
-        {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public int onStartCommand(Intent intent, int flags, int startId)
-        {
-            // TODO Auto-generated method stub
-            Toast.makeText(this, "Servicio en Ejecucion", Toast.LENGTH_SHORT).show();
-            return START_STICKY;
-        }
-
-        @Override
-        public void onDestroy()
-        {
-            // TODO Auto-generated method stub
-            super.onDestroy();
-            Toast.makeText(this, "Servicio destruido", Toast.LENGTH_SHORT).show();
-        }
-    }*/
 }
