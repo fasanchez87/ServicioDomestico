@@ -93,8 +93,8 @@ public class Registro extends AppCompatActivity
         EditTextNameUser.setText(sharedPreferences.getString("nombresUsuario"));
         EditTextApellidoUser.setText(sharedPreferences.getString("apellidosUsuario"));
         EditTextEmailUser.setText(sharedPreferences.getString("emailUsuario"));
-        EditTextClaveUser.setText(sharedPreferences.getString("documentoUsuario"));
-        EditTextDocumentoUser.setText(sharedPreferences.getString("claveUsuario"));
+        EditTextClaveUser.setText(sharedPreferences.getString("claveUsuario"));
+        EditTextDocumentoUser.setText(sharedPreferences.getString("documentoUsuario"));
 
         EditTextNameUser.addTextChangedListener(new RevisorText(EditTextNameUser));
         EditTextApellidoUser.addTextChangedListener(new RevisorText(EditTextApellidoUser));

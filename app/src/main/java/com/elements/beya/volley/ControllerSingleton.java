@@ -7,6 +7,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
+import com.elements.beya.helper.MyPreferenceManager;
 
 /**
  * Created by FABiO on 23/01/2016.
@@ -19,6 +20,9 @@ public class ControllerSingleton extends Application
 
     public static final String TAG = ControllerSingleton.class.getSimpleName();
 
+    private MyPreferenceManager pref;
+
+
 
     @Override
     public void onCreate()
@@ -30,6 +34,16 @@ public class ControllerSingleton extends Application
     public static synchronized ControllerSingleton getInstance()
     {
         return mInstance;
+    }
+
+    public MyPreferenceManager getPrefManager()
+    {
+        if (pref == null)
+        {
+            pref = new MyPreferenceManager(this);
+        }
+
+        return pref;
     }
 
     public RequestQueue getReqQueue()

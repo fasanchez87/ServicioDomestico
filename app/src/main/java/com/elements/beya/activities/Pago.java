@@ -1,9 +1,13 @@
 package com.elements.beya.activities;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -33,8 +37,14 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.R;
+import com.elements.beya.app.Config;
+import com.elements.beya.gcm.GcmIntentService;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -80,10 +90,20 @@ public class Pago extends AppCompatActivity
     private String fechaVigencia;
 
     private String _urlWebService;
+    private String tokenGCM;
+
+    private Intent _intent;
 
     Registro registro;
 
-
+    private String TAG = MainActivity.class.getSimpleName();
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -97,7 +117,44 @@ public class Pago extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                // checking for type intent filter
+                if (intent.getAction().equals(Config.REGISTRATION_COMPLETE)) {
+                    // gcm successfully registered
+                    // now subscribe to `global` topic to receive app wide notifications
+                    tokenGCM = intent.getStringExtra("token");
+
+                    Toast.makeText(getApplicationContext(), "GCM registration token: " + tokenGCM, Toast.LENGTH_LONG).show();
+
+                } else if (intent.getAction().equals(Config.SENT_TOKEN_TO_SERVER)) {
+                    // gcm registration id is stored in our server's MySQL
+
+                    Toast.makeText(getApplicationContext(), "GCM registration token is stored in server!", Toast.LENGTH_LONG).show();
+
+                } else if (intent.getAction().equals(Config.PUSH_NOTIFICATION)) {
+                    // new push notification is received
+
+                    Toast.makeText(getApplicationContext(), "Push notification is received!", Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+
+
+
+        if (checkPlayServices()) {
+            registerGCM();
+        }
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+
+
        // registro = new Registro();
+
 
         EditTextNameUser = (EditText) findViewById(R.id.edit_text_nombre_registro);
         EditTextApellidoUser = (EditText) findViewById(R.id.edit_text_apellido_registro);
@@ -155,6 +212,30 @@ public class Pago extends AppCompatActivity
 
     }
 
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+                        .show();
+            } else {
+                Log.i(TAG, "This device is not supported. Google Play Services not installed!");
+                Toast.makeText(getApplicationContext(), "This device is not supported. Google Play Services not installed!", Toast.LENGTH_LONG).show();
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    // starting the service to register with GCM
+    private void registerGCM() {
+        Intent intent = new Intent(this, GcmIntentService.class);
+        intent.putExtra("key", "register");
+        startService(intent);
+    }
+
 
     private boolean validarDatosPago()
     {
@@ -194,6 +275,7 @@ public class Pago extends AppCompatActivity
     {
         if( validarDatosPago() )
         {
+
             numeroTarjetaCredito = EditTextNumeroTarjetaCreditoUser.getText().toString().replaceAll("\\s+", "");
             MesTarjetaCredito = EditTextMesTarjetaCreditoUser.getText().toString();
             AñoTarjetaCredito = EditTextAñoTarjetaCreditoUser.getText().toString();
@@ -201,6 +283,7 @@ public class Pago extends AppCompatActivity
 
             fechaVigencia = EditTextAñoTarjetaCreditoUser.getText().toString()+"/"+EditTextMesTarjetaCreditoUser.getText().toString();
 
+            Log.w("tokenGCM",""+tokenGCM);
             Log.w("numeroTarjetaCredito",numeroTarjetaCredito);
             Log.w("MesTarjetaCredito",MesTarjetaCredito);
             Log.w("AñoTarjetaCredito",AñoTarjetaCredito);
@@ -217,15 +300,42 @@ public class Pago extends AppCompatActivity
             Log.w("tipoUsuario", sharedPreferences.getString("tipoUsuario"));
 
 
-            _webServiceRegistroUsuario(sharedPreferences.getString("nombresUsuario"), sharedPreferences.getString("apellidosUsuario"),
+            _webServiceRegistroUsuario( tokenGCM, sharedPreferences.getString("nombresUsuario"), sharedPreferences.getString("apellidosUsuario"),
                     sharedPreferences.getString("emailUsuario"), sharedPreferences.getString("documentoUsuario"),
                     sharedPreferences.getString("claveUsuario"), sharedPreferences.getString("direccionIp"),
                     sharedPreferences.getString("sistemaOperativo"), sharedPreferences.getString("tipoUsuario"), numeroTarjetaCredito,
-                    fechaVigencia, getNameFranquicia());
+                    fechaVigencia, getNameFranquicia() );
+
+
+
+
+
+
 
 
         }
     }
+
+    @Override
+    protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // register GCM registration complete receiver
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(Config.REGISTRATION_COMPLETE));
+
+        // register new push message receiver
+        // by doing this, the activity will be notified each time a new message arrives
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(Config.PUSH_NOTIFICATION));
+    }
+
 
 
     private boolean validateNumberCreditCard()
@@ -648,12 +758,16 @@ public class Pago extends AppCompatActivity
         return super.onKeyDown(keyCode, event);
     }
 
-    private void _webServiceRegistroUsuario(String nombre, String apellido, String email, String documento,
+    private void _webServiceRegistroUsuario(final String tokenGCM , String nombre, String apellido, String email, String documento,
                                             String clave, String direccionIP, String sistemaOperativo, String tipoUsuario,
                                             final String numeroTarjetaCredito, final String fechaVigencia, String tipoTarjeta)
+
+
+
     {
 
         _urlWebService = "http://52.72.85.214/ws/RegistroUsuario";
+
 
         progressBarRegistroUsuario.setVisibility(View.VISIBLE);
         TextViewLabelProgressBar.setVisibility(View.VISIBLE);
@@ -969,6 +1083,8 @@ public class Pago extends AppCompatActivity
                 HashMap<String, String> headers = new HashMap <String, String>();
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
+
+                headers.put("tokenGCM", tokenGCM);
                 headers.put("documentoUsuario", sharedPreferences.getString("documentoUsuario"));
                 headers.put("nombresUsuario", sharedPreferences.getString("nombresUsuario") );
                 headers.put("apellidosUsuario", sharedPreferences.getString("apellidosUsuario"));

@@ -109,6 +109,9 @@ public class ServiceActualizarUbicacionProveedor extends Service {
 
                     Toast.makeText(getApplicationContext(), gestion.getLocation(4.102533, -76.202582, 10000),
                             Toast.LENGTH_SHORT).show();
+
+                    Toast.makeText(getApplicationContext(), sharedPreferences.getString("statusOnline"),
+                            Toast.LENGTH_SHORT).show();
                 }
 
             });

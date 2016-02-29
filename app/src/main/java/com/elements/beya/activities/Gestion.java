@@ -38,7 +38,7 @@ public class Gestion extends AppCompatActivity
     SwitchCompat switchActivarLocation;
 
     //GUARDAR OPCION SELECTED SWITCH.
-    private boolean isCheckedSwitch = false;
+    private boolean isCheckedSwitch;
 
     private String statusOnline = "0";  // 0 is OffLine; 1 is Online.
 
@@ -70,7 +70,11 @@ public class Gestion extends AppCompatActivity
 
         //EVENTO DEL SWITCH BUTTON.
         switchActivarLocation = (SwitchCompat) MenuItemCompat.getActionView(item);
-        switchActivarLocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+        switchActivarLocation.setChecked(sharedPreferences.getBoolean("isCheckedSwitch"));
+
+        switchActivarLocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
@@ -81,6 +85,8 @@ public class Gestion extends AppCompatActivity
                 {
                     //SERVICIO EN BACKGROUND PARA ACTUALIZAR LA UBICACION DEL PROVEEDOR.
                     isCheckedSwitch = true;
+                    sharedPreferences.putBoolean("isCheckedSwitch",isCheckedSwitch );
+
 
                     Log.e("CHECKED", "onCheckedChanged" + isChecked);
                     statusOnline = "1";
@@ -91,6 +97,7 @@ public class Gestion extends AppCompatActivity
                 else
                 {
                     isCheckedSwitch = false;// PENDIENTE
+                    sharedPreferences.putBoolean("isCheckedSwitch",isCheckedSwitch );
                     statusOnline = "0";
                     Log.e("CHECKED", "onCheckedChanged" + isChecked);
                     stopService(new Intent(getBaseContext(), ServiceActualizarUbicacionProveedor.class));
