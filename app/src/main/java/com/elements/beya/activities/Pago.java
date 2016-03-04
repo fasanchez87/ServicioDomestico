@@ -90,7 +90,7 @@ public class Pago extends AppCompatActivity
     private String fechaVigencia;
 
     private String _urlWebService;
-    private String tokenGCM;
+    public String tokenGCM;
 
     private Intent _intent;
 
@@ -126,6 +126,7 @@ public class Pago extends AppCompatActivity
                     // gcm successfully registered
                     // now subscribe to `global` topic to receive app wide notifications
                     tokenGCM = intent.getStringExtra("token");
+                    sharedPreferences.putString("TOKEN :: ",tokenGCM);
 
                     Toast.makeText(getApplicationContext(), "GCM registration token: " + tokenGCM, Toast.LENGTH_LONG).show();
 

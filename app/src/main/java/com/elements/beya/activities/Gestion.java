@@ -40,6 +40,7 @@ public class Gestion extends AppCompatActivity
     //GUARDAR OPCION SELECTED SWITCH.
     private boolean isCheckedSwitch;
 
+
     private String statusOnline = "0";  // 0 is OffLine; 1 is Online.
 
     @Override
@@ -54,6 +55,8 @@ public class Gestion extends AppCompatActivity
         name = sharedPreferences.getString("nombreUsuario");
         email = sharedPreferences.getString("emailUser");
         tipoUsuario = sharedPreferences.getString("tipoUsuario");
+
+        Log.w("TOKEN :: ","."+sharedPreferences.getString("tokenGCM"));
 
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

@@ -72,6 +72,8 @@ public class SolicitarServicio extends Fragment
 
     private gestionSharedPreferences sharedPreferences;
 
+    private String serialUsuario;
+
 
     private ArrayList<Servicio> servicioList = new ArrayList<>();
     private ArrayList<Proveedor> provedoresList;
@@ -219,6 +221,7 @@ public class SolicitarServicio extends Fragment
     private void _webServiceGetProviderServicesOnMAP(final String id_services)
     {
         _urlWebService = "http://52.72.85.214/ws/ObtenerProveedoresServicios";
+
 
         /*progressBar.setVisibility(View.VISIBLE);
         buttonSeleccionarServicios.setVisibility(View.GONE);*/
@@ -491,6 +494,7 @@ public class SolicitarServicio extends Fragment
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
                 headers.put("servicios", id_services);
+                headers.put("serialUsuario", sharedPreferences.getString("serialUsuario"));
                 return headers;
             }
 

@@ -71,9 +71,11 @@ public class ServiceActualizarUbicacionProveedor extends Service {
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         // TODO Auto-generated method stub
-        if (mTimer != null) {
+        if (mTimer != null)
+        {
             mTimer.cancel();
-        } else {
+        } else
+        {
             // recreate new
             mTimer = new Timer();
         }
