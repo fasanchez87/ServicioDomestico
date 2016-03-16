@@ -293,7 +293,7 @@ public class SolicitarServicio extends Fragment
                                 for (int i = 0; i <= provedoresList.size() - 1; i++)
                                 {
                                     Log.w("Proveedor", "" + provedoresList.get(i).getNombreProveedor());
-                                    Log.w("Proveedor", "" + provedoresList.get(i).getImgUsuario().toString());
+                                    Log.w("Proveedor", "" + provedoresList.get(i).getEmailProveedor().toString());
                                 }
 
                                 //progressBar.setVisibility(View.GONE);

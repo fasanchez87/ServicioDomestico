@@ -217,15 +217,12 @@ public class Login extends AppCompatActivity
 
                             if(status.equals("ok"))
                                 {
-
-
                                     String nombre = response.getString("nombresUsuario");
                                     String apellidos = response.getString("apellidosUsuario");
                                     String nombreUsuario = (nombre+" "+apellidos);
                                     String emailUser = response.getString("emailUsuario");
                                     String tipoUsuario = response.getString("tipoUsuario");
                                     String serialUsuario = response.getString("serialUsuario");
-
 
                                     sharedPreferences.putString("nombreUsuario",nombreUsuario);
                                     sharedPreferences.putString("emailUser",emailUser);

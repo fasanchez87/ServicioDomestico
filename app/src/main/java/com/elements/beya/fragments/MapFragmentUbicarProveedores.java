@@ -30,9 +30,21 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
 import com.elements.beya.R;
+import com.elements.beya.activities.Gestion;
 import com.elements.beya.beans.Proveedor;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
@@ -57,7 +69,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class MapFragmentUbicarProveedores extends Fragment implements LocationListener, GoogleMap.OnMarkerClickListener
@@ -81,6 +98,10 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     double mLatitude = 0;
     double mLongitude = 0;
 
+    private String _urlWebService;
+
+    private Button buttonSeleccionarServicioFragmentSolicitarServicio;
+
     Button buttonFindCoach;
     LocationManager lm;
 
@@ -96,6 +117,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         super.onCreate(savedInstanceState);
 
         sharedPreferences = new gestionSharedPreferences(this.getActivity());
+
 
 
 
@@ -142,6 +164,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
             mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
             mGoogleMap.getUiSettings().setCompassEnabled(true);
+            mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
             mGoogleMap.setMyLocationEnabled(true);
 
             if (ActivityCompat.checkSelfPermission(this.getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) !=
@@ -174,56 +197,24 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                 onLocationChanged(location);
             }
 
-            locationManager.requestLocationUpdates(provider, 80000, 0, this);
-
+            locationManager.requestLocationUpdates(provider, 90000, 0, this);
 
             cargarProveedoresServicios();
 
+            //EVENTO BOTON SOLICITAR SERVICIOS A LOS PROVEEDORES DE SERVICIO MEDIANTE PUSH.
+            buttonSeleccionarServicioFragmentSolicitarServicio = (Button) this.getActivity().
+                    findViewById(R.id.buttonSeleccionarServicioFragmentSolicitarServicio);
+            buttonSeleccionarServicioFragmentSolicitarServicio.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    _webServiceEnviarNotificacionPushATodos( sharedPreferences.getString("serialUsuario") );
+                }
+            });
 
         }
 
-    }
-
-    public static void locationChecker(GoogleApiClient mGoogleApiClient, final Activity activity) {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(30 * 1000);
-        locationRequest.setFastestInterval(5 * 1000);
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest);
-        builder.setAlwaysShow(true);
-        PendingResult<LocationSettingsResult> result =
-                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>()
-        {
-            @Override
-            public void onResult(LocationSettingsResult result) {
-                final Status status = result.getStatus();
-                final LocationSettingsStates state = result.getLocationSettingsStates();
-                switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        // All location settings are satisfied. The client can initialize location
-                        // requests here.
-                        break;
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        // Location settings are not satisfied. But could be fixed by showing the user
-                        // a dialog.
-                        try {
-                            // Show the dialog by calling startResolutionForResult(),
-                            // and check the result in onActivityResult().
-                            status.startResolutionForResult(
-                                    activity, 1000);
-                        } catch (IntentSender.SendIntentException e) {
-                            // Ignore the error.
-                        }
-                        break;
-                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        // Location settings are not satisfied. However, we have no way to fix the
-                        // settings so we won't show the dialog.
-                        break;
-                }
-            }
-        });
     }
 
     public void cargarProveedoresServicios()
@@ -237,15 +228,13 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
             markerOptions = new MarkerOptions();
             LatLng latLng = new LatLng( Double.parseDouble(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getLatitudUsuario()),
-                                        Double.parseDouble(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getLongitudUsuario()));
+                    Double.parseDouble(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getLongitudUsuario()));
 
             markerOptions.position(latLng);
             markerOptions.title(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getNombreProveedor().toString() + " " +
                     sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getApellidoProveedor());
 
-            markerOptions.snippet("aa:"+sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getEmailProveedor().toString());
-
-
+            markerOptions.snippet(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getEmailProveedor().toString());
 
 
 
@@ -373,7 +362,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 */
 
 
-         return (null);
+            return (null);
 
 
         }
@@ -395,9 +384,11 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
 
 
-            TextView tv=(TextView) popup.findViewById(R.id.title);
-            tv.setText(marker.getTitle());
-            tv=(TextView)popup.findViewById(R.id.snippet);
+            TextView tvTitle = (TextView) popup.findViewById(R.id.title);
+            TextView tvSnippet = (TextView) popup.findViewById(R.id.title);
+            tvTitle.setText(marker.getTitle());
+            tvSnippet = (TextView)popup.findViewById(R.id.snippet);
+            tvSnippet.setText(marker.getSnippet());
 
 
 
@@ -440,7 +431,241 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
 
 
+    private void _webServiceEnviarNotificacionPushATodos( final String serialUsuario )
+    {
+        _urlWebService = "http://52.72.85.214/ws/SendPushNotificationForALL";
 
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, _urlWebService, null,
+                new Response.Listener<JSONObject>()
+                {
+                    @Override
+                    public void onResponse(JSONObject response)
+                    {
+                        try
+                        {
+                            boolean status = response.getBoolean("status");
+                            String result = response.getString("result");
+
+
+                            if(status)
+                            {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+                                builder
+                                        .setMessage("Solicitud enviada con exito a todos los Esteticistas; en instantes se le asignara su servicio.")
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                        {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int id)
+                                            {
+                                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                                //startActivity(intent);
+                                                //finish();
+                                            }
+                                        }).show();
+                             /*   Intent intent = new Intent(Login.this, Gestion.class);
+                                startActivity(intent);
+                                sharedPreferences.putBoolean("GuardarSesion", true);
+                                sharedPreferences.putString("email", emailUser);
+                                sharedPreferences.putString("clave",claveUser);
+                                sharedPreferences.putString("tipoUsuario", tipoUsuario);
+                                sharedPreferences.putString("serialUsuario", serialUsuario);
+                                finish();*//*
+
+                                //}
+                                //}).show();*/
+
+
+                            }
+
+                            else
+                            {
+                                if(!status)
+                                {
+
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+                                    builder
+                                            .setMessage("Error al enviar solicitud: Error: "+result)
+                                            .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                            {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                                    //startActivity(intent);
+                                                    //finish();
+                                                }
+                                            }).show();
+                                }
+                            }
+                        }
+
+                        catch (JSONException e)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+                            builder
+                                    .setMessage(e.getMessage().toString())
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+                            e.printStackTrace();
+                        }
+                    }
+                },
+
+                new Response.ErrorListener()
+                {
+
+
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+
+                        if (error instanceof TimeoutError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+                            builder
+                                    .setMessage("Error de conexión, sin respuesta del servidor.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                        }
+
+                        else
+
+                        if (error instanceof NoConnectionError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+                            builder
+                                    .setMessage("Por favor, conectese a la red.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                        }
+
+                        else
+
+                        if (error instanceof AuthFailureError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+                            builder
+                                    .setMessage("Error de autentificación en la red, favor contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                        }
+
+                        else
+
+                        if (error instanceof ServerError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+                            builder
+                                    .setMessage("Error server, sin respuesta del servidor.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                        }
+
+                        else
+
+                        if (error instanceof NetworkError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+                            builder
+                                    .setMessage("Error de red, contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                        }
+
+                        else
+
+                        if (error instanceof ParseError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+                            builder
+                                    .setMessage("Error de conversión Parser, contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                        }
+                    }
+                })
+
+        {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError
+            {
+                HashMap<String, String> headers = new HashMap <String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
+                headers.put("serialUsuario", serialUsuario);
+                return headers;
+            }
+
+        };
+
+        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        ControllerSingleton.getInstance().addToReqQueue(jsonObjReq,"");
+
+    }
 
 
 
