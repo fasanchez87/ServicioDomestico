@@ -33,6 +33,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.R;
+import com.elements.beya.fragments.MapFragmentUbicarProveedores;
 import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.services.ServiceActualizarUbicacionProveedor;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
@@ -57,6 +58,7 @@ public class Gestion extends AppCompatActivity
     String name, email, tipoUsuario;
     SwitchCompat switchActivarLocation;
     public static String _urlWebService;
+    public String event;
 
 
     //GUARDAR OPCION SELECTED SWITCH.
@@ -79,6 +81,15 @@ public class Gestion extends AppCompatActivity
         tipoUsuario = sharedPreferences.getString("tipoUsuario");
 
         Log.w("TOKEN :: ","."+sharedPreferences.getString("tokenGCM"));
+
+        Bundle extras = getIntent().getExtras();
+
+
+        if (extras != null)
+        {
+            event = extras.getString("Event:MyGcmPushReceiver");
+
+        }
 
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -157,17 +168,36 @@ public class Gestion extends AppCompatActivity
 
         if (savedInstanceState == null)
         {
-            //MOSTRAMOS POR DEFECTO EL NAV SOLICITAR SERVICIOS
-            navigationView.setCheckedItem(R.id.nav_solicitar_servicio);
 
-            android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-            android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.frame_container, new SolicitarServicio());
-            fragmentTransaction.commit();
+            if (tipoUsuario.equals("E"))
+            {
+                //MOSTRAMOS POR DEFECTO EL NAV MIS SERVICIOS CUANDO ES ESTETICISTA
+                navigationView.setCheckedItem(R.id.nav_activar_geolocalizacion);
+
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.frame_container, new MapFragmentUbicarProveedores());
+                fragmentTransaction.commit();
+
+            }
+
+            else
+            {
+
+
+                //MOSTRAMOS POR DEFECTO EL NAV SOLICITAR SERVICIOS CUANDO ES CLIENTE
+                navigationView.setCheckedItem(R.id.nav_solicitar_servicio);
+
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.frame_container, new SolicitarServicio());
+                fragmentTransaction.commit();
+            }
 
         }
-
     }
+
+
 
     public String getLocation(double x0, double y0, int radius) {
         Random random = new Random();
@@ -299,6 +329,8 @@ public class Gestion extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
 
 
     private void _webServiceCerrarSesionChangeStateOnLine(final String serialUsuario)

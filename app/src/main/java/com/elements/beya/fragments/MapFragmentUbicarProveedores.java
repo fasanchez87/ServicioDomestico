@@ -3,6 +3,9 @@ package com.elements.beya.fragments;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+
+import com.elements.beya.beans.Servicio;
+import com.elements.beya.vars.vars;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -69,9 +72,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +91,15 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     private Marker marker;
     private MarkerOptions markerOptions;
 
+    private String TAG = MapFragmentUbicarProveedores.class.getSimpleName();
+
+
+    private String indicaAndroid = "";
+
     GoogleApiClient mGoogleApiClient;
+
+
+    public vars vars;
 
     private gestionSharedPreferences sharedPreferences;
 
@@ -118,6 +131,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
         sharedPreferences = new gestionSharedPreferences(this.getActivity());
 
+        vars = new vars();
 
 
 
@@ -182,22 +196,39 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
             }
 
 
+            //Location location = locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+           /* if (location!=null){
+                double longitude = location.getLongitude();
+                double latitude = location.getLatitude();
+                String locLat = String.valueOf(latitude)+","+String.valueOf(longitude);
+            }*/
+
+
             LocationManager locationManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
 
             // Creating a criteria object to retrieve provider
             Criteria criteria = new Criteria();
 
             // Getting the name of the best provider
-            String provider = locationManager.getBestProvider(criteria, true);
+            String provider = locationManager.getBestProvider(criteria, false);
 
             // Getting Current Location From GPS
-            Location location = locationManager.getLastKnownLocation(provider);
+            Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
             if (location != null) {
                 onLocationChanged(location);
+                mLatitude = location.getLatitude();
+                mLongitude = location.getLongitude();
             }
 
             locationManager.requestLocationUpdates(provider, 90000, 0, this);
+
+           /* mLatitude = location.getLatitude();
+            mLongitude = location.getLongitude();*/
+
+            //SE OBTIENE LAS COORDENADAS DEL CLIENTE QUE SOLICITA EL SERVICIO.
+            sharedPreferences.putDouble("latitudCliente", mLatitude);
+            sharedPreferences.putDouble("longitudCliente",mLongitude);
 
             cargarProveedoresServicios();
 
@@ -235,8 +266,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                     sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getApellidoProveedor());
 
             markerOptions.snippet(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getEmailProveedor().toString());
-
-
+            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.beya_logo_on_map));
 
             mGoogleMap.addMarker(markerOptions);
 
@@ -387,7 +417,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
             TextView tvTitle = (TextView) popup.findViewById(R.id.title);
             TextView tvSnippet = (TextView) popup.findViewById(R.id.title);
             tvTitle.setText(marker.getTitle());
-            tvSnippet = (TextView)popup.findViewById(R.id.snippet);
+            tvSnippet = (TextView) popup.findViewById(R.id.snippet);
             tvSnippet.setText(marker.getSnippet());
 
 
@@ -426,14 +456,14 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         }
     }
 
-
-
-
-
-
     private void _webServiceEnviarNotificacionPushATodos( final String serialUsuario )
     {
         _urlWebService = "http://52.72.85.214/ws/SendPushNotificationForALL";
+
+        Log.e(TAG, " Se escojieron: "+sharedPreferences.getString("serviciosEscogidos"));
+
+
+        indicaAndroid = vars.indicaAndroid;
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, _urlWebService, null,
                 new Response.Listener<JSONObject>()
@@ -441,11 +471,9 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                     @Override
                     public void onResponse(JSONObject response)
                     {
-                        try
-                        {
+                        try {
                             boolean status = response.getBoolean("status");
-                            String result = response.getString("result");
-
+                            String message = response.getString("message");
 
                             if(status)
                             {
@@ -484,7 +512,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
                                     AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
                                     builder
-                                            .setMessage("Error al enviar solicitud: Error: "+result)
+                                            .setMessage("Error al enviar solicitud: Error: "+message)
                                             .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
                                             {
                                                 @Override
@@ -657,7 +685,12 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
                 headers.put("serialUsuario", serialUsuario);
+                headers.put("latitudCliente", "" + sharedPreferences.getDouble("latitudCliente", 0));
+                headers.put("longitudCliente", "" + sharedPreferences.getDouble("longitudCliente", 0));
+                headers.put("servicios", sharedPreferences.getString("serviciosEscogidos"));
+                headers.put("MyToken", sharedPreferences.getString("MyToken"));
                 return headers;
+
             }
 
         };

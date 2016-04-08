@@ -303,6 +303,8 @@ public class ServiceActualizarUbicacionProveedor extends Service {
                 headers.put("latitudUsuario", latitudUsuario);
                 headers.put("longitudUsuario", longitudUsuario);
                 headers.put("statusOnline", statusOnline);
+                headers.put("MyToken", sharedPreferences.getString("MyToken"));
+
 
                 return headers;
             }

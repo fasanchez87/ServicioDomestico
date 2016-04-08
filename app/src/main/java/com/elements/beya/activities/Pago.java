@@ -117,46 +117,46 @@ public class Pago extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        mRegistrationBroadcastReceiver = new BroadcastReceiver()
-        {
-            @Override
-            public void onReceive(Context context, Intent intent)
-            {
+//        mRegistrationBroadcastReceiver = new BroadcastReceiver()
+//        {
+//            @Override
+//            public void onReceive(Context context, Intent intent)
+//            {
+//
+//                // checking for type intent filter
+//                if (intent.getAction().equals(Config.REGISTRATION_COMPLETE))
+//                {
+//                    // gcm successfully registered
+//                    // now subscribe to `global` topic to receive app wide notifications
+//                    tokenGCM = intent.getStringExtra("token");
+//                    sharedPreferences.putString("TOKEN :: ",tokenGCM);
+//
+//                    Toast.makeText(getApplicationContext(), "GCM registration token: " + tokenGCM, Toast.LENGTH_LONG).show();
+//
+//                }
+//
+//                else if (intent.getAction().equals(Config.SENT_TOKEN_TO_SERVER))
+//                {
+//                    // gcm registration id is stored in our server's MySQL
+//
+//                    Toast.makeText(getApplicationContext(), "GCM registration token is stored in server!", Toast.LENGTH_LONG).show();
+//
+//                }
+//
+//                else if (intent.getAction().equals(Config.PUSH_NOTIFICATION))
+//                {
+//                    // new push notification is received
+//
+//                    Toast.makeText(getApplicationContext(), "Push notification is received!", Toast.LENGTH_LONG).show();
+//                }
+//            }
+//        };
 
-                // checking for type intent filter
-                if (intent.getAction().equals(Config.REGISTRATION_COMPLETE))
-                {
-                    // gcm successfully registered
-                    // now subscribe to `global` topic to receive app wide notifications
-                    tokenGCM = intent.getStringExtra("token");
-                    sharedPreferences.putString("TOKEN :: ",tokenGCM);
-
-                    Toast.makeText(getApplicationContext(), "GCM registration token: " + tokenGCM, Toast.LENGTH_LONG).show();
-
-                }
-
-                else if (intent.getAction().equals(Config.SENT_TOKEN_TO_SERVER))
-                {
-                    // gcm registration id is stored in our server's MySQL
-
-                    Toast.makeText(getApplicationContext(), "GCM registration token is stored in server!", Toast.LENGTH_LONG).show();
-
-                }
-
-                else if (intent.getAction().equals(Config.PUSH_NOTIFICATION))
-                {
-                    // new push notification is received
-
-                    Toast.makeText(getApplicationContext(), "Push notification is received!", Toast.LENGTH_LONG).show();
-                }
-            }
-        };
 
 
-
-        if (checkPlayServices()) {
-            registerGCM();
-        }
+//        if (checkPlayServices()) {
+//            registerGCM();
+//        }
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -222,29 +222,29 @@ public class Pago extends AppCompatActivity
 
     }
 
-    private boolean checkPlayServices() {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (apiAvailability.isUserResolvableError(resultCode)) {
-                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
-                        .show();
-            } else {
-                Log.i(TAG, "This device is not supported. Google Play Services not installed!");
-                Toast.makeText(getApplicationContext(), "This device is not supported. Google Play Services not installed!", Toast.LENGTH_LONG).show();
-                finish();
-            }
-            return false;
-        }
-        return true;
-    }
+//    private boolean checkPlayServices() {
+//        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+//        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+//        if (resultCode != ConnectionResult.SUCCESS) {
+//            if (apiAvailability.isUserResolvableError(resultCode)) {
+//                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+//                        .show();
+//            } else {
+//                Log.i(TAG, "This device is not supported. Google Play Services not installed!");
+//                Toast.makeText(getApplicationContext(), "This device is not supported. Google Play Services not installed!", Toast.LENGTH_LONG).show();
+//                finish();
+//            }
+//            return false;
+//        }
+//        return true;
+//    }
 
-    // starting the service to register with GCM
-    private void registerGCM() {
-        Intent intent = new Intent(this, GcmIntentService.class);
-        intent.putExtra("key", "register");
-        startService(intent);
-    }
+//    // starting the service to register with GCM
+//    private void registerGCM() {
+//        Intent intent = new Intent(this, GcmIntentService.class);
+//        intent.putExtra("key", "register");
+//        startService(intent);
+//    }
 
 
     private boolean validarDatosPago()
@@ -326,25 +326,25 @@ public class Pago extends AppCompatActivity
         }
     }
 
-    @Override
-    protected void onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        // register GCM registration complete receiver
-        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
-                new IntentFilter(Config.REGISTRATION_COMPLETE));
-
-        // register new push message receiver
-        // by doing this, the activity will be notified each time a new message arrives
-        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
-                new IntentFilter(Config.PUSH_NOTIFICATION));
-    }
+//    @Override
+//    protected void onPause() {
+//        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+//        super.onPause();
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//
+//        // register GCM registration complete receiver
+//        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+//                new IntentFilter(Config.REGISTRATION_COMPLETE));
+//
+//        // register new push message receiver
+//        // by doing this, the activity will be notified each time a new message arrives
+//        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+//                new IntentFilter(Config.PUSH_NOTIFICATION));
+//    }
 
 
 

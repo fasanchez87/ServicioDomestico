@@ -58,6 +58,10 @@ public class SolicitarServicio extends Fragment
 {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
+    private String TAG = SolicitarServicio.class.getSimpleName();
+
+
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private String _urlWebService;
@@ -76,6 +80,7 @@ public class SolicitarServicio extends Fragment
 
 
     private ArrayList<Servicio> servicioList = new ArrayList<>();
+    private ArrayList<Servicio> serviciosSeleccionadosList;
     private ArrayList<Proveedor> provedoresList;
 
     private RecyclerView recyclerView;
@@ -101,6 +106,7 @@ public class SolicitarServicio extends Fragment
 
         sharedPreferences = new gestionSharedPreferences(this.getActivity());
         provedoresList = new ArrayList<Proveedor>();
+        serviciosSeleccionadosList = new ArrayList<Servicio>();
 
 
     }
@@ -145,6 +151,10 @@ public class SolicitarServicio extends Fragment
             public void onClick(View v)
             {
                 String data = "";
+                String serviciosEscogidosParaPush = "";
+
+
+
                 List<Servicio> lista_servicios = ((ServiciosAdapter) mAdapter).getServiciosList();
 
                 for (int i = 0; i < lista_servicios.size(); i++)
@@ -154,6 +164,15 @@ public class SolicitarServicio extends Fragment
                     if (servicio.isSelected() == true)
                     {
                         data = data+servicio.getId().toString()+":";
+
+                        Servicio serviciosSeleccionados = new Servicio();
+
+                        serviciosSeleccionados.setId( servicio.getId() );
+                        serviciosSeleccionados.setNombreServicio(servicio.getNombreServicio());
+                        serviciosSeleccionados.setDescripcionServicio(servicio.getDescripcionServicio());
+                        serviciosSeleccionados.setValorServicio(servicio.getValorServicio());
+                        serviciosSeleccionadosList.add(serviciosSeleccionados);
+
                     }
                 }
 
@@ -175,8 +194,9 @@ public class SolicitarServicio extends Fragment
 
                 else
                 {
-                    //BORRAR ULTIMA COMA
+                    //BORRAR ULTIMA COMA Y SEPARARLOS POR DOS PUNTOS ':'
                     String serviciosEscogidos = data.substring(0, data.lastIndexOf(":"));
+                    sharedPreferences.putString("serviciosEscogidos", serviciosEscogidos);
                     Toast.makeText(SolicitarServicio.this.getActivity(),
                             "Selected Services: \n" + serviciosEscogidos, Toast.LENGTH_LONG)
                             .show();
@@ -273,6 +293,10 @@ public class SolicitarServicio extends Fragment
                                     proveedor.setLongitudUsuario(object.getString("longitudUsuario"));
                                     proveedor.setImgUsuario(object.getString("imgUsuario"));
                                     provedoresList.add(proveedor);
+
+
+
+
                                 }
 
                                 if (!provedoresList.isEmpty())
@@ -292,8 +316,8 @@ public class SolicitarServicio extends Fragment
 
                                 for (int i = 0; i <= provedoresList.size() - 1; i++)
                                 {
-                                    Log.w("Proveedor", "" + provedoresList.get(i).getNombreProveedor());
-                                    Log.w("Proveedor", "" + provedoresList.get(i).getEmailProveedor().toString());
+                                    Log.w(TAG,"Proveedor"+"" + provedoresList.get(i).getNombreProveedor());
+                                    Log.w(TAG,"Proveedor"+ provedoresList.get(i).getEmailProveedor().toString());
                                 }
 
                                 //progressBar.setVisibility(View.GONE);
@@ -495,6 +519,7 @@ public class SolicitarServicio extends Fragment
                 headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
                 headers.put("servicios", id_services);
                 headers.put("serialUsuario", sharedPreferences.getString("serialUsuario"));
+                headers.put("MyToken", sharedPreferences.getString("MyToken"));
                 return headers;
             }
 
@@ -514,20 +539,24 @@ public class SolicitarServicio extends Fragment
         buttonSeleccionarServicios.setVisibility(View.GONE);
 
 
-        JsonArrayRequest jsonObjReq = new JsonArrayRequest(_urlWebService,
-                new Response.Listener<JSONArray>()
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
+                new Response.Listener<JSONObject>()
                 {
 
                     @Override
-                    public void onResponse(JSONArray response)
+                    public void onResponse(JSONObject response)
                     {
                         try
                         {
+                            String message = response.getString("message");
+                            Log.w("Mensaje : ", message);
+                            JSONArray servicios = response.getJSONArray("result");
                             JSONObject object;
 
-                            for (int i = 0; i <= response.length()-1; i++)
+
+                            for (int i = 0; i <= servicios.length()-1; i++)
                             {
-                                object = response.getJSONObject(i);
+                                object = servicios.getJSONObject(i);
 
                                 Servicio servicio = new Servicio();
                                 servicio.setId(object.getString("codigoServicio"));
@@ -710,8 +739,18 @@ public class SolicitarServicio extends Fragment
                     }
 
 
-                });
-
+                })
+                {
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError
+                    {
+                        HashMap <String, String> headers = new HashMap <String, String>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
+                        headers.put("MyToken", sharedPreferences.getString("MyToken"));
+                        return headers;
+                    }
+                };
 
         jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");

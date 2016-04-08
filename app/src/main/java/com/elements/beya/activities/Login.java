@@ -1,17 +1,22 @@
 package com.elements.beya.activities;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Menu;
@@ -35,8 +40,15 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.R;
+import com.elements.beya.app.Config;
+import com.elements.beya.gcm.GcmIntentService;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
+import com.elements.beya.vars.vars;
 import com.elements.beya.volley.ControllerSingleton;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,6 +69,8 @@ public class Login extends AppCompatActivity
     TextView textViewRegistroLogin;
     TextView textViewProgressBar;
 
+    public vars vars;
+
     private gestionSharedPreferences sharedPreferences;
 
     TextInputLayout textInputLayoutEmail;
@@ -72,6 +86,20 @@ public class Login extends AppCompatActivity
     ProgressBar progressBar;
 
     private String emailUser,claveUser,_urlWebService;
+
+    private String tokenGCM;
+    private String TAG = MainActivity.class.getSimpleName();
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+
+    String indicaAndroid = "";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -92,6 +120,55 @@ public class Login extends AppCompatActivity
         getSupportActionBar().setDisplayShowHomeEnabled(false);
 
         String fontPath = "fonts/Raleway-Medium.ttf";
+
+        vars = new vars();
+
+        indicaAndroid = vars.indicaAndroid;
+
+        mRegistrationBroadcastReceiver = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+
+                // checking for type intent filter
+                if (intent.getAction().equals(Config.REGISTRATION_COMPLETE))
+                {
+                    // gcm successfully registered
+                    // now subscribe to `global` topic to receive app wide notifications
+                    tokenGCM = intent.getStringExtra("token");
+                    sharedPreferences.putString("TOKEN",tokenGCM);
+
+                    Toast.makeText(getApplicationContext(), "GCM registration token: " + tokenGCM, Toast.LENGTH_LONG).show();
+
+                }
+
+                else if (intent.getAction().equals(Config.SENT_TOKEN_TO_SERVER))
+                {
+                    // gcm registration id is stored in our server's MySQL
+
+                    Toast.makeText(getApplicationContext(), "GCM registration token is stored in server!", Toast.LENGTH_LONG).show();
+
+                }
+
+                else if (intent.getAction().equals(Config.PUSH_NOTIFICATION))
+                {
+                    // new push notification is received
+
+                    Toast.makeText(getApplicationContext(), "Push notification is received!", Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+
+
+
+        if (checkPlayServices())
+        {
+            registerGCM();
+        }
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
         // text view label
 
@@ -168,6 +245,30 @@ public class Login extends AppCompatActivity
 
     }
 
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+                        .show();
+            } else {
+                Log.i(TAG, "This device is not supported. Google Play Services not installed!");
+                Toast.makeText(getApplicationContext(), "This device is not supported. Google Play Services not installed!", Toast.LENGTH_LONG).show();
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    // starting the service to register with GCM
+    private void registerGCM() {
+        Intent intent = new Intent(this, GcmIntentService.class);
+        intent.putExtra("key", "register");
+        startService(intent);
+    }
+
     public void cargarActivitySharedPrefenrenceToGestion()
     {
 
@@ -193,6 +294,26 @@ public class Login extends AppCompatActivity
 
         _webServiceLogin(emailUser, claveUser);
 
+    }
+
+    @Override
+    protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // register GCM registration complete receiver
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(Config.REGISTRATION_COMPLETE));
+
+        // register new push message receiver
+        // by doing this, the activity will be notified each time a new message arrives
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(Config.PUSH_NOTIFICATION));
     }
 
     private void _webServiceLogin(final String emailUser , final String claveUser)
@@ -223,9 +344,12 @@ public class Login extends AppCompatActivity
                                     String emailUser = response.getString("emailUsuario");
                                     String tipoUsuario = response.getString("tipoUsuario");
                                     String serialUsuario = response.getString("serialUsuario");
+                                    String token = response.getString("MyToken");
+
 
                                     sharedPreferences.putString("nombreUsuario",nombreUsuario);
                                     sharedPreferences.putString("emailUser",emailUser);
+                                    sharedPreferences.putString("MyToken",token);
 
                                     progressBar.setVisibility(View.GONE);
                                     textViewProgressBar.setVisibility(View.GONE);
@@ -479,6 +603,8 @@ public class Login extends AppCompatActivity
                 headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
                 headers.put("user", emailUser);
                 headers.put("pass", claveUser);
+                headers.put("tokenGCM", tokenGCM);
+                headers.put("indicaAndroid", indicaAndroid);
                 return headers;
             }
 

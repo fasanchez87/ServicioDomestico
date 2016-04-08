@@ -9,6 +9,7 @@ import java.util.Map;
 
 //import com.easymarket.app.feed.itemFeed.ProductoItem;
 import com.elements.beya.beans.Proveedor;
+import com.elements.beya.beans.Servicio;
 import com.google.gson.Gson;
 
 import android.content.Context;
@@ -440,6 +441,21 @@ public class gestionSharedPreferences {
         return objects;
     }
 
+    public ArrayList<Servicio> getListObjectServicio(String key, Class<?> mClass)
+    {
+        Gson gson = new Gson();
+
+        ArrayList<String> objStrings = getListString(key);
+        ArrayList<Servicio> servicios =  new ArrayList<Servicio>();
+
+        for(String jObjString : objStrings)
+        {
+            Object value  = gson.fromJson(jObjString,  mClass);
+            servicios.add((Servicio) value);
+        }
+        return servicios;
+    }
+
 
     public void putListObject(String key, ArrayList<Proveedor> proveedoresLista)
     {
@@ -447,6 +463,18 @@ public class gestionSharedPreferences {
         Gson gson = new Gson();
         ArrayList<String> objStrings = new ArrayList<String>();
         for(Object obj : proveedoresLista)
+        {
+            objStrings.add(gson.toJson(obj));
+        }
+        putListString(key, objStrings);
+    }
+
+    public void putListObjectServicio(String key, ArrayList<Servicio> serviciosLista)
+    {
+        checkForNullKey(key);
+        Gson gson = new Gson();
+        ArrayList<String> objStrings = new ArrayList<String>();
+        for(Object obj : serviciosLista)
         {
             objStrings.add(gson.toJson(obj));
         }
