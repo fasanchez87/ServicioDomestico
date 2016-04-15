@@ -2,11 +2,16 @@
 package com.elements.beya.activities;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.provider.SyncStateContract;
 import android.support.v4.app.Fragment;
 import android.support.design.widget.NavigationView;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -19,7 +24,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -33,7 +40,9 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.R;
+import com.elements.beya.app.Config;
 import com.elements.beya.fragments.MapFragmentUbicarProveedores;
+import com.elements.beya.fragments.ServiciosDisponibles;
 import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.services.ServiceActualizarUbicacionProveedor;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
@@ -56,9 +65,15 @@ public class Gestion extends AppCompatActivity
     private TextView textViewnameUser;
     private TextView textViewemailUser;
     String name, email, tipoUsuario;
-    SwitchCompat switchActivarLocation;
+    public SwitchCompat switchActivarLocation;
     public static String _urlWebService;
     public String event;
+
+    ProgressBar progressBar;
+
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
+
+
 
 
     //GUARDAR OPCION SELECTED SWITCH.
@@ -75,19 +90,46 @@ public class Gestion extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mRegistrationBroadcastReceiver = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+
+
+                if (intent.getAction().equals(Config.PUSH_NOTIFICATION))
+                {
+                    // new push notification is received
+
+                    Log.w("ALERTA", "Push notification is received!"+intent.getStringExtra("message"));
+
+                    Toast.makeText(getApplicationContext(), "Push notification is received!"+intent.getExtras().getString("message"), Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+
+
+
         sharedPreferences = new gestionSharedPreferences(getApplicationContext());
         name = sharedPreferences.getString("nombreUsuario");
         email = sharedPreferences.getString("emailUser");
         tipoUsuario = sharedPreferences.getString("tipoUsuario");
 
         Log.w("TOKEN :: ","."+sharedPreferences.getString("tokenGCM"));
+        progressBar = (ProgressBar) this.findViewById(R.id.toolbar_progress_bar);
+
 
         Bundle extras = getIntent().getExtras();
 
 
+
+
         if (extras != null)
         {
-            event = extras.getString("Event:MyGcmPushReceiver");
+            event = extras.getString("type");
+
+            Log.w("Gestion",""+event);
+
 
         }
 
@@ -166,18 +208,30 @@ public class Gestion extends AppCompatActivity
         textViewnameUser = (TextView) findViewById(R.id.NombreUserHeaderNavGestion);
         textViewemailUser = (TextView) findViewById(R.id.EmailHeaderNavGestion);
 
+
+
         if (savedInstanceState == null)
         {
 
             if (tipoUsuario.equals("E"))
             {
+
+
+
                 //MOSTRAMOS POR DEFECTO EL NAV MIS SERVICIOS CUANDO ES ESTETICISTA
-                navigationView.setCheckedItem(R.id.nav_activar_geolocalizacion);
+                progressBar.setVisibility(View.VISIBLE);
 
                 android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
                 android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.frame_container, new MapFragmentUbicarProveedores());
+                fragmentTransaction.replace(R.id.frame_container, new ServiciosDisponibles());
                 fragmentTransaction.commit();
+
+
+                //navigationView.getMenu().getItem(1).getSubMenu().getItem(0).setChecked(true);
+               //Titulo en Toolbar.
+                setTitle(navigationView.getMenu().getItem(1).getSubMenu().getItem(0).getTitle());
+                navigationView.setCheckedItem(R.id.nav_activar_geolocalizacion);
+
 
             }
 
@@ -195,8 +249,10 @@ public class Gestion extends AppCompatActivity
             }
 
         }
-    }
 
+
+
+    }
 
 
     public String getLocation(double x0, double y0, int radius) {
@@ -277,6 +333,12 @@ public class Gestion extends AppCompatActivity
                 fragmentClass = SolicitarServicio.class;
                 break;
 
+            case R.id.nav_activar_geolocalizacion:
+                progressBar.setVisibility(View.VISIBLE);
+
+                fragmentClass = ServiciosDisponibles.class;
+                break;
+
             case R.id.nav_cerrar_sesion:
                 AlertDialog.Builder builder = new AlertDialog.Builder(Gestion.this);
                 builder
@@ -328,6 +390,26 @@ public class Gestion extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+       /* // register GCM registration complete receiver
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(Config.REGISTRATION_COMPLETE));*/
+
+        // register new push message receiver
+        // by doing this, the activity will be notified each time a new message arrives
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(Config.PUSH_NOTIFICATION));
     }
 
 

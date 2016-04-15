@@ -6,6 +6,7 @@ package com.elements.beya.gcm;
  */
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
@@ -14,6 +15,8 @@ import android.util.Log;
 import com.elements.beya.activities.Gestion;
 import com.elements.beya.activities.MainActivity;
 import com.elements.beya.activities.SolitudServicioDetallada;
+import com.elements.beya.fragments.ServiciosDisponibles;
+import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.google.android.gms.gcm.GcmListenerService;
 
 
@@ -26,6 +29,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import me.leolin.shortcutbadger.ShortcutBadger;
+
 
 public class MyGcmPushReceiver extends GcmListenerService
 {
@@ -33,7 +38,12 @@ public class MyGcmPushReceiver extends GcmListenerService
     private static final String TAG = MyGcmPushReceiver.class.getSimpleName();
 
     private NotificationUtils notificationUtils;
+    private gestionSharedPreferences sharedPreferences;
     JSONArray jsonArray;
+
+    ServiciosDisponibles serviciosDisponibles = new ServiciosDisponibles();
+
+    private int countPush=0;
 
     /**
      * Called when message is received.
@@ -59,6 +69,17 @@ public class MyGcmPushReceiver extends GcmListenerService
         Log.e(TAG, "image: " + image);
         Log.e(TAG, "timestamp: " + timestamp);
         Log.e(TAG, "isBackground: " + isBackground);
+
+        sharedPreferences = new gestionSharedPreferences(getApplicationContext());
+
+        countPush=0;
+
+        sharedPreferences.putInt("countPush", countPush=sharedPreferences.getInt("countPush")+1);
+
+        Log.w(TAG, "" + sharedPreferences.getInt("countPush"));
+
+
+        ShortcutBadger.applyCount(this, sharedPreferences.getInt("countPush")); //for 1.1.4
 
       /*  Log.e(TAG, "services: " + services);
 
@@ -93,15 +114,19 @@ public class MyGcmPushReceiver extends GcmListenerService
             if (!NotificationUtils.isAppIsInBackground(getApplicationContext()))
             {
                 // app is in foreground, broadcast the push message
+                //Si la app esta al frente, creamos un Broadcast receiver; con el objetivo de que cuando
+                //llegue un push se dispare dicho evento llamando al broadcast receiver en la
+                //actividad mediante el metodo onreceive();-> ver -> ServiciosDisponibles
                 Intent pushNotification = new Intent(Config.PUSH_NOTIFICATION);
-                pushNotification.putExtra("type", Config.PUSH_TYPE_USER);
                 pushNotification.putExtra("message", message);
                 LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotification);
-                // play notification sound
-               // NotificationUtils notificationUtils = new NotificationUtils();
-                //notificationUtils.playNotificationSound();
 
-                Intent resultIntent = new Intent(getApplicationContext(), SolitudServicioDetallada.class);
+                // play notification sound
+                NotificationUtils notificationUtils = new NotificationUtils();
+                notificationUtils.playNotificationSound();
+
+
+              /*  Intent resultIntent = new Intent(getApplicationContext(), Gestion.class);
                 if (TextUtils.isEmpty(image))
                 {
                     showNotificationMessage(getApplicationContext(), title, message, timestamp, resultIntent);
@@ -112,7 +137,7 @@ public class MyGcmPushReceiver extends GcmListenerService
                     // push notification contains image
                     // show it with the image
                     showNotificationMessageWithBigImage(getApplicationContext(), title, message, timestamp, resultIntent, image);
-                }
+                }*/
 
                 Log.e(TAG, "APP IS FOREGROUND: " + "APP IS FOREGROUND");
 
@@ -121,7 +146,7 @@ public class MyGcmPushReceiver extends GcmListenerService
             else
             {
                 // app is in background. show the message in notification try
-                Intent resultIntent = new Intent(getApplicationContext(), SolitudServicioDetallada.class);
+                Intent resultIntent = new Intent(getApplicationContext(), Gestion.class);
                 Log.e(TAG, "APP IS BACKGROUND" + "APP IS BACKGROUND");
 
 
@@ -167,4 +192,5 @@ public class MyGcmPushReceiver extends GcmListenerService
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         notificationUtils.showNotificationMessage(title, message, timeStamp, intent, imageUrl);
     }
+
 }

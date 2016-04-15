@@ -10,6 +10,7 @@ public class Servicio
     private String descripcionServicio;
     private String valorServicio;
     private String id;
+    private String imagen;
 
 
 
@@ -28,14 +29,23 @@ public class Servicio
 
     }
 
-    public Servicio(String id, String nombreServicio, String descripcionServicio, String valorServicio, boolean isSelected)
+    public Servicio(String id, String nombreServicio, String descripcionServicio, String valorServicio, boolean isSelected, String imagen)
     {
         this.nombreServicio = nombreServicio;
         this.descripcionServicio = descripcionServicio;
         this.valorServicio = valorServicio;
         this.id = id;
+        this.imagen = imagen;
         this.isSelected = isSelected;
 
+    }
+
+    public String getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
     }
 
     public boolean isSelected() {

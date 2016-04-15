@@ -5,12 +5,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 //import com.easymarket.app.feed.itemFeed.ProductoItem;
 import com.elements.beya.beans.Proveedor;
 import com.elements.beya.beans.Servicio;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import android.content.Context;
 
@@ -455,6 +457,33 @@ public class gestionSharedPreferences {
         }
         return servicios;
     }
+
+
+
+
+    public HashMap<String,ArrayList<Servicio>> getHashMapObjectServicio( )
+    {
+        Gson gson = new Gson();
+        //get from shared prefs
+        String storedHashMapString = preferences.getString("HashMapObjectServicio", "oopsDintWork");
+        java.lang.reflect.Type type = new TypeToken<HashMap<String, ArrayList<Servicio>>>(){}.getType();
+        HashMap<String, ArrayList<Servicio>> testHashMap2 = gson.fromJson(storedHashMapString, type);
+        return testHashMap2;
+
+    }
+
+    public void putHashMapObjectServicio( HashMap<String,ArrayList<Servicio>> getHashMapObjectServicio )
+    {
+
+        Gson gson = new Gson();
+        String hashMapString = gson.toJson(getHashMapObjectServicio);
+        //save in shared prefs
+        loginPrefsEditor.putString("HashMapObjectServicio", hashMapString).apply();
+    }
+
+
+
+
 
 
     public void putListObject(String key, ArrayList<Proveedor> proveedoresLista)

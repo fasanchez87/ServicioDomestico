@@ -155,6 +155,8 @@ public class Login extends AppCompatActivity
                 {
                     // new push notification is received
 
+                    Log.w("ALERTA", "Push notification is received!");
+
                     Toast.makeText(getApplicationContext(), "Push notification is received!", Toast.LENGTH_LONG).show();
                 }
             }

@@ -20,19 +20,19 @@ import com.elements.beya.beans.Servicio;
 import com.elements.beya.volley.ControllerSingleton;
 
 import java.util.List;
-public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyViewHolder>
+public class ServiciosSeleccionadosPush extends RecyclerView.Adapter <ServiciosSeleccionadosPush.MyViewHolder>
 {
 
     private List<Servicio> serviciosList;
-
     ImageLoader imageLoader = ControllerSingleton.getInstance().getImageLoader();
-
 
     public class MyViewHolder extends RecyclerView.ViewHolder
     {
         public TextView idServicio,nombreServicio, descripcionServicio, valorServicio;
-        public CheckBox checkServicio;
         public NetworkImageView imagenServicio;
+
+
+        public CheckBox checkServicio;
 
         public MyViewHolder(View view)
         {
@@ -40,15 +40,16 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
 
             idServicio= (TextView) view.findViewById(R.id.textViewIDServicio);
             nombreServicio = (TextView) view.findViewById(R.id.textViewNombreServicio);
+            imagenServicio = (NetworkImageView) view.findViewById(R.id.imageItemService);
             descripcionServicio = (TextView) view.findViewById(R.id.textViewDescServicio);
             valorServicio = (TextView) view.findViewById(R.id.textViewValorServicio);
             checkServicio = (CheckBox) view.findViewById(R.id.checkBoxServicio);
-            imagenServicio = (NetworkImageView) view.findViewById(R.id.imageItemService);
+            checkServicio = (CheckBox) view.findViewById(R.id.checkBoxServicio);
         }
     }
 
 
-    public ServiciosAdapter(List<Servicio> serviciosList)
+    public ServiciosSeleccionadosPush(List<Servicio> serviciosList)
     {
         this.serviciosList = serviciosList;
     }
@@ -68,25 +69,15 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
     public void onBindViewHolder(MyViewHolder holder, final int position)
     {
         final Servicio servicio = serviciosList.get(position);
-
-        if(servicio.getImagen().isEmpty())
-        {
-
-        }
-
-
-        holder.imagenServicio.setImageUrl(servicio.getImagen(),imageLoader);
-        holder.imagenServicio.setDefaultImageResId(R.drawable.ic_blower);// poner imagen por default
-        holder.imagenServicio.setErrorImageResId(R.drawable.ic_blower);// en caso de error poner esta imagen.
         holder.idServicio.setText(servicio.getId());
         holder.nombreServicio.setText(servicio.getNombreServicio());
         holder.descripcionServicio.setText(servicio.getDescripcionServicio());
         holder.valorServicio.setText(servicio.getValorServicio());
-
-        holder.checkServicio.setChecked(servicio.isSelected());
+        holder.imagenServicio.setVisibility(View.GONE);
+        holder.checkServicio.setVisibility(View.GONE);
         holder.checkServicio.setTag(servicio);
 
-        holder.checkServicio.setOnClickListener(new View.OnClickListener()
+       /* holder.checkServicio.setOnClickListener(new View.OnClickListener()
         {
             public void onClick(View v)
             {
@@ -96,12 +87,12 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
                 s.setSelected(cb.isChecked());
                 serviciosList.get(position).setSelected(cb.isChecked());
 
-               /* Toast.makeText(
+               *//**//* Toast.makeText(
                         v.getContext(),
                         "Clicked on Checkbox: " + cb.getText() + " is "
-                                + cb.isChecked(), Toast.LENGTH_LONG).show();*/
+                                + cb.isChecked(), Toast.LENGTH_LONG).show();*//**//*
             }
-        });
+        });*/
 
     }
 

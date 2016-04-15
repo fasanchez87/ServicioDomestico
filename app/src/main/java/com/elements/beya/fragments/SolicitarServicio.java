@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.Cache;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
@@ -48,6 +49,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -88,6 +90,9 @@ public class SolicitarServicio extends Fragment
 
     private Button buttonSeleccionarServicios;
 
+    private Cache cache;
+
+
 
 
     private boolean foundService;
@@ -107,6 +112,8 @@ public class SolicitarServicio extends Fragment
         sharedPreferences = new gestionSharedPreferences(this.getActivity());
         provedoresList = new ArrayList<Proveedor>();
         serviciosSeleccionadosList = new ArrayList<Servicio>();
+        cache = ControllerSingleton.getInstance().getReqQueue().getCache();
+
 
 
     }
@@ -167,6 +174,7 @@ public class SolicitarServicio extends Fragment
 
                         Servicio serviciosSeleccionados = new Servicio();
 
+                        serviciosSeleccionados.setImagen( servicio.getImagen());
                         serviciosSeleccionados.setId( servicio.getId() );
                         serviciosSeleccionados.setNombreServicio(servicio.getNombreServicio());
                         serviciosSeleccionados.setDescripcionServicio(servicio.getDescripcionServicio());
@@ -245,6 +253,29 @@ public class SolicitarServicio extends Fragment
 
         /*progressBar.setVisibility(View.VISIBLE);
         buttonSeleccionarServicios.setVisibility(View.GONE);*/
+
+/*        Cache.Entry entry = cache.get(_urlWebService);
+        if(entry != null)
+        {
+            try
+            {
+                String data = new String(entry.data, "UTF-8");
+                Log.e("Cache",""+data);
+                // handle data, like converting it to xml, json, bitmap etc.,
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else
+
+        {
+            Log.e("Cache","empty");
+
+
+            // Cached response doesn't exists. Make network call here
+        }*/
 
         JsonArrayRequest jsonObjReq = new JsonArrayRequest(_urlWebService,
                 new Response.Listener<JSONArray>()
@@ -539,6 +570,30 @@ public class SolicitarServicio extends Fragment
         buttonSeleccionarServicios.setVisibility(View.GONE);
 
 
+        Cache.Entry entry = cache.get(_urlWebService);
+        if(entry != null)
+        {
+            try
+            {
+                String data = new String(entry.data, "UTF-8");
+                Log.e("Cache",""+data);
+                // handle data, like converting it to xml, json, bitmap etc.,
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else
+
+        {
+            Log.e("Cache","empty");
+
+
+            // Cached response doesn't exists. Make network call here
+        }
+
+
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
                 new Response.Listener<JSONObject>()
                 {
@@ -559,6 +614,7 @@ public class SolicitarServicio extends Fragment
                                 object = servicios.getJSONObject(i);
 
                                 Servicio servicio = new Servicio();
+                                servicio.setImagen(object.getString("imagenServicio"));
                                 servicio.setId(object.getString("codigoServicio"));
                                 servicio.setNombreServicio(object.getString("nombreServicio"));
                                 servicio.setDescripcionServicio(object.getString("descripcionServicio"));

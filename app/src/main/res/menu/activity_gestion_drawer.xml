@@ -36,7 +36,7 @@
                     android:icon="@drawable/ic_announcement_black_48dp"
                     app:actionViewClass="android.support.v7.widget.SwitchCompat"
                     app:showAsAction="always"
-                    android:title="Mis servicios" />
+                    android:title="Servicios Disponibles" />
             </group>
         </menu>
     </item>

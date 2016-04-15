@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:focusable="true"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
     android:paddingTop="10dp"
     android:paddingBottom="10dp"
     android:clickable="true"
@@ -24,11 +24,11 @@
         android:textColor="@color/title"
         android:textSize="16dp"
         android:textStyle="bold"
-        android:layout_alignParentTop="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="MANICURE"
-        android:layout_toStartOf="@+id/checkBoxServicio" />
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/textViewDescServicio" />
 
     <TextView
         android:id="@+id/textViewDescServicio"
@@ -40,7 +40,8 @@
         android:ellipsize="none"
         android:maxLines="100"
         android:scrollHorizontally="false"
-        android:layout_toStartOf="@+id/checkBoxServicio" />
+        android:layout_toStartOf="@+id/checkBoxServicio"
+        android:layout_toEndOf="@+id/imageItemService"/>
 
     <TextView
         android:id="@+id/textViewValorServicio"
@@ -48,8 +49,7 @@
         android:layout_height="wrap_content"
         android:text="17,000 COP"
         android:layout_below="@+id/textViewDescServicio"
-        android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/checkBoxServicio" />
+        android:layout_toEndOf="@+id/imageItemService" />
 
     <CheckBox
         android:layout_width="wrap_content"
@@ -59,5 +59,32 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_alignBottom="@+id/textViewValorServicio" />
+
+   <!-- <ImageView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:scaleType="fitXY"
+        android:adjustViewBounds="true"
+        android:layout_gravity="center"
+        android:paddingRight="5dp"
+        android:id="@+id/imageView3"
+        android:src="@drawable/ic_blower"
+        android:layout_alignParentTop="true"
+        android:layout_alignBottom="@+id/textViewValorServicio"
+        android:layout_alignStart="@+id/textViewIDServicio" />-->
+
+
+    <com.android.volley.toolbox.NetworkImageView
+        android:id="@+id/imageItemService"
+        android:layout_width="100dp"
+        android:paddingRight="6dp"
+        android:layout_height="100dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_blower"
+        android:adjustViewBounds="true"
+        android:layout_gravity="center"
+        android:layout_alignParentTop="true"
+        android:layout_alignBottom="@+id/textViewValorServicio"
+        android:layout_alignStart="@+id/textViewIDServicio"/>
 
 </RelativeLayout>

@@ -46,60 +46,82 @@
                 android:layout_width="match_parent"
                 android:layout_height="20dp"
                 />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Ubicación Cliente"
-                android:id="@+id/textViewxxx"
-                />
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="20dp"
-                />
 
             <fragment
                 android:id="@+id/mapClienteSolicitudServicioViaPush"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 class="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_weight="1" />
 
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="20dp"
-                 />
+                android:layout_height="20dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_view_servicioSolictadoViaPush"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Servicios solicitados:"
-                android:id="@+id/textView"
-                />
+                android:scrollbars="vertical"
+                android:layout_weight="0"/>
+
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="20dp"/>
 
-           <!-- <android.support.v7.widget.RecyclerView
-                    android:id="@+id/recycler_view_servicioSolictadoViaPush"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:scrollbars="vertical"
-                    android:layout_weight="1"
-                />-->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                >
 
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="ACEPTAR SERVICIO"
+                    android:text="ACEPTAR"
                     android:id="@+id/buttonAceptarServicioViaPush"
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentStart="true"
-                    android:layout_weight="0"
+                    android:layout_weight="1"
                     android:background="@drawable/css_button_rectangular"
                     android:textColor="#FFFFFF"/>
+
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="fill_parent"
+                    />
+
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="RECHAZAR"
+                    android:id="@+id/buttonRechazarServicioViaPush"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_weight="1"
+                    android:background="@drawable/css_button_rectangular"
+                    android:textColor="#FFFFFF"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"/>
+
+            </LinearLayout>
+
+
+
+
 
         </LinearLayout>
 
