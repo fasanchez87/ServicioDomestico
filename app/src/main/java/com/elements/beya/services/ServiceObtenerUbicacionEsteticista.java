@@ -4,9 +4,11 @@ import android.app.AlertDialog;
 import android.app.Service;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -20,10 +22,12 @@ import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.elements.beya.activities.AceptacionServicio;
 import com.elements.beya.activities.Gestion;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,6 +43,12 @@ import java.util.TimerTask;
  */
 public class ServiceObtenerUbicacionEsteticista extends Service
 {
+
+    public static double latitud = 0;
+    public static double longitud = 0;
+    public static String fechaMovimiento;
+
+   AceptacionServicio aceptacionServicio;
 
     public static final long NOTIFY_INTERVAL = 5 * 1000; // 5 seconds
     // run on another Thread to avoid crash
@@ -62,6 +72,8 @@ public class ServiceObtenerUbicacionEsteticista extends Service
         // cancel if already existed
         gestion = new Gestion();
         sharedPreferences = new gestionSharedPreferences(getApplicationContext());
+        aceptacionServicio = new AceptacionServicio();
+
 
 
     }
@@ -100,9 +112,8 @@ public class ServiceObtenerUbicacionEsteticista extends Service
         // TODO Auto-generated method stub
         super.onDestroy();
         mTimer.cancel();
-      /*  _webServiceUpdatePositionProvider(gestion.getLocation(4.102533, -76.202582, 10000),
-                sharedPreferences.getString("serialUsuario"), sharedPreferences.getString("statusOnline"));
-        Toast.makeText(this, "Servicio destruido", Toast.LENGTH_SHORT).show();*/
+        _webServiceObtenerUbicacionEsteticista();
+        Toast.makeText(this, "Servicio destruido", Toast.LENGTH_SHORT).show();
     }
 
     class TimeDisplayTimerTask extends TimerTask
@@ -118,16 +129,21 @@ public class ServiceObtenerUbicacionEsteticista extends Service
                 @Override
                 public void run()
                 {
-                    // display toast
+                                    // display toast
 
-                   /* _webServiceUpdatePositionProvider(gestion.getLocation(4.102533, -76.202582, 10000),
-                            sharedPreferences.getString("serialUsuario") , sharedPreferences.getString("statusOnline"));*/
 
-                    Toast.makeText(getApplicationContext(), gestion.getLocation(4.102533, -76.202582, 10000),
+
+                    _webServiceObtenerUbicacionEsteticista();
+
+
+                  /*  Toast.makeText(getApplicationContext(), getLatitud()+" : "+getLongitud()+" : "+getFechaMovimiento(),
                             Toast.LENGTH_SHORT).show();
 
-                    Toast.makeText(getApplicationContext(), sharedPreferences.getString("statusOnline"),
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),  "Aceptacion::: "+sharedPreferences.getString("serialUsuarioEsteticista"),
+                            Toast.LENGTH_SHORT).show();*/
+
+                    /*Toast.makeText(getApplicationContext(), sharedPreferences.getString("statusOnline"),
+                            Toast.LENGTH_SHORT).show();*/
                 }
 
             });
@@ -142,30 +158,92 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
     }
 
-   /* private void _webServiceObtenerUbicacionEsteticista(final String serialUser)
+    public static double getLatitud()
+    {
+        return latitud;
+    }
+
+    public void setLatitud(double latitud)
+    {
+        this.latitud = latitud;
+    }
+
+    public static double getLongitud()
+    {
+        return longitud;
+    }
+
+    public void setLongitud(double longitud)
+    {
+        this.longitud = longitud;
+    }
+
+    public static String getFechaMovimiento()
+    {
+        return fechaMovimiento;
+    }
+
+    public void setFechaMovimiento(String fechaMovimiento)
+    {
+        this.fechaMovimiento = fechaMovimiento;
+    }
+
+    private void _webServiceObtenerUbicacionEsteticista()
     {
         _urlWebService = "http://52.72.85.214/ws/ObtenerUbicacionEsteticista";
 
-        String[] parts = locationUser.split(":");
+       /* String[] parts = locationUser.split(":");
         final String latitudUsuario = parts[0];
-        final String longitudUsuario = parts[1];
+        final String longitudUsuario = parts[1];*/
 
-        Toast.makeText(getApplicationContext(), "LATITUD::" + latitudUsuario + "  LONGITUD::" + longitudUsuario + " SERIALUSER:: " + serialUser,
-                Toast.LENGTH_SHORT).show();
+      /*  Toast.makeText(getApplicationContext(), "LATITUD::" + latitudUsuario + "  LONGITUD::" + longitudUsuario + " SERIALUSER:: " + serialUser,
+                Toast.LENGTH_SHORT).show();*/
 
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, _urlWebService, null,
-                new Response.Listener<JSONObject>() {
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
+                new Response.Listener<JSONObject>()
+                {
                     @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            String status = response.getString("status");
+                    public void onResponse(JSONObject response)
+                    {
+                        try
+                        {
+                            boolean status = response.getBoolean("status");
+                            String message = response.getString("message");
 
 
-                            if (status.equals("update_location_success")) {
+                            if (status)
+                            {
+                                JSONArray ubicacion = response.getJSONArray("result");
 
-                            } else {
-                                if (status.equals("update_location_failed")) {
+                                for( int i=0; i<= ubicacion.length()-1; i++ )
+                                {
+                                    setLatitud(Double.parseDouble(ubicacion.getJSONObject(i).getString("latitudUsuario").toString()));
+                                    setLongitud(Double.parseDouble(ubicacion.getJSONObject(i).getString("longitudUsuario").toString()));
+                                    setFechaMovimiento(ubicacion.getJSONObject(i).getString("fecMovimiento").toString());
 
+                                    Log.i("ServiceObtenerUbicacionEsteticista",""+getLatitud());
+                                    Log.i("ServiceObtenerUbicacionEsteticista", ""+getLongitud());
+                                    Log.i("ServiceObtenerUbicacionEsteticista",""+getFechaMovimiento());
+
+                                }
+
+                            }
+                            else
+                            {
+
+                                if (!status)
+                                {
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
+                                    builder
+                                            .setMessage(message.toString())
+                                            .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                                    //startActivity(intent);
+                                                    //finish();
+                                                }
+                                            }).show();
 
                                 }
 
@@ -173,7 +251,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
                         } catch (JSONException e) {
 
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceActualizarUbicacionProveedor.this);
+                          AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
                             builder
                                     .setMessage(e.getMessage().toString())
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
@@ -202,7 +280,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
                         if (error instanceof TimeoutError) {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceActualizarUbicacionProveedor.this);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
                             builder
                                     .setMessage("Error de conexión, sin respuesta del servidor.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
@@ -217,7 +295,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
                         } else if (error instanceof NoConnectionError) {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceActualizarUbicacionProveedor.this);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
                             builder
                                     .setMessage("Por favor, conectese a la red.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
@@ -231,7 +309,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
                         } else if (error instanceof AuthFailureError) {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceActualizarUbicacionProveedor.this);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
                             builder
                                     .setMessage("Error de autentificación en la red, favor contacte a su proveedor de servicios.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
@@ -246,7 +324,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
                         } else if (error instanceof ServerError) {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceActualizarUbicacionProveedor.this);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
                             builder
                                     .setMessage("Error server, sin respuesta del servidor.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
@@ -261,7 +339,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
                         } else if (error instanceof NetworkError) {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceActualizarUbicacionProveedor.this);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
                             builder
                                     .setMessage("Error de red, contacte a su proveedor de servicios.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
@@ -276,7 +354,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
                         } else if (error instanceof ParseError) {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceActualizarUbicacionProveedor.this);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
                             builder
                                     .setMessage("Error de conversión Parser, contacte a su proveedor de servicios.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
@@ -301,10 +379,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
 
-                headers.put("serialUsuario", serialUser);
-                headers.put("latitudUsuario", latitudUsuario);
-                headers.put("longitudUsuario", longitudUsuario);
-                headers.put("statusOnline", statusOnline);
+                headers.put("serialUsuario", aceptacionServicio.getSerialUsuarioEsteticista());
                 headers.put("MyToken", sharedPreferences.getString("MyToken"));
 
 
@@ -316,6 +391,6 @@ public class ServiceObtenerUbicacionEsteticista extends Service
         jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
-    }*/
+    }
 
 }

@@ -1,11 +1,14 @@
 package com.elements.beya.services;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.widget.Toast;
 
@@ -34,7 +37,26 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class ServiceActualizarUbicacionProveedor extends Service {
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
+
+public class ServiceActualizarUbicacionProveedor extends Service
+{
+
+    private static final String TAG = "ServiceActualizarUbicacionProveedor";
+    private LocationManager mLocationManager = null;
+    private static final int LOCATION_INTERVAL = 1000;
+    private static final float LOCATION_DISTANCE = 10f;
+
+    private double mLatitude = 0;
+    private double mLongitude = 0;
+
 
     Gestion gestion;
     private gestionSharedPreferences sharedPreferences;
@@ -48,21 +70,56 @@ public class ServiceActualizarUbicacionProveedor extends Service {
 
     private String _urlWebService;
 
-    public ServiceActualizarUbicacionProveedor() {
+    public ServiceActualizarUbicacionProveedor()
+    {
 
     }
 
     @Override
-    public void onCreate() {
+    public void onCreate()
+    {
         // cancel if already existed
         gestion = new Gestion();
         sharedPreferences = new gestionSharedPreferences(getApplicationContext());
 
 
+        Log.e(TAG, "onCreate");
+        initializeLocationManager();
+        try
+        {
+            mLocationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    mLocationListeners[1]);
+        }
+        catch (java.lang.SecurityException ex)
+        {
+            Log.i(TAG, "fail to request location update, ignore", ex);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
+        }
+        try
+        {
+            mLocationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    mLocationListeners[0]);
+        }
+        catch (java.lang.SecurityException ex)
+        {
+            Log.i(TAG, "fail to request location update, ignore", ex);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            Log.d(TAG, "gps provider does not exist " + ex.getMessage());
+        }
+
+
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
+    public IBinder onBind(Intent intent)
+    {
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
     }
@@ -74,26 +131,65 @@ public class ServiceActualizarUbicacionProveedor extends Service {
         if (mTimer != null)
         {
             mTimer.cancel();
-        } else
+        }
+        else
         {
             // recreate new
             mTimer = new Timer();
         }
         // schedule task
         mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
-        Toast.makeText(this, "Servicio en Ejecucion", Toast.LENGTH_SHORT).show();
+       Toast.makeText(this, "Servicio en Ejecucion", Toast.LENGTH_SHORT).show();
         return START_STICKY;
     }
-
     @Override
     public void onDestroy()
     {
         // TODO Auto-generated method stub
         super.onDestroy();
         mTimer.cancel();
-        _webServiceUpdatePositionProvider(gestion.getLocation(4.102533, -76.202582, 10000),
-                sharedPreferences.getString("serialUsuario") , sharedPreferences.getString("statusOnline"));
+        _webServiceUpdatePositionProvider((mLatitude + ":" + mLongitude),
+                sharedPreferences.getString("serialUsuario"), sharedPreferences.getString("statusOnline"));
         Toast.makeText(this, "Servicio destruido", Toast.LENGTH_SHORT).show();
+
+        Log.e(TAG, "onDestroy");
+        super.onDestroy();
+        if (mLocationManager != null)
+        {
+            for (int i = 0; i < mLocationListeners.length; i++)
+            {
+                try
+                {
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                            PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                            PackageManager.PERMISSION_GRANTED)
+                    {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    mLocationManager.removeUpdates(mLocationListeners[i]);
+                }
+                catch (Exception ex)
+                {
+                    Log.i(TAG, "fail to remove location listners, ignore", ex);
+                }
+            }
+        }
+    }
+
+    private void initializeLocationManager()
+    {
+        Log.e(TAG, "initializeLocationManager");
+        if (mLocationManager == null)
+        {
+            mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        }
     }
 
     class TimeDisplayTimerTask extends TimerTask
@@ -108,10 +204,10 @@ public class ServiceActualizarUbicacionProveedor extends Service {
                 public void run() {
                     // display toast
 
-                    _webServiceUpdatePositionProvider(gestion.getLocation(4.102533, -76.202582, 10000),
+                    _webServiceUpdatePositionProvider( ( mLatitude + ":" + mLongitude ) ,
                             sharedPreferences.getString("serialUsuario") , sharedPreferences.getString("statusOnline"));
 
-                    Toast.makeText(getApplicationContext(), gestion.getLocation(4.102533, -76.202582, 10000),
+                    Toast.makeText(getApplicationContext(),  ( mLatitude + ":" + mLongitude ) ,
                             Toast.LENGTH_SHORT).show();
 
                     Toast.makeText(getApplicationContext(), sharedPreferences.getString("statusOnline"),
@@ -128,6 +224,54 @@ public class ServiceActualizarUbicacionProveedor extends Service {
         }
 
     }
+
+
+
+    private class LocationListener implements android.location.LocationListener
+    {
+        Location mLastLocation;
+
+        public LocationListener(String provider)
+        {
+            Log.e(TAG, "LocationListener " + provider);
+            mLastLocation = new Location(provider);
+        }
+
+        @Override
+        public void onLocationChanged(Location location)
+        {
+            Log.e(TAG, "onLocationChanged: " + location);
+            mLatitude = location.getLatitude();
+            mLongitude = location.getLongitude();
+            Log.e(TAG, "COORDENADAS BACKGROUND: " + mLatitude+" : "+mLongitude);
+            mLastLocation.set(location);
+        }
+
+        @Override
+        public void onProviderDisabled(String provider)
+        {
+            Log.e(TAG, "onProviderDisabled: " + provider);
+        }
+
+        @Override
+        public void onProviderEnabled(String provider)
+        {
+            Log.e(TAG, "onProviderEnabled: " + provider);
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras)
+        {
+            Log.e(TAG, "onStatusChanged: " + provider);
+        }
+    }
+
+    LocationListener[] mLocationListeners = new LocationListener[]{
+            new LocationListener(LocationManager.GPS_PROVIDER),
+            new LocationListener(LocationManager.NETWORK_PROVIDER)
+    };
+
+
 
     private void _webServiceUpdatePositionProvider(String locationUser, final String serialUser, final String statusOnline) {
         _urlWebService = "http://52.72.85.214/ws/ActualizarUbicacionEsteticista";

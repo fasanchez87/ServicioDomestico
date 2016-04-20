@@ -254,13 +254,13 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
 
 
                                     _webServiceAceptarSolicitudServicios();
-                                    isCheckedSwitch = false;// PENDIENTE
+                                /*    isCheckedSwitch = false;// PENDIENTE
                                     sharedPreferences.putBoolean("isCheckedSwitch", isCheckedSwitch);
 
                                     String statusOnline = "0";
                                     stopService(new Intent(getBaseContext(), ServiceActualizarUbicacionProveedor.class));
                                     sharedPreferences.putString("statusOnline", statusOnline);
-
+*/
 /*
 
                                     NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);

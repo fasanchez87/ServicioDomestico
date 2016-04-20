@@ -99,6 +99,12 @@
             android:enabled="true"
             android:exported="false" />
 
+        <service
+            android:name=".services.ServiceObtenerUbicacionEsteticista"
+            android:enabled="true"
+            android:exported="false" />
+
+
         <!-- START Added for GCM -->
 
         <receiver

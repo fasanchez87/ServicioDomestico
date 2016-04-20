@@ -4,11 +4,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,6 +26,7 @@ import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -42,8 +45,11 @@ import com.elements.beya.R;
 import com.elements.beya.adapters.ServiciosAceptacionAdapter;
 import com.elements.beya.adapters.ServiciosAdapter;
 
+import com.elements.beya.beans.Proveedor;
 import com.elements.beya.beans.Servicio;
 import com.elements.beya.decorators.DividerItemDecoration;
+import com.elements.beya.services.ServiceActualizarUbicacionProveedor;
+import com.elements.beya.services.ServiceObtenerUbicacionEsteticista;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 import com.google.android.gms.common.ConnectionResult;
@@ -62,9 +68,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class AceptacionServicio extends AppCompatActivity implements LocationListener, GoogleMap.OnMarkerClickListener
@@ -79,6 +89,16 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
     private String distancia;
     private String tiempo;
+
+    ServiceObtenerUbicacionEsteticista serviceObtenerUbicacionEsteticista;
+    private Timer mTimer = null;
+    public static final long NOTIFY_INTERVAL = 5 * 1000; // 5 seconds
+
+
+    private Handler mHandler = new Handler();
+
+
+    public static String serialUsuarioEsteticista;
 
     ImageLoader imageLoader = ControllerSingleton.getInstance().getImageLoader();
 
@@ -98,9 +118,11 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
     double mLatitude = 0;
     double mLongitude = 0;
 
-    private double latitudUsuario;
+    double latitudEsteticista = 0;
+    double longitudEsteticista = 0;
 
-    private double longitudUsuario;
+    public static double latitudUsuario;
+    public static double longitudUsuario;
 
     GoogleApiClient mGoogleApiClient;
 
@@ -133,6 +155,8 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarAceptacionServicio);
         setSupportActionBar(toolbar);
 
+
+        serviceObtenerUbicacionEsteticista = new ServiceObtenerUbicacionEsteticista();
 
         sharedPreferences = new gestionSharedPreferences(this);
 
@@ -271,7 +295,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
         }
 
-        _webServiceGetRoutesEsteticista();
+        //_webServiceGetRoutesEsteticista();
 
         mAdapter = new ServiciosAceptacionAdapter(allServices);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getApplicationContext());
@@ -288,12 +312,106 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         mAdapter.notifyDataSetChanged();
 
 
+        startService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));
+
+        // TODO Auto-generated method stub
+        if (mTimer != null)
+        {
+            mTimer.cancel();
+        }
+
+        else
+
+        {
+            // recreate new
+            mTimer = new Timer();
+        }
+        // schedule task
+        mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
+
+
+        //startService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));
+
+
+
 
        /* if (imageLoader == null)
             imageLoader = ControllerSingleton.getInstance().getImageLoader();
         */
 
 
+
+    }
+
+    class TimeDisplayTimerTask extends TimerTask
+    {
+
+        @Override
+        public void run()
+        {
+            // run on another thread
+            mHandler.post(new Runnable()
+            {
+
+                @Override
+                public void run()
+                {
+                    // display toast
+
+                    serviceObtenerUbicacionEsteticista = new ServiceObtenerUbicacionEsteticista();
+
+                    Toast.makeText(getApplicationContext(), "desde aceptacion servicios: "+serviceObtenerUbicacionEsteticista.getLatitud() + " : " +
+                                    serviceObtenerUbicacionEsteticista.getLongitud() + " : " +
+                                    serviceObtenerUbicacionEsteticista.getFechaMovimiento(),
+                            Toast.LENGTH_SHORT).show();
+
+                    latitudEsteticista = serviceObtenerUbicacionEsteticista.getLatitud();
+                    latitudEsteticista = serviceObtenerUbicacionEsteticista.getLongitud();
+
+                    markerOptions = new MarkerOptions();
+                    final LatLng latLng = new LatLng( latitudEsteticista ,
+                            latitudEsteticista );
+
+                    markerOptions.position(latLng);
+                    markerOptions.title("Tu esteticista se movio..viene aqui!");
+                    markerOptions.snippet(serviceObtenerUbicacionEsteticista.getFechaMovimiento());
+                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.beya_logo_on_map));
+
+                    Log.d("AceptacionServicio", "Marker added.............................");
+
+                    mGoogleMap.addMarker(markerOptions);
+           /* Glide.with(MapFragmentUbicarProveedores.this.getActivity()).
+                    load("http://52.72.85.214/ws/images/user1.jpg")
+                    .asBitmap()
+                    .fitCenter()
+                    .into(new SimpleTarget<Bitmap>() {
+                        @Override
+                        public void onResourceReady(Bitmap bitmap, GlideAnimation<? super Bitmap> glideAnimation) {
+                            mGoogleMap.addMarker(new MarkerOptions()
+                                    .position(latLng)
+                                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomMarkerView, bitmap))).anchor(0.5f, 0.5f));
+                            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13f));
+
+
+                        }
+                    });*/
+
+
+
+
+
+
+                }
+
+            });
+        }
+
+        private String getDateTime()
+        {
+            // get date time in custom format
+            SimpleDateFormat sdf = new SimpleDateFormat("[yyyy/MM/dd - HH:mm:ss]");
+            return sdf.format(new Date());
+        }
 
     }
 
@@ -318,7 +436,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         this.ubicacionEsteticista = ubicacionEsteticista;
     }
 
-    public double getLongitudUsuario() {
+    public static double getLongitudUsuario() {
         return longitudUsuario;
     }
 
@@ -326,8 +444,16 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         this.longitudUsuario = longitudUsuario;
     }
 
-    public double getLatitudUsuario() {
+    public static double getLatitudUsuario() {
         return latitudUsuario;
+    }
+
+    public static String getSerialUsuarioEsteticista() {
+        return serialUsuarioEsteticista;
+    }
+
+    public void setSerialUsuarioEsteticista(String serialUsuarioEsteticista) {
+        this.serialUsuarioEsteticista = serialUsuarioEsteticista;
     }
 
     public void setLatitudUsuario(double latitudUsuario) {
@@ -339,10 +465,8 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
     {
 
         String nombreUsuario = null, apellidoUsuario = null,
-               imgUsuario=null,telefonoUsuario = null,serialUsuario,
+               imgUsuario=null,telefonoUsuario = null,serialUsuarioEsteticista = null,
                distanciaUsuario, tiempoUsuario;
-
-        _webServiceGetRoutesEsteticista();
 
         try
         {
@@ -354,23 +478,29 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                 JSONObject servicio = jsonArray.getJSONObject(i);
                 nombreUsuario = servicio.getString("nombresUsuario");
                 nombreUsuario += " "+servicio.getString("apellidosUsuario");
-                setLatitudUsuario(latitudUsuario = Double.parseDouble(servicio.getString("latitudUsuario")));
-                setLongitudUsuario(longitudUsuario = Double.parseDouble(servicio.getString("longitudUsuario")));
+                this.setLatitudUsuario(Double.parseDouble(servicio.getString("latitudUsuario")));
+                this.setLongitudUsuario(Double.parseDouble(servicio.getString("longitudUsuario")));
+
                 imgUsuario = servicio.getString("imgUsuario");
                 telefonoUsuario = servicio.getString("telefonoUsuario");
-
+                serialUsuarioEsteticista = servicio.getString("serialUsuario"); //Serial de Usuario Esteticista que acepta servicio.
+                //sharedPreferences.putString("serialUsuarioEsteticista", serialUsuarioEsteticista);
+                setSerialUsuarioEsteticista(serialUsuarioEsteticista);
+                _webServiceGetRoutesEsteticista();
             }
+
+
 
             if (imageLoader == null)
                 imageLoader = ControllerSingleton.getInstance().getImageLoader();
 
-            imagenEsteticista.setImageUrl(imgUsuario,imageLoader);
+            imagenEsteticista.setImageUrl(imgUsuario, imageLoader);
 
             nombreEsteticista.setText(nombreUsuario);
             //apellidoEsteticista.setText(apellidoUsuario);
             telefonoEsteticistaAceptacionServicios.setText(telefonoUsuario);
 
-            markerOptions = new MarkerOptions();
+          /*  markerOptions = new MarkerOptions();
             LatLng latLng = new LatLng(getLatitudUsuario(),getLongitudUsuario());//esto es lo dinamico!
 
             markerOptions.position(latLng);
@@ -379,16 +509,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
             // markerOptions.snippet("a 2 horas");
             markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.beya_logo_on_map));
 
-            mGoogleMap.addMarker(markerOptions);
-
-
-
-
-
-
-
-
-
+            mGoogleMap.addMarker(markerOptions);*/
         }
         catch (JSONException e)
         {
@@ -663,16 +784,8 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
     private void _webServiceGetRoutesEsteticista()
     {
 
-
-
-        Log.i("LATITUD ESTETICISTA", ""+getLatitudUsuario());
-        Log.i("LONGITUD ESTETICISTA", ""+getLongitudUsuario());
-        Log.i("LATITUD CLIENTE", ""+mLatitude);
-        Log.i("LONGITUD CLIENTE", ""+mLongitude); //sacaba error porque la location del emulador siempre es 0.0.
-
-        _urlWebService = "http://maps.google.com/maps/api/directions/json?origin="+"4.0857975,-76.1754153"+"&destination="+
-                mLatitude+","+mLongitude+"&"+"sensor=false";
-
+        _urlWebService = "http://maps.google.com/maps/api/directions/json?origin="+this.getLatitudUsuario()+","+this.getLongitudUsuario()+
+                "&destination="+mLatitude+","+mLongitude+"&"+"sensor=false";
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
                 new Response.Listener<JSONObject>()
@@ -693,11 +806,6 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                             JSONObject distOb = newDisTimeOb.getJSONObject("distance");
                             JSONObject timeOb = newDisTimeOb.getJSONObject("duration");
 
-
-                            Log.i("Distance :", "" + distOb.getString("text"));
-                            Log.i("Time :", "" + timeOb.getString("text"));
-
-
                             kilometrosDistanciaEsteticista.setText("" + distOb.getString("text"));
                             tiempoLlegadaEsteticista.setText("" + timeOb.getString("text"));
 
@@ -706,10 +814,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                         catch (JSONException e)
                         {
 
-                            //progressBar.setVisibility(View.GONE);
-                            //buttonSeleccionarServicios.setVisibility(View.GONE);
-
-                            AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this.getApplicationContext());
+                           AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this.getApplicationContext());
                             builder
                                     .setMessage(e.getMessage().toString())
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {

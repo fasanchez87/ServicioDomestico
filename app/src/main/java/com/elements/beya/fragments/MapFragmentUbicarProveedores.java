@@ -441,6 +441,11 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+
+        sharedPreferences.putDouble("latitudCliente", mLatitude);
+        sharedPreferences.putDouble("longitudCliente",mLongitude);
+
+
     }
 
 

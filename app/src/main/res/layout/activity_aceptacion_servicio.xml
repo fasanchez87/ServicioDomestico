@@ -104,7 +104,6 @@
                         android:layout_height="wrap_content"
                         android:textSize="18dip"
                         android:textStyle="bold"
-                        android:text="2.3 km"
                         android:paddingLeft="6dp"/>
 
                     <TextView
@@ -112,7 +111,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textStyle="bold"
-                        android:text="2 min"
                         android:textSize="18dip"
                         android:paddingLeft="6dp"/>
 
