@@ -255,6 +255,8 @@ public class Gestion extends AppCompatActivity
     }
 
 
+
+
     public String getLocation(double x0, double y0, int radius) {
         Random random = new Random();
 

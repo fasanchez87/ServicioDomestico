@@ -6,7 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
-import android.view.View;
+import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -34,11 +34,11 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class ServiceActualizarUbicacionProveedor extends Service {
-
-    Gestion gestion;
-    private gestionSharedPreferences sharedPreferences;
-
+/**
+ * Created by FABiO on 19/04/2016.
+ */
+public class ServiceObtenerUbicacionEsteticista extends Service
+{
 
     public static final long NOTIFY_INTERVAL = 5 * 1000; // 5 seconds
     // run on another Thread to avoid crash
@@ -46,14 +46,19 @@ public class ServiceActualizarUbicacionProveedor extends Service {
     // timer handling
     private Timer mTimer = null;
 
+    Gestion gestion;
+    private gestionSharedPreferences sharedPreferences;
+
     private String _urlWebService;
 
-    public ServiceActualizarUbicacionProveedor() {
+    public ServiceObtenerUbicacionEsteticista()
+    {
 
     }
 
     @Override
-    public void onCreate() {
+    public void onCreate()
+    {
         // cancel if already existed
         gestion = new Gestion();
         sharedPreferences = new gestionSharedPreferences(getApplicationContext());
@@ -62,7 +67,8 @@ public class ServiceActualizarUbicacionProveedor extends Service {
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
+    public IBinder onBind(Intent intent)
+    {
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
     }
@@ -74,14 +80,17 @@ public class ServiceActualizarUbicacionProveedor extends Service {
         if (mTimer != null)
         {
             mTimer.cancel();
-        } else
+        }
+
+        else
+
         {
             // recreate new
             mTimer = new Timer();
         }
         // schedule task
         mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
-        Toast.makeText(this, "Servicio en Ejecucion", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Servicio Rastreo Ubicacion Esteticista: ACTIVO", Toast.LENGTH_SHORT).show();
         return START_STICKY;
     }
 
@@ -91,25 +100,28 @@ public class ServiceActualizarUbicacionProveedor extends Service {
         // TODO Auto-generated method stub
         super.onDestroy();
         mTimer.cancel();
-        _webServiceUpdatePositionProvider(gestion.getLocation(4.102533, -76.202582, 10000),
-                sharedPreferences.getString("serialUsuario") , sharedPreferences.getString("statusOnline"));
-        Toast.makeText(this, "Servicio destruido", Toast.LENGTH_SHORT).show();
+      /*  _webServiceUpdatePositionProvider(gestion.getLocation(4.102533, -76.202582, 10000),
+                sharedPreferences.getString("serialUsuario"), sharedPreferences.getString("statusOnline"));
+        Toast.makeText(this, "Servicio destruido", Toast.LENGTH_SHORT).show();*/
     }
 
     class TimeDisplayTimerTask extends TimerTask
     {
 
         @Override
-        public void run() {
+        public void run()
+        {
             // run on another thread
-            mHandler.post(new Runnable() {
+            mHandler.post(new Runnable()
+            {
 
                 @Override
-                public void run() {
+                public void run()
+                {
                     // display toast
 
-                    _webServiceUpdatePositionProvider(gestion.getLocation(4.102533, -76.202582, 10000),
-                            sharedPreferences.getString("serialUsuario") , sharedPreferences.getString("statusOnline"));
+                   /* _webServiceUpdatePositionProvider(gestion.getLocation(4.102533, -76.202582, 10000),
+                            sharedPreferences.getString("serialUsuario") , sharedPreferences.getString("statusOnline"));*/
 
                     Toast.makeText(getApplicationContext(), gestion.getLocation(4.102533, -76.202582, 10000),
                             Toast.LENGTH_SHORT).show();
@@ -121,7 +133,8 @@ public class ServiceActualizarUbicacionProveedor extends Service {
             });
         }
 
-        private String getDateTime() {
+        private String getDateTime()
+        {
             // get date time in custom format
             SimpleDateFormat sdf = new SimpleDateFormat("[yyyy/MM/dd - HH:mm:ss]");
             return sdf.format(new Date());
@@ -129,8 +142,9 @@ public class ServiceActualizarUbicacionProveedor extends Service {
 
     }
 
-    private void _webServiceUpdatePositionProvider(String locationUser, final String serialUser, final String statusOnline) {
-        _urlWebService = "http://52.72.85.214/ws/ActualizarUbicacionEsteticista";
+   /* private void _webServiceObtenerUbicacionEsteticista(final String serialUser)
+    {
+        _urlWebService = "http://52.72.85.214/ws/ObtenerUbicacionEsteticista";
 
         String[] parts = locationUser.split(":");
         final String latitudUsuario = parts[0];
@@ -278,22 +292,8 @@ public class ServiceActualizarUbicacionProveedor extends Service {
 
                     }
                 })
-
         {
 
-//				    @Override
-//		            protected Map<String, String> getParams() throws com.android.volley.AuthFailureError
-//		            {
-//				    	HashMap<String, String> params = new HashMap<String, String>();
-//				    	//params.put("Content-Type", "application/json");
-//				    	params.put("email_cliente", "MMM" );
-//				    	params.put("pass_cliente", "MMM" );
-//				    	params.put("name_cliente", "MMM");
-//				    	params.put("ape_cliente", "MMM" );
-//
-//
-//		                return params;
-//		            }
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -316,5 +316,6 @@ public class ServiceActualizarUbicacionProveedor extends Service {
         jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
-    }
+    }*/
+
 }

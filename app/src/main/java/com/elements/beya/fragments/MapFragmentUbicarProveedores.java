@@ -4,11 +4,21 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.elements.beya.activities.AceptacionServicio;
+import com.elements.beya.activities.SolitudServicioDetallada;
+import com.elements.beya.app.Config;
 import com.elements.beya.beans.Servicio;
 import com.elements.beya.vars.vars;
+
+import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -16,14 +26,18 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.DrawableRes;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +46,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -81,6 +96,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.leolin.shortcutbadger.ShortcutBadger;
+
 
 public class MapFragmentUbicarProveedores extends Fragment implements LocationListener, GoogleMap.OnMarkerClickListener
 {
@@ -93,10 +110,19 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
     private String TAG = MapFragmentUbicarProveedores.class.getSimpleName();
 
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
+
+    ProgressDialog progressDialog;
+
+
+
+    JSONArray jsonArray;
 
     private String indicaAndroid = "";
 
     GoogleApiClient mGoogleApiClient;
+    private View mCustomMarkerView;
+    private ImageView mMarkerImageView;
 
 
     public vars vars;
@@ -134,6 +160,69 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         vars = new vars();
 
 
+        mRegistrationBroadcastReceiver = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                if (intent.getAction().equals(Config.PUSH_NOTIFICATION_PANTALLA))
+                {
+                    // new push notification is received
+
+
+                    progressDialog.dismiss();
+
+                    String datosEsteticista = intent.getExtras().getString("datosEsteticista");
+
+                    /*sharedPreferences.remove("datosEsteticista");
+                    sharedPreferences.putString("datosEsteticista",intent.getExtras().getString("datosEsteticista"));*/
+
+                    Intent ordenServicio = new Intent(MapFragmentUbicarProveedores.this.getActivity(), AceptacionServicio.class);
+                    ordenServicio.putExtra("codigoSolicitud", datosEsteticista);
+                    startActivity(ordenServicio);
+
+                  /*  try
+                    {
+                        jsonArray = new JSONArray( datosEsteticista );
+
+                        for (int i = 0; i < jsonArray.length(); i++)
+                        {
+
+                            JSONObject servicio = jsonArray.getJSONObject(i);
+                            Log.w(TAG , "servicio en push: "+servicio.getString("nombresUsuario"));
+                            Log.w(TAG , "servicio en push: "+servicio.getString("apellidosUsuario"));
+                            Log.w(TAG , "servicio en push: "+servicio.getString("latitudUsuario"));
+                            Log.w(TAG , "servicio en push: "+servicio.getString("longitudUsuario"));
+
+                        }
+
+
+                    }
+                    catch (JSONException e)
+                    {
+                        e.printStackTrace();
+                    }*/
+
+                    Log.w("ALERTA", "Push notification is received!"+intent.getStringExtra("datosEsteticista"));
+                    Toast.makeText(MapFragmentUbicarProveedores.this.getActivity(), "SERVICIO ACEPTADO: " +
+                            intent.getExtras().getString("datosEsteticista"), Toast.LENGTH_LONG).show();
+
+                   /* solicitudesServicios.clear();
+                    //data.addAll(datas);
+                    //notifyDataSetChanged();
+
+                    _webServiceGetSolicitudesServicios();
+                    mAdapter.notifyDataSetChanged();
+                    ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
+
+
+                    Toast.makeText(ServiciosDisponibles.this.getActivity(), "Push notification is received!" +
+                            intent.getExtras().getString("message"), Toast.LENGTH_LONG).show();*/
+                }
+            }
+        };
+
+        mCustomMarkerView = ((LayoutInflater) MapFragmentUbicarProveedores.this.getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_info_market_map, null);
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -141,6 +230,8 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         //findCoachMap();
 
     }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -174,7 +265,6 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         } else
 
         {
-
 
             mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
             mGoogleMap.getUiSettings().setCompassEnabled(true);
@@ -255,18 +345,38 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         for( int i = 0; i <= sharedPreferences.getListObject("proveedores", Proveedor.class).size()-1; i++ )
         {
 
+            mMarkerImageView = (ImageView) mCustomMarkerView.findViewById(R.id.imagenProveedorCustomInfoMarket);
+
+
             mGoogleMap.setInfoWindowAdapter(new IconizedWindowAdapter(getActivity().getLayoutInflater()));
 
             markerOptions = new MarkerOptions();
-            LatLng latLng = new LatLng( Double.parseDouble(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getLatitudUsuario()),
+            final LatLng latLng = new LatLng( Double.parseDouble(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getLatitudUsuario()),
                     Double.parseDouble(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getLongitudUsuario()));
 
             markerOptions.position(latLng);
-            markerOptions.title(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getNombreProveedor().toString() + " " +
-                    sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getApellidoProveedor());
-
+            markerOptions.title(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getNombreProveedor().toString() + " " + sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getApellidoProveedor());
             markerOptions.snippet(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getEmailProveedor().toString());
             markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.beya_logo_on_map));
+
+
+/*
+            Glide.with(MapFragmentUbicarProveedores.this.getActivity()).
+                    load("http://52.72.85.214/ws/images/user1.jpg")
+                    .asBitmap()
+                    .fitCenter()
+                    .into(new SimpleTarget<Bitmap>() {
+                        @Override
+                        public void onResourceReady(Bitmap bitmap, GlideAnimation<? super Bitmap> glideAnimation) {
+                            mGoogleMap.addMarker(new MarkerOptions()
+                                    .position(latLng)
+                                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomMarkerView, bitmap))).anchor(0.5f, 0.5f));
+                            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13f));
+
+
+                        }
+                    });*/
+
 
             mGoogleMap.addMarker(markerOptions);
 
@@ -290,6 +400,28 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
         });*/
 
+    }
+
+    @Override
+    public void onPause() {
+        LocalBroadcastManager.getInstance(MapFragmentUbicarProveedores.this.getActivity()).unregisterReceiver(mRegistrationBroadcastReceiver);
+        super.onPause();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+       /* // register GCM registration complete receiver
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(Config.REGISTRATION_COMPLETE));*/
+        ShortcutBadger.removeCount(MapFragmentUbicarProveedores.this.getActivity()); //for 1.1.4
+
+        // register new push message receiver
+        // by doing this, the activity will be notified each time a new message arrives
+        LocalBroadcastManager.getInstance(MapFragmentUbicarProveedores.this.getActivity()).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(Config.PUSH_NOTIFICATION_PANTALLA));
     }
 
 
@@ -317,6 +449,8 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     {
 
     }
+
+
 
     /**
      * Called when the provider is enabled by the user.
@@ -360,14 +494,12 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
         public IconizedWindowAdapter(LayoutInflater inflater) {
             this.inflater=inflater;
-            if (imageLoader == null)
-                imageLoader = ControllerSingleton.getInstance().getImageLoader();
+
         }
 
         public IconizedWindowAdapter() {
             popup = inflater.inflate(R.layout.custom_info_market_map, null);
-            if (imageLoader == null)
-                imageLoader = ControllerSingleton.getInstance().getImageLoader();
+
 
         }
 
@@ -379,17 +511,9 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
 
 
-         /*   // iv.setDefaultImageResId(R.drawable.ic_launcher);// poner imagen por default
+           // iv.setDefaultImageResId(R.drawable.ic_launcher);// poner imagen por default
             if (imageLoader == null)
                 imageLoader = ControllerSingleton.getInstance().getImageLoader();
-
-            NetworkImageView iv = (NetworkImageView) view.findViewById(R.id.imagenProveedorCustomInfoMarket);
-            iv.setImageUrl("http://52.72.85.214/ws/images/minion.jpg", imageLoader);
-            // iv.setDefaultImageResId(R.drawable.ic_launcher);// poner imagen por default
-            iv.setErrorImageResId(R.mipmap.beya_logo);// en caso de error poner esta imagen.
-
-
-*/
 
 
             return (null);
@@ -402,15 +526,15 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         {
 
 
-
-            popup = inflater.inflate(R.layout.custom_info_market_map, null);
-
             if (imageLoader == null)
                 imageLoader = ControllerSingleton.getInstance().getImageLoader();
 
+            popup = inflater.inflate(R.layout.custom_info_market_map, null);
+
+
             NetworkImageView iv = (NetworkImageView) popup.findViewById(R.id.imagenProveedorCustomInfoMarket);
 
-
+            iv.setImageUrl("http://52.72.85.214/ws/images/minion.jpg", imageLoader);
 
 
 
@@ -423,13 +547,6 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
 
 
-            for( int i = 0; i <= sharedPreferences.getListObject("proveedores", Proveedor.class).size()-1; i++ )
-            {
-
-
-                iv.setImageUrl("http://52.72.85.214/ws/images/minion.jpg", imageLoader);
-
-            }
 
 
 
@@ -477,7 +594,15 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
                             if(status)
                             {
-                                AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+
+
+                                progressDialog = ProgressDialog.show(MapFragmentUbicarProveedores.this.getActivity(),
+                                        "SOLICITUD DE SERVICIO.",
+                                        "Por favor espere un momento, se está asigando un esteticista a su solicitud de servicio.");
+                                progressDialog.setCanceledOnTouchOutside(false);
+                                progressDialog.setCancelable(false);
+
+                              /*  AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
                                 builder
                                         .setMessage("Solicitud enviada con exito a todos los Esteticistas; en instantes se le asignara su servicio.")
                                         .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -489,7 +614,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                                                 //startActivity(intent);
                                                 //finish();
                                             }
-                                        }).show();
+                                        }).show();*/
                              /*   Intent intent = new Intent(Login.this, Gestion.class);
                                 startActivity(intent);
                                 sharedPreferences.putBoolean("GuardarSesion", true);

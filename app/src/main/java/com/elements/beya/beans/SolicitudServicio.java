@@ -14,7 +14,7 @@ public class SolicitudServicio
     private String HoraSolicitudServicio;
     private String UbicacionSolicitudServicio;
     private String LugarSolicitudServicio;
-    private String esAtendida;
+    private String estadoSolicitud;
 
 
 
@@ -57,6 +57,14 @@ public class SolicitudServicio
         UbicacionSolicitudServicio = ubicacionSolicitudServicio;
     }
 
+    public String getEstadoSolicitud() {
+        return estadoSolicitud;
+    }
+
+    public void setEstadoSolicitud(String estadoSolicitud) {
+        this.estadoSolicitud = estadoSolicitud;
+    }
+
     public String getCodigoClienteSolicitudServicio() {
         return codigoClienteSolicitudServicio;
     }
@@ -73,13 +81,6 @@ public class SolicitudServicio
         LugarSolicitudServicio = lugarSolicitudServicio;
     }
 
-    public String getEsAtendida() {
-        return esAtendida;
-    }
-
-    public void setEsAtendida(String esAtendida) {
-        this.esAtendida = esAtendida;
-    }
 
     public String getHoraSolicitudServicio() {
         return HoraSolicitudServicio;

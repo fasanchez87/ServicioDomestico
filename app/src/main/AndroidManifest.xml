@@ -18,7 +18,6 @@
     <uses-permission android:name="android.permission.REAL_GET_TASKS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
-
     <!-- START Added for GCM -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
@@ -90,11 +89,10 @@
             android:name=".activities.Gestion"
             android:label="@string/title_activity_gestion"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".activities.SolitudServicioDetallada"
             android:label="@string/title_activity_solitud_servicio_detallada"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service
             android:name=".services.ServiceActualizarUbicacionProveedor"
@@ -131,6 +129,11 @@
         </service>
 
         <!-- END Added for GCM -->
+
+        <activity
+            android:name=".activities.AceptacionServicio"
+            android:label="Orden Servicio"
+            android:theme="@style/AppTheme.NoActionBar"/>
 
 
     </application>

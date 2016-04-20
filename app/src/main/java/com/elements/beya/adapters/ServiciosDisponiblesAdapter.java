@@ -64,7 +64,7 @@ public class ServiciosDisponiblesAdapter extends RecyclerView.Adapter <Servicios
        /* holder.direccionSolicitud.setText(solicitudServicio.getUbicacionSolicitudServicio());
         holder.lugarSolicitud.setText(solicitudServicio.getLugarSolicitudServicio());*/
         holder.horaSolicitud.setText(solicitudServicio.getHoraSolicitudServicio());
-        holder.esAtendida.setText(solicitudServicio.getEsAtendida());
+        holder.esAtendida.setText(solicitudServicio.getEstadoSolicitud());
 
 
     }

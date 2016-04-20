@@ -170,7 +170,7 @@ public class SolicitarServicio extends Fragment
 
                     if (servicio.isSelected() == true)
                     {
-                        data = data+servicio.getId().toString()+":";
+                        data = data+servicio.getId().toString()+",";
 
                         Servicio serviciosSeleccionados = new Servicio();
 
@@ -203,7 +203,7 @@ public class SolicitarServicio extends Fragment
                 else
                 {
                     //BORRAR ULTIMA COMA Y SEPARARLOS POR DOS PUNTOS ':'
-                    String serviciosEscogidos = data.substring(0, data.lastIndexOf(":"));
+                    String serviciosEscogidos = data.substring(0, data.lastIndexOf(","));
                     sharedPreferences.putString("serviciosEscogidos", serviciosEscogidos);
                     Toast.makeText(SolicitarServicio.this.getActivity(),
                             "Selected Services: \n" + serviciosEscogidos, Toast.LENGTH_LONG)

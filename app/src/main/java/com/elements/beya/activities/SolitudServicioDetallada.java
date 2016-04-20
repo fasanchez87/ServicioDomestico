@@ -13,14 +13,19 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -100,11 +105,14 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
 
     GoogleApiClient mGoogleApiClient;
 
-
+    Gestion gestion;
 
     CheckBox checkBoxServicio;
 
     private ArrayList<Servicio> servicioList;
+
+    public SwitchCompat switchActivarLocation;
+
 
 
     private gestionSharedPreferences sharedPreferences;
@@ -129,7 +137,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         ubicacionCliente = intent.getStringExtra("ubicacionCliente");
         keyCodigoClienteSolicitudSeleccionada = intent.getStringExtra("codigoCliente");
 
-
+        gestion = new Gestion();
 
 
 
@@ -253,9 +261,18 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                                     stopService(new Intent(getBaseContext(), ServiceActualizarUbicacionProveedor.class));
                                     sharedPreferences.putString("statusOnline", statusOnline);
 
-                                    Intent intent = new Intent(SolitudServicioDetallada.this, Gestion.class);
+/*
+
+                                    NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                                    Menu menu = navigationView.getMenu();
+                                    MenuItem item = menu.findItem(R.id.nav_activar_geolocalizacion);
+                                    switchActivarLocation = (SwitchCompat) MenuItemCompat.getActionView(item);
+                                    switchActivarLocation.setChecked(sharedPreferences.getBoolean("isCheckedSwitch"));
+                                   *//* Intent intent = new Intent(SolitudServicioDetallada.this, Gestion.class);
                                     startActivity(intent);
-                                    finish();
+                                    finish();*/
+
+
 
                                 }
                             }).setNegativeButton("Volver", new DialogInterface.OnClickListener() {
@@ -325,14 +342,14 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                     {
                         try
                         {
-                            Boolean status = response.getBoolean("result");
-                            String message = response.getString("status");
+                            Boolean status = response.getBoolean("status");
+                           // String message = response.getString("status");
 
                             if(status)
                             {
-                                AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
+                               AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
                                 builder
-                                        .setMessage(message)
+                                        .setMessage("bien")
                                         .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
                                         {
                                             @Override
@@ -347,9 +364,9 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
 
                             else
                             {
-                                AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
+                               AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
                                 builder
-                                        .setMessage(message)
+                                        .setMessage("error")
                                         .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
                                         {
                                             @Override
@@ -366,7 +383,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                         {
 
 
-                            progressBar.setVisibility(View.GONE);
+                            //progressBar.setVisibility(View.GONE);
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this.getApplicationContext());
                             builder

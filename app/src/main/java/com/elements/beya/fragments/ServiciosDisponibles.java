@@ -219,9 +219,6 @@ public class ServiciosDisponibles extends Fragment
     {
         _urlWebService = "http://52.72.85.214/ws/ObtenerSolicitudesDisponibles";
 
-
-
-
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
                 new Response.Listener<JSONObject>()
                 {
@@ -239,139 +236,78 @@ public class ServiciosDisponibles extends Fragment
                     {
                         try
                         {
-                            JSONArray solicitudes = response.getJSONArray("result");
-                            JSONObject object;
-                            JSONObject objectServicios;
-                            JSONObject objectServiciosSolicitados;
-                            JSONArray listadoServicios;
 
-                            for (int i = 0; i <= solicitudes.length()-1; i++)
+                            Boolean solicitudesDisponibles = response.getBoolean("status");
+
+                            if (solicitudesDisponibles)
                             {
-                                object = solicitudes.getJSONObject(i);
+                                JSONArray solicitudes = response.getJSONArray("result");
+                                JSONObject object;
+                                JSONObject objectServicios;
+                                JSONObject objectServiciosSolicitados;
+                                JSONArray listadoServicios;
 
-                                SolicitudServicio solicitudServicio = new SolicitudServicio();
-
-                                solicitudServicio.setCodigoSolicitudServicio(object.getString("codigoSolicitud"));
-                                solicitudServicio.setCodigoClienteSolicitudServicio(object.getString("codigoCliente"));
-                                String fecha = object.getString("fecSolicitudCliente");
-
-                                fechaSolicitud = new ArrayList<String>(Arrays.asList(fecha.split(" ")));
-
-                                solicitudServicio.setFechaSolicitudServicio(fechaSolicitud.get(0));
-                                solicitudServicio.setHoraSolicitudServicio(fechaSolicitud.get(1));
-
-                                solicitudServicio.setUbicacionSolicitudServicio(object.getString("ubicacionCliente"));
-                                solicitudServicio.setEsAtendida(object.getString("esAtendida"));
-
-                                solicitudesServicios.add(solicitudServicio);
-                                listadoServicios = object.getJSONArray("servicios");
-
-                                serviciosDisponibles = new ArrayList<Servicio>();
-
-                                for (int j = 0; j <= listadoServicios.length() - 1; j++)
+                                for (int i = 0; i <= solicitudes.length()-1; i++)
                                 {
-                                    objectServiciosSolicitados = listadoServicios.getJSONObject(j);
-                                    Servicio servicio = new Servicio();
-                                    servicio.setNombreServicio(objectServiciosSolicitados.getString("nombreServicio"));
-                                    servicio.setDescripcionServicio(objectServiciosSolicitados.getString("descripcionServicio"));
-                                    servicio.setValorServicio(objectServiciosSolicitados.getString("valorServicio"));
-                                    serviciosDisponibles.add(servicio);
+                                    object = solicitudes.getJSONObject(i);
+
+                                    SolicitudServicio solicitudServicio = new SolicitudServicio();
+
+                                    solicitudServicio.setCodigoSolicitudServicio(object.getString("codigoSolicitud"));
+                                    solicitudServicio.setCodigoClienteSolicitudServicio(object.getString("codigoCliente"));
+                                    String fecha = object.getString("fecSolicitudCliente");
+
+                                    fechaSolicitud = new ArrayList<String>(Arrays.asList(fecha.split(" ")));
+
+                                    solicitudServicio.setFechaSolicitudServicio(fechaSolicitud.get(0));
+                                    solicitudServicio.setHoraSolicitudServicio(fechaSolicitud.get(1));
+
+                                    solicitudServicio.setUbicacionSolicitudServicio(object.getString("ubicacionCliente"));
+                                   // solicitudServicio.setEstadoSolicitud(object.getString("esAtendida"));
+
+                                    solicitudesServicios.add(solicitudServicio);
+                                    listadoServicios = object.getJSONArray("servicios");
+
+                                    serviciosDisponibles = new ArrayList<Servicio>();
+
+                                    for (int j = 0; j <= listadoServicios.length() - 1; j++)
+                                    {
+                                        objectServiciosSolicitados = listadoServicios.getJSONObject(j);
+                                        Servicio servicio = new Servicio();
+                                        servicio.setNombreServicio(objectServiciosSolicitados.getString("nombreServicio"));
+                                        servicio.setDescripcionServicio(objectServiciosSolicitados.getString("descripcionServicio"));
+                                        servicio.setValorServicio(objectServiciosSolicitados.getString("valorServicio"));
+                                        serviciosDisponibles.add(servicio);
+                                    }
+
+                                    hashTableSolicitudDetallada.put(solicitudesServicios.get(i).getCodigoSolicitudServicio(),
+                                            serviciosDisponibles);
+
+
                                 }
-
-                                hashTableSolicitudDetallada.put(solicitudesServicios.get(i).getCodigoSolicitudServicio(),
-                                        serviciosDisponibles);
-
+                                progressBar.setVisibility(View.GONE);
+                                mAdapter.notifyDataSetChanged();
 
                             }
 
-                              /*  location = new ArrayList<String>(Arrays.asList(ubicacionCliente.split(",")));
-
-                                lat = Float.parseFloat(location.get(0));
-                                lon = Float.parseFloat(location.get(1));
-
-                                latitude = lat.doubleValue();
-                                longitude = lon.doubleValue();
-
-                                geocoder = new Geocoder(ServiciosDisponibles.this.getActivity(), Locale.getDefault());
-                                addresses = geocoder.getFromLocation(latitude, longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-*/
-                               /* if(addresses.size()== 0)
-                                {
-
-                                   // String municipio = addresses.get(0).getLocality(); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-                                   // String departamento = addresses.get(0).getAdminArea();
-
-                                    solicitudServicio.setUbicacionSolicitudServicio("ERROR UBICACIÓN");
-                                    solicitudServicio.setLugarSolicitudServicio("ERROR UBICACIÓN");
-                                    solicitudServicio.setEsAtendida(object.getString("esAtendida"));
-                                }
-                                else
-                                {*/
-                                   /* String municipio = addresses.get(0).getLocality(); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-                                    String departamento = addresses.get(0).getAdminArea();*/
-
-                                 /*   solicitudServicio.setUbicacionSolicitudServicio("XXX");
-                                    solicitudServicio.setLugarSolicitudServicio("XXX");*/
-                                    //solicitudServicio.setEsAtendida(object.getString("esAtendida"));
-                              /*  }*/
-
-
-
-                              /*
-
-
-                                for (int j = 0; j <= solicitudes.length()-1; i++)
-                                {
-
-
-                                }*/
-
-
-
-                                //servicioList.add(servicio);
-
-
-
-                              /* for (Map.Entry<String, ArrayList<Servicio>> ee : hashTableSolicitudDetallada.entrySet())
-                               {
-                                    String key = ee.getKey();
-                                    ArrayList<Servicio> values = ee.getValue();
-                                    // TODO: Do something.
-                                   for(int i=0; i<=values.size()-1;i++)
-                                   {
-                                       Log.w("ServiciosDisponibles", ""+ee.getValue().get(i).getNombreServicio());
-                                   }
-
-                                }*/
-
-                            // printing the result
-                           /* for(Map.Entry<String, ArrayList<Servicio>> alternateEntry : hashTableSolicitudDetallada.entrySet())
+                            else
                             {
-                                String key = alternateEntry.getKey();
-                                ArrayList<Servicio> values = alternateEntry.getValue();
-                                Log.w("ServiciosDisponibles", "Key = " + key);
-                                Log.w("ServiciosDisponibles", values.size() + "n");
-                            }*/
 
-
-
-                            mAdapter.notifyDataSetChanged();
-                            progressBar.setVisibility(View.GONE);
-
-
-
-                           /* for(int i=0; i<=hashTableSolicitudDetallada.size()-1;i++)
-                            {
-                                ArrayList<Servicio> services = hashTableSolicitudDetallada.get(serviciosDisponibles.get(i).getDescripcionServicio());
-
-                                for(j=0; j<=services)
-                                {
-
-                                }
-                            }*/
-
-
-
+                                AlertDialog.Builder builder = new AlertDialog.Builder(ServiciosDisponibles.this.getActivity());
+                                builder
+                                        .setMessage("No existen solicitudes de servicio en este momento.")
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                        {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int id)
+                                            {
+                                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                                //startActivity(intent);
+                                                //finish();
+                                            }
+                                        }).show();
+                                progressBar.setVisibility(View.GONE);
+                            }
 
                         }
                         catch (JSONException e)

@@ -12,6 +12,7 @@
         android:adjustViewBounds="true"
         android:cropToPadding="true"
         android:padding="2dip"
+        android:visibility="gone"
         android:src="@mipmap/beya_logo"
         />
 

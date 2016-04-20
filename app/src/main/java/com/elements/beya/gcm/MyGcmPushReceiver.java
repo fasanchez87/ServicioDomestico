@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.elements.beya.activities.Gestion;
 import com.elements.beya.activities.MainActivity;
@@ -61,20 +62,21 @@ public class MyGcmPushReceiver extends GcmListenerService
         Boolean isBackground = Boolean.valueOf(bundle.getString("is_background"));
         String image = bundle.getString("image");
         String timestamp = bundle.getString("created_at");
-        String priority = bundle.getString("priority");
-        String services = bundle.getString("services");//aqui esta el error
+        String pantallaMostrarPushAndroid = bundle.getString("pantallaMostrarPushAndroid");
+       // String priority = bundle.getString("priority");
+        String datosEsteticista = bundle.getString("datosEsteticista");//aqui esta el error
         Log.e(TAG, "From: " + from);
         Log.e(TAG, "Title: " + title);
         Log.e(TAG, "message: " + message);
         Log.e(TAG, "image: " + image);
         Log.e(TAG, "timestamp: " + timestamp);
-        Log.e(TAG, "isBackground: " + isBackground);
+        Log.e(TAG, "isBackground: " + pantallaMostrarPushAndroid);
 
         sharedPreferences = new gestionSharedPreferences(getApplicationContext());
 
         countPush=0;
 
-        sharedPreferences.putInt("countPush", countPush=sharedPreferences.getInt("countPush")+1);
+        sharedPreferences.putInt("countPush", countPush = sharedPreferences.getInt("countPush") + 1);
 
         Log.w(TAG, "" + sharedPreferences.getInt("countPush"));
 
@@ -113,33 +115,58 @@ public class MyGcmPushReceiver extends GcmListenerService
             // verifying whether the app is in background or foreground
             if (!NotificationUtils.isAppIsInBackground(getApplicationContext()))
             {
-                // app is in foreground, broadcast the push message
-                //Si la app esta al frente, creamos un Broadcast receiver; con el objetivo de que cuando
-                //llegue un push se dispare dicho evento llamando al broadcast receiver en la
-                //actividad mediante el metodo onreceive();-> ver -> ServiciosDisponibles
-                Intent pushNotification = new Intent(Config.PUSH_NOTIFICATION);
-                pushNotification.putExtra("message", message);
-                LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotification);
-
-                // play notification sound
-                NotificationUtils notificationUtils = new NotificationUtils();
-                notificationUtils.playNotificationSound();
 
 
-              /*  Intent resultIntent = new Intent(getApplicationContext(), Gestion.class);
-                if (TextUtils.isEmpty(image))
+                if(pantallaMostrarPushAndroid.equals("empty"))
                 {
-                    showNotificationMessage(getApplicationContext(), title, message, timestamp, resultIntent);
-                }
+
+
+
+                        // app is in foreground, broadcast the push message
+                        //Si la app esta al frente, creamos un Broadcast receiver; con el objetivo de que cuando
+                        //llegue un push se dispare dicho evento llamando al broadcast receiver en la
+                        //actividad mediante el metodo onreceive();-> ver -> ServiciosDisponibles
+                        Intent pushNotification = new Intent(Config.PUSH_NOTIFICATION);
+                        pushNotification.putExtra("message", message);
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotification);
+
+                        // play notification sound
+                        NotificationUtils notificationUtils = new NotificationUtils();
+                        notificationUtils.playNotificationSound();
+
+
+                  /*  Intent resultIntent = new Intent(getApplicationContext(), Gestion.class);
+                    if (TextUtils.isEmpty(image))
+                    {
+                        showNotificationMessage(getApplicationContext(), title, message, timestamp, resultIntent);
+                    }
+
+                    else
+                    {
+                        // push notification contains image
+                        // show it with the image
+                        showNotificationMessageWithBigImage(getApplicationContext(), title, message, timestamp, resultIntent, image);
+                    }*/
+
+                        Log.e(TAG, "APP IS FOREGROUND: " + "APP IS FOREGROUND");
+                    }
 
                 else
                 {
-                    // push notification contains image
-                    // show it with the image
-                    showNotificationMessageWithBigImage(getApplicationContext(), title, message, timestamp, resultIntent, image);
-                }*/
 
-                Log.e(TAG, "APP IS FOREGROUND: " + "APP IS FOREGROUND");
+                    Log.e(TAG, "PRUEBA ENTRA PUSH SERVICIO");
+
+
+                        Intent pushNotification = new Intent(Config.PUSH_NOTIFICATION_PANTALLA);
+                        pushNotification.putExtra("datosEsteticista", datosEsteticista);
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotification);
+
+                        // play notification sound
+                        NotificationUtils notificationUtils = new NotificationUtils();
+                        notificationUtils.playNotificationSound();
+
+                }
+
 
             }
 
