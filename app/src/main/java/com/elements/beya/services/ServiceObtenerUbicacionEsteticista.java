@@ -44,13 +44,13 @@ import java.util.TimerTask;
 public class ServiceObtenerUbicacionEsteticista extends Service
 {
 
-    public static double latitud = 0;
-    public static double longitud = 0;
+    public static double latitud;
+    public static double longitud;
     public static String fechaMovimiento;
 
    AceptacionServicio aceptacionServicio;
 
-    public static final long NOTIFY_INTERVAL = 5 * 1000; // 5 seconds
+    public static final long NOTIFY_INTERVAL = 5 * 1000; // 10 seconds
     // run on another Thread to avoid crash
     private Handler mHandler = new Handler();
     // timer handling
@@ -233,7 +233,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
                                 if (!status)
                                 {
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
+                                  /*  AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
                                     builder
                                             .setMessage(message.toString())
                                             .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
@@ -243,7 +243,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
                                                     //startActivity(intent);
                                                     //finish();
                                                 }
-                                            }).show();
+                                            }).show();*/
 
                                 }
 

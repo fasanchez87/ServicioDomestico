@@ -1,5 +1,6 @@
 package com.elements.beya.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,6 +22,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -63,6 +65,7 @@ public class SolicitarServicio extends Fragment
 
     private String TAG = SolicitarServicio.class.getSimpleName();
 
+    public static TextView valorTotalTextView;
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -92,14 +95,18 @@ public class SolicitarServicio extends Fragment
 
     private Cache cache;
 
-
-
-
     private boolean foundService;
 
     public SolicitarServicio()
     {
         // Required empty public constructor
+
+    }
+
+    public SolicitarServicio(Context context)
+    {
+        // Required empty public constructor
+
     }
 
 
@@ -108,6 +115,8 @@ public class SolicitarServicio extends Fragment
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+
 
         sharedPreferences = new gestionSharedPreferences(this.getActivity());
         provedoresList = new ArrayList<Proveedor>();
@@ -134,6 +143,9 @@ public class SolicitarServicio extends Fragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        valorTotalTextView = (TextView) this.getActivity().findViewById(R.id.valorTotalServiciosSeleccionadosSolicitarServicios);
+
+
         recyclerView = (RecyclerView) this.getActivity().findViewById(R.id.recycler_view);
 
         progressBar = (ProgressBar) this.getActivity().findViewById(R.id.toolbar_progress_bar);
@@ -159,6 +171,10 @@ public class SolicitarServicio extends Fragment
             {
                 String data = "";
                 String serviciosEscogidosParaPush = "";
+
+
+                sharedPreferences.putString("valorTotalServicios",valorTotalTextView.getText().toString());
+
 
 
 
@@ -340,6 +356,11 @@ public class SolicitarServicio extends Fragment
                                     android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                                     fragmentTransaction.replace(R.id.frame_container, fragment);
                                     fragmentTransaction.commit();
+
+                                    sharedPreferences.putInt("totalServiciosEscogidosEnSolicitarServicio",
+                                            Integer.parseInt(valorTotalTextView.getText().toString()));
+
+
                                 }
 
                                 //SHAREDPREFERENCES OBJETO PROVEEDOR.

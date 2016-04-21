@@ -5,6 +5,7 @@ package com.elements.beya.adapters;
  */
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,13 +18,24 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.elements.beya.R;
 import com.elements.beya.beans.Servicio;
+import com.elements.beya.beans.SolicitudServicio;
+import com.elements.beya.fragments.SolicitarServicio;
+import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 
 import java.util.List;
+
+import static com.google.android.gms.internal.zzir.runOnUiThread;
+
 public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyViewHolder>
 {
 
     private List<Servicio> serviciosList;
+
+    private gestionSharedPreferences sharedPreferences;
+
+
+    public static int valorTotal = 0;
 
     ImageLoader imageLoader = ControllerSingleton.getInstance().getImageLoader();
 
@@ -51,6 +63,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
     public ServiciosAdapter(List<Servicio> serviciosList)
     {
         this.serviciosList = serviciosList;
+
     }
 
     @Override
@@ -65,7 +78,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
 
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, final int position)
+    public void onBindViewHolder(final MyViewHolder holder, final int position)
     {
         final Servicio servicio = serviciosList.get(position);
 
@@ -74,8 +87,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
 
         }
 
-
-        holder.imagenServicio.setImageUrl(servicio.getImagen(),imageLoader);
+        holder.imagenServicio.setImageUrl(servicio.getImagen(), imageLoader);
         holder.imagenServicio.setDefaultImageResId(R.drawable.ic_blower);// poner imagen por default
         holder.imagenServicio.setErrorImageResId(R.drawable.ic_blower);// en caso de error poner esta imagen.
         holder.idServicio.setText(servicio.getId());
@@ -85,6 +97,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
 
         holder.checkServicio.setChecked(servicio.isSelected());
         holder.checkServicio.setTag(servicio);
+
 
         holder.checkServicio.setOnClickListener(new View.OnClickListener()
         {
@@ -96,11 +109,60 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
                 s.setSelected(cb.isChecked());
                 serviciosList.get(position).setSelected(cb.isChecked());
 
-               /* Toast.makeText(
-                        v.getContext(),
-                        "Clicked on Checkbox: " + cb.getText() + " is "
-                                + cb.isChecked(), Toast.LENGTH_LONG).show();*/
+
+
+              /*  Toast.makeText(v.getContext(), "Clicked on Checkbox: " + cb.getText() + " is "+ cb.isChecked(), Toast.LENGTH_LONG).show();
+                Toast.makeText(v.getContext(), "Clicked on : " + s.getValorServicio(), Toast.LENGTH_LONG).show();*/
+
+                if(cb.isChecked())
+                {
+                    //sumo si selecciona servicios
+                    valorTotal = valorTotal+(Integer.parseInt(s.getValorServicio()));
+                    //Toast.makeText(v.getContext(), ""+valorTotal, Toast.LENGTH_LONG).show();
+
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+
+                          SolicitarServicio.valorTotalTextView.setText(""+valorTotal);
+
+                        }
+                    });
+
+
+                }
+
+                else
+                {
+                    //resto si lo quita
+                    valorTotal = valorTotal-(Integer.parseInt(s.getValorServicio()));
+                   // holder.valorTotalTextView.setText(""+valorTotal);
+                    //Toast.makeText(v.getContext(), ""+valorTotal, Toast.LENGTH_LONG).show();
+
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            SolicitarServicio.valorTotalTextView.setText("" + valorTotal);
+
+                        }
+                    });
+
+                }
+
+                sharedPreferences = new gestionSharedPreferences(v.getContext());
+                sharedPreferences.putInt("valorTotalServicios",valorTotal);
+
+
             }
+
+
+
+
+
         });
 
     }

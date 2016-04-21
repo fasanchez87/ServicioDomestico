@@ -41,9 +41,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.R;
 import com.elements.beya.app.Config;
+import com.elements.beya.fragments.Configuracion;
 import com.elements.beya.fragments.MapFragmentUbicarProveedores;
 import com.elements.beya.fragments.ServiciosDisponibles;
 import com.elements.beya.fragments.SolicitarServicio;
+import com.elements.beya.fragments.Soporte;
 import com.elements.beya.services.ServiceActualizarUbicacionProveedor;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
@@ -341,7 +343,16 @@ public class Gestion extends AppCompatActivity
                 fragmentClass = ServiciosDisponibles.class;
                 break;
 
+            case R.id.nav_soporte:
+                fragmentClass = Soporte.class;
+                break;
+
+            case R.id.nav_configuracion:
+                fragmentClass = Configuracion.class;
+                break;
+
             case R.id.nav_cerrar_sesion:
+
                 AlertDialog.Builder builder = new AlertDialog.Builder(Gestion.this);
                 builder
                         .setMessage("¿Deseas cerrar sesión? Se eliminaran los datos de ingreso.")
@@ -367,6 +378,8 @@ public class Gestion extends AppCompatActivity
 
                     }
                 }).show();
+
+
 
             default:
                 fragmentClass = SolicitarServicio.class;

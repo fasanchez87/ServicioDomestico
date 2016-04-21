@@ -47,9 +47,11 @@
         android:id="@+id/textViewValorServicio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="17,000 COP"
+        android:text="17,000"
+        android:textStyle="bold"
         android:layout_below="@+id/textViewDescServicio"
-        android:layout_toEndOf="@+id/imageItemService" />
+        android:layout_toEndOf="@+id/imageItemService"
+        android:textColor="@color/colorAccent"/>
 
     <CheckBox
         android:layout_width="wrap_content"

@@ -65,6 +65,7 @@ public class MyGcmPushReceiver extends GcmListenerService
         String pantallaMostrarPushAndroid = bundle.getString("pantallaMostrarPushAndroid");
        // String priority = bundle.getString("priority");
         String datosEsteticista = bundle.getString("datosEsteticista");//aqui esta el error
+        String datosCliente = bundle.getString("datosCliente");//aqui esta el error
         Log.e(TAG, "From: " + from);
         Log.e(TAG, "Title: " + title);
         Log.e(TAG, "message: " + message);
@@ -154,16 +155,23 @@ public class MyGcmPushReceiver extends GcmListenerService
                 else
                 {
 
-                    Log.e(TAG, "PRUEBA ENTRA PUSH SERVICIO");
+
 
 
                         Intent pushNotification = new Intent(Config.PUSH_NOTIFICATION_PANTALLA);
                         pushNotification.putExtra("datosEsteticista", datosEsteticista);
+                        pushNotification.putExtra("datosCliente", datosCliente);
                         LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotification);
 
                         // play notification sound
                         NotificationUtils notificationUtils = new NotificationUtils();
                         notificationUtils.playNotificationSound();
+
+                        sharedPreferences.putString("datosCliente", datosCliente); //datos del cliente que hizo la solicutud.
+                         Log.e(TAG, sharedPreferences.getString("datosCliente"));
+                         Log.e(TAG, sharedPreferences.getString("datosEsteticista"));
+                         Log.e(TAG+" "+"datosEsteticista", ""+datosEsteticista);
+
 
                 }
 

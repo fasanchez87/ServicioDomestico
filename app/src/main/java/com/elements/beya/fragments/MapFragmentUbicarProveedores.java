@@ -173,12 +173,14 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                     progressDialog.dismiss();
 
                     String datosEsteticista = intent.getExtras().getString("datosEsteticista");
+                    String datosCliente = intent.getExtras().getString("datosCliente");
 
                     /*sharedPreferences.remove("datosEsteticista");
                     sharedPreferences.putString("datosEsteticista",intent.getExtras().getString("datosEsteticista"));*/
 
                     Intent ordenServicio = new Intent(MapFragmentUbicarProveedores.this.getActivity(), AceptacionServicio.class);
-                    ordenServicio.putExtra("codigoSolicitud", datosEsteticista);
+                    ordenServicio.putExtra("datosEsteticista", datosEsteticista);
+                    ordenServicio.putExtra("datosCliente", datosCliente);
                     startActivity(ordenServicio);
 
                   /*  try

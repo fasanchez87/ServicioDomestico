@@ -207,11 +207,11 @@ public class ServiceActualizarUbicacionProveedor extends Service
                     _webServiceUpdatePositionProvider( ( mLatitude + ":" + mLongitude ) ,
                             sharedPreferences.getString("serialUsuario") , sharedPreferences.getString("statusOnline"));
 
-                    Toast.makeText(getApplicationContext(),  ( mLatitude + ":" + mLongitude ) ,
+                 /*   Toast.makeText(getApplicationContext(),  ( mLatitude + ":" + mLongitude ) ,
                             Toast.LENGTH_SHORT).show();
 
                     Toast.makeText(getApplicationContext(), sharedPreferences.getString("statusOnline"),
-                            Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_SHORT).show();*/
                 }
 
             });

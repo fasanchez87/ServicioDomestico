@@ -20,12 +20,13 @@ public class Servicio
     {
     }
 
-    public Servicio(String id, String nombreServicio, String descripcionServicio, String valorServicio)
+    public Servicio(String id, String nombreServicio, String descripcionServicio, String valorServicio, boolean isSelected)
     {
         this.nombreServicio = nombreServicio;
         this.descripcionServicio = descripcionServicio;
         this.valorServicio = valorServicio;
         this.id = id;
+        this.isSelected = isSelected;
 
     }
 

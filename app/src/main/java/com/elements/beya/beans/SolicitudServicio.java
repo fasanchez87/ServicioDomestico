@@ -11,10 +11,18 @@ public class SolicitudServicio
     private String FechaSolicitudServicio;
 
 
+
+    private String telefonoClienteSolicitudServicio;
+
+
     private String HoraSolicitudServicio;
     private String UbicacionSolicitudServicio;
     private String LugarSolicitudServicio;
     private String estadoSolicitud;
+
+
+    private String nombreUsuario;
+
 
 
 
@@ -24,13 +32,25 @@ public class SolicitudServicio
 
     }
 
-    public SolicitudServicio(String codigoSolicitudServicio , String FechaSolicitudServicio, String UbicacionSolicitudServicio, String codigoClienteSolicitudServicio)
+    public SolicitudServicio(String codigoSolicitudServicio , String FechaSolicitudServicio,
+                             String UbicacionSolicitudServicio, String codigoClienteSolicitudServicio , String nombreUsuario, String telefonoClienteSolicitudServicio)
     {
         this.codigoSolicitudServicio = codigoSolicitudServicio;
         this.codigoClienteSolicitudServicio = codigoClienteSolicitudServicio;
         this.FechaSolicitudServicio = FechaSolicitudServicio;
         this.UbicacionSolicitudServicio = UbicacionSolicitudServicio;
+        this.nombreUsuario = nombreUsuario;
+        this.telefonoClienteSolicitudServicio = telefonoClienteSolicitudServicio;
     }
+
+    public String getNombreUsuario() {
+        return nombreUsuario;
+    }
+
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
+    }
+
 
 
     public String getCodigoSolicitudServicio() {
@@ -39,6 +59,14 @@ public class SolicitudServicio
 
     public void setCodigoSolicitudServicio(String codigoSolicitudServicio) {
         this.codigoSolicitudServicio = codigoSolicitudServicio;
+    }
+
+    public String getTelefonoClienteSolicitudServicio() {
+        return telefonoClienteSolicitudServicio;
+    }
+
+    public void setTelefonoClienteSolicitudServicio(String telefonoClienteSolicitudServicio) {
+        this.telefonoClienteSolicitudServicio = telefonoClienteSolicitudServicio;
     }
 
     public String getFechaSolicitudServicio() {

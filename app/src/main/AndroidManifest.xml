@@ -98,12 +98,10 @@
             android:name=".services.ServiceActualizarUbicacionProveedor"
             android:enabled="true"
             android:exported="false" />
-
         <service
             android:name=".services.ServiceObtenerUbicacionEsteticista"
             android:enabled="true"
             android:exported="false" />
-
 
         <!-- START Added for GCM -->
 
@@ -119,15 +117,14 @@
         </receiver>
 
         <service
-            android:name="com.elements.beya.gcm.MyGcmPushReceiver"
+            android:name=".gcm.MyGcmPushReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
-
         <service
-            android:name="com.elements.beya.gcm.GcmIntentService"
+            android:name=".gcm.GcmIntentService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID" />
@@ -139,9 +136,11 @@
         <activity
             android:name=".activities.AceptacionServicio"
             android:label="Orden Servicio"
-            android:theme="@style/AppTheme.NoActionBar"/>
-
-
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.AceptacionServicioEsteticista"
+            android:label="@string/title_activity_aceptacion_servicio_esteticista"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

@@ -196,6 +196,9 @@ public class ServiciosDisponibles extends Fragment
                 intent.putExtra("codigoSolicitud",solicitudServicio.getCodigoSolicitudServicio());
                 intent.putExtra("codigoCliente",solicitudServicio.getCodigoClienteSolicitudServicio());
                 intent.putExtra("ubicacionCliente",solicitudServicio.getUbicacionSolicitudServicio());
+                intent.putExtra("nombreUsuario",solicitudServicio.getNombreUsuario());
+                intent.putExtra("fechaSolicitud",solicitudServicio.getFechaSolicitudServicio());
+                intent.putExtra("telefonoUsuario",solicitudServicio.getTelefonoClienteSolicitudServicio());
                 startActivity(intent);
 
                 sharedPreferences.putHashMapObjectServicio(hashTableSolicitudDetallada);
@@ -261,6 +264,9 @@ public class ServiciosDisponibles extends Fragment
 
                                     solicitudServicio.setFechaSolicitudServicio(fechaSolicitud.get(0));
                                     solicitudServicio.setHoraSolicitudServicio(fechaSolicitud.get(1));
+                                    solicitudServicio.setNombreUsuario(object.getString("nombreCompleto"));
+                                    solicitudServicio.setFechaSolicitudServicio(object.getString("fecSolicitudCliente"));
+                                    solicitudServicio.setTelefonoClienteSolicitudServicio(object.getString("telefonoUsuario"));
 
                                     solicitudServicio.setUbicacionSolicitudServicio(object.getString("ubicacionCliente"));
                                    // solicitudServicio.setEstadoSolicitud(object.getString("esAtendida"));

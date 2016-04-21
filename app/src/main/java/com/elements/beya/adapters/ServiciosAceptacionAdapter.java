@@ -16,14 +16,23 @@ import android.widget.Toast;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.elements.beya.R;
+import com.elements.beya.activities.AceptacionServicio;
 import com.elements.beya.beans.Servicio;
+import com.elements.beya.fragments.SolicitarServicio;
+import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 
 import java.util.List;
+
+import static com.google.android.gms.internal.zzir.runOnUiThread;
+
 public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosAceptacionAdapter.MyViewHolder>
 {
 
     private List<Servicio> serviciosList;
+    public static int valorTotal = 0;
+    public static int valorAcarreado = 0;
+
 
     public class MyViewHolder extends RecyclerView.ViewHolder
     {
@@ -80,13 +89,53 @@ public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosA
                 CheckBox cb = (CheckBox) v;
                 Servicio s = (Servicio) cb.getTag();
 
-                s.setSelected(cb.isChecked());
-                serviciosList.get(position).setSelected(cb.isChecked());
+                valorAcarreado = 0;
 
-               /* Toast.makeText(
-                        v.getContext(),
-                        "Clicked on Checkbox: " + cb.getText() + " is "
-                                + cb.isChecked(), Toast.LENGTH_LONG).show();*/
+                if(cb.isChecked())
+                {
+                    //sumo si selecciona servicios
+                    valorTotal = valorTotal+(Integer.parseInt(s.getValorServicio()));
+                    Toast.makeText(v.getContext(), ""+valorTotal, Toast.LENGTH_LONG).show();
+
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+
+                            valorAcarreado = Integer.parseInt(AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.getText().toString());
+                            valorAcarreado += valorTotal;
+                            AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText("" + valorAcarreado);
+
+                        }
+                    });
+
+
+                }
+
+                else
+                {
+                    //resto si lo quita
+                    valorTotal = valorTotal-(Integer.parseInt(s.getValorServicio()));
+                    // holder.valorTotalTextView.setText(""+valorTotal);
+                    //Toast.makeText(v.getContext(), ""+valorTotal, Toast.LENGTH_LONG).show();
+
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            valorAcarreado = Integer.parseInt(AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.getText().toString());
+                            valorAcarreado -= valorTotal;
+                            AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText("" + valorAcarreado);
+
+                        }
+                    });
+
+                }
+
+                /*sharedPreferences = new gestionSharedPreferences(v.getContext());
+                sharedPreferences.putInt("valorTotalServicios", valorTotal);*/
             }
         });
 

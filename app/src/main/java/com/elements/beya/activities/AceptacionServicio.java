@@ -68,6 +68,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -80,19 +81,23 @@ import java.util.TimerTask;
 public class AceptacionServicio extends AppCompatActivity implements LocationListener, GoogleMap.OnMarkerClickListener
 {
 
+
+
     NetworkImageView imagenEsteticista;
 
     TextView nombreEsteticista, apellidoEsteticista, kilometrosDistanciaEsteticista,
              tiempoLlegadaEsteticista, valorTotalServiciosSeleccionados, telefonoEsteticistaAceptacionServicios;
 
+    public static TextView precioTemporalAceptacionServicios;
 
+   public static TextView valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios;
 
     private String distancia;
     private String tiempo;
 
     ServiceObtenerUbicacionEsteticista serviceObtenerUbicacionEsteticista;
     private Timer mTimer = null;
-    public static final long NOTIFY_INTERVAL = 5 * 1000; // 5 seconds
+    public static final long NOTIFY_INTERVAL = 2 * 1000; // 5 seconds
 
 
     private Handler mHandler = new Handler();
@@ -146,6 +151,12 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
     private String _urlWebService;
 
     private String datosEsteticista;
+    private String datosCliente;
+    MarkerOptions options;
+    Marker mapMarker;
+    LatLng latLng;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -155,8 +166,11 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarAceptacionServicio);
         setSupportActionBar(toolbar);
 
-
         serviceObtenerUbicacionEsteticista = new ServiceObtenerUbicacionEsteticista();
+
+        precioTemporalAceptacionServicios = (TextView) findViewById(R.id.precioTemporalAceptacionServicios);
+
+
 
         sharedPreferences = new gestionSharedPreferences(this);
 
@@ -173,8 +187,25 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         valorTotalServiciosSeleccionados = (TextView)this.findViewById(R.id.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios);
         telefonoEsteticistaAceptacionServicios = (TextView)this.findViewById(R.id.telefonoEsteticistaAceptacionServicios);
 
+        valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios = (TextView) findViewById(R.id.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios);
+
         botonFinalizarOrdenServicio = (Button) this.findViewById(R.id.botonFinalizarServiciosEsteticistaAceptacionServicios);
         botonCancelarOrdenServicio = (Button) this.findViewById(R.id.botonCancelarServicioEsteticistaAceptacionServicios);
+       /* botonAceptarServicio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
+                builder
+                        .setMessage("¿Esta seguro de aceptar el servicio?" + "\n" + "Se procedera a atender la solicitud.")
+                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+
+
+                    }
+                }).show();
+            }
+        });*/
 
         checkBoxServicio = (CheckBox) this.findViewById(R.id.checkBoxServicio);
 
@@ -194,16 +225,19 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
             if(extras == null)
             {
                 datosEsteticista= null;
+                datosCliente= null;
             }
             else
             {
-                datosEsteticista= extras.getString("codigoSolicitud");
+                datosEsteticista= extras.getString("datosEsteticista");
+                datosCliente= extras.getString("datosCliente");
             }
         }
 
         else
         {
-            datosEsteticista= (String) savedInstanceState.getSerializable("codigoSolicitud");
+            datosEsteticista= (String) savedInstanceState.getSerializable("datosEsteticista");
+            datosCliente= (String) savedInstanceState.getSerializable("datosCliente");
         }
 
         Log.w("ACEPTACION SERVICIO", datosEsteticista);
@@ -352,53 +386,27 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
             // run on another thread
             mHandler.post(new Runnable()
             {
-
                 @Override
                 public void run()
                 {
-                    // display toast
 
                     serviceObtenerUbicacionEsteticista = new ServiceObtenerUbicacionEsteticista();
-
-                    Toast.makeText(getApplicationContext(), "desde aceptacion servicios: "+serviceObtenerUbicacionEsteticista.getLatitud() + " : " +
-                                    serviceObtenerUbicacionEsteticista.getLongitud() + " : " +
+/*
+                    Toast.makeText(getApplicationContext(), "desde aceptacion servicios: "+serviceObtenerUbicacionEsteticista.getLatitud()
+                                    + " : " +serviceObtenerUbicacionEsteticista.getLongitud() + " : " +
                                     serviceObtenerUbicacionEsteticista.getFechaMovimiento(),
-                            Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_SHORT).show();*/
 
-                    latitudEsteticista = serviceObtenerUbicacionEsteticista.getLatitud();
-                    latitudEsteticista = serviceObtenerUbicacionEsteticista.getLongitud();
-
-                    markerOptions = new MarkerOptions();
-                    final LatLng latLng = new LatLng( latitudEsteticista ,
-                            latitudEsteticista );
-
-                    markerOptions.position(latLng);
-                    markerOptions.title("Tu esteticista se movio..viene aqui!");
-                    markerOptions.snippet(serviceObtenerUbicacionEsteticista.getFechaMovimiento());
-                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.beya_logo_on_map));
-
+                    options = new MarkerOptions();
+                    latLng = new LatLng( serviceObtenerUbicacionEsteticista.getLatitud() ,
+                            serviceObtenerUbicacionEsteticista.getLongitud() );
+                    options.position(latLng);
+                    mGoogleMap.addMarker(new MarkerOptions().position(latLng).title(nombreEsteticista.getText().toString())).
+                            setSnippet("" + serviceObtenerUbicacionEsteticista.getFechaMovimiento());
+                    //mapMarker = mGoogleMap.addMarker(options);
+                    //LatLng latLng
+                    //mapMarker.setTitle(""+serviceObtenerUbicacionEsteticista.getFechaMovimiento());
                     Log.d("AceptacionServicio", "Marker added.............................");
-
-                    mGoogleMap.addMarker(markerOptions);
-           /* Glide.with(MapFragmentUbicarProveedores.this.getActivity()).
-                    load("http://52.72.85.214/ws/images/user1.jpg")
-                    .asBitmap()
-                    .fitCenter()
-                    .into(new SimpleTarget<Bitmap>() {
-                        @Override
-                        public void onResourceReady(Bitmap bitmap, GlideAnimation<? super Bitmap> glideAnimation) {
-                            mGoogleMap.addMarker(new MarkerOptions()
-                                    .position(latLng)
-                                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomMarkerView, bitmap))).anchor(0.5f, 0.5f));
-                            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13f));
-
-
-                        }
-                    });*/
-
-
-
-
 
 
                 }
@@ -499,6 +507,8 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
             nombreEsteticista.setText(nombreUsuario);
             //apellidoEsteticista.setText(apellidoUsuario);
             telefonoEsteticistaAceptacionServicios.setText(telefonoUsuario);
+            precioTemporalAceptacionServicios.setText("Subtotal: "+sharedPreferences.getInt("totalServiciosEscogidosEnSolicitarServicio"));
+            valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText(""+sharedPreferences.getInt("totalServiciosEscogidosEnSolicitarServicio"));
 
           /*  markerOptions = new MarkerOptions();
             LatLng latLng = new LatLng(getLatitudUsuario(),getLongitudUsuario());//esto es lo dinamico!
@@ -711,9 +721,6 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                                             //finish();
                                         }
                                     }).show();
-
-
-
                         }
 
                         else
@@ -806,8 +813,8 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                             JSONObject distOb = newDisTimeOb.getJSONObject("distance");
                             JSONObject timeOb = newDisTimeOb.getJSONObject("duration");
 
-                            kilometrosDistanciaEsteticista.setText("" + distOb.getString("text"));
-                            tiempoLlegadaEsteticista.setText("" + timeOb.getString("text"));
+                            kilometrosDistanciaEsteticista.setText("Estoy a: " + distOb.getString("text"));
+                            tiempoLlegadaEsteticista.setText("Llego en Aprox: " + timeOb.getString("text"));
 
 
                         }
@@ -909,7 +916,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                         if (error instanceof ServerError)
                         {
 
-                           /* AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this.getApplicationContext());
                             builder
                                     .setMessage("Error server, sin respuesta del servidor.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -921,7 +928,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                                             //startActivity(intent);
                                             //finish();
                                         }
-                                    }).show();*/
+                                    }).show();
 
 
 
