@@ -103,11 +103,7 @@ public class SolicitarServicio extends Fragment
 
     }
 
-    public SolicitarServicio(Context context)
-    {
-        // Required empty public constructor
 
-    }
 
 
 
