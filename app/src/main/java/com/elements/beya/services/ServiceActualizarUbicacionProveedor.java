@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
-import android.view.View;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -26,6 +25,9 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.activities.Gestion;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,13 +39,10 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 
 public class ServiceActualizarUbicacionProveedor extends Service
@@ -51,18 +50,21 @@ public class ServiceActualizarUbicacionProveedor extends Service
 
     private static final String TAG = "ServiceActualizarUbicacionProveedor";
     private LocationManager mLocationManager = null;
-    private static final int LOCATION_INTERVAL = 1000;
-    private static final float LOCATION_DISTANCE = 10f;
+    private static final int LOCATION_INTERVAL = 300000;
+    private static final float LOCATION_DISTANCE = 100f;
 
     private double mLatitude = 0;
     private double mLongitude = 0;
+
+    private LocationRequest lr;
+
 
 
     Gestion gestion;
     private gestionSharedPreferences sharedPreferences;
 
 
-    public static final long NOTIFY_INTERVAL = 5 * 1000; // 5 seconds
+    public static final long NOTIFY_INTERVAL = 20 * 1000; // 5 seconds
     // run on another Thread to avoid crash
     private Handler mHandler = new Handler();
     // timer handling
@@ -227,14 +229,22 @@ public class ServiceActualizarUbicacionProveedor extends Service
 
 
 
-    private class LocationListener implements android.location.LocationListener
+    private class LocationListener implements android.location.LocationListener, GoogleApiClient.ConnectionCallbacks,
+            GoogleApiClient.OnConnectionFailedListener
     {
         Location mLastLocation;
+        private static final long UPDATE_INTERVAL = 300000;
+        private static final int FASTEST_INTERVAL = 60000;
+        private LocationRequest lr;
 
         public LocationListener(String provider)
         {
             Log.e(TAG, "LocationListener " + provider);
             mLastLocation = new Location(provider);
+            lr = LocationRequest.create();
+            lr.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            lr.setInterval(UPDATE_INTERVAL);
+            lr.setFastestInterval(FASTEST_INTERVAL);
         }
 
         @Override
@@ -263,6 +273,21 @@ public class ServiceActualizarUbicacionProveedor extends Service
         public void onStatusChanged(String provider, int status, Bundle extras)
         {
             Log.e(TAG, "onStatusChanged: " + provider);
+        }
+
+        @Override
+        public void onConnected(Bundle bundle) {
+
+        }
+
+        @Override
+        public void onConnectionSuspended(int i) {
+
+        }
+
+        @Override
+        public void onConnectionFailed(ConnectionResult connectionResult) {
+
         }
     }
 
@@ -457,7 +482,7 @@ public class ServiceActualizarUbicacionProveedor extends Service
 
         };
 
-        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        //jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
     }

@@ -12,6 +12,10 @@ public class SolicitudServicio
 
 
 
+    private String direccion;
+
+
+
     private String telefonoClienteSolicitudServicio;
 
 
@@ -19,6 +23,10 @@ public class SolicitudServicio
     private String UbicacionSolicitudServicio;
     private String LugarSolicitudServicio;
     private String estadoSolicitud;
+
+
+
+    private String costoSolicitud;
 
 
     private String nombreUsuario;
@@ -43,6 +51,14 @@ public class SolicitudServicio
         this.telefonoClienteSolicitudServicio = telefonoClienteSolicitudServicio;
     }
 
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
+    }
+
     public String getNombreUsuario() {
         return nombreUsuario;
     }
@@ -51,7 +67,13 @@ public class SolicitudServicio
         this.nombreUsuario = nombreUsuario;
     }
 
+    public String getCostoSolicitud() {
+        return costoSolicitud;
+    }
 
+    public void setCostoSolicitud(String costoSolicitud) {
+        this.costoSolicitud = costoSolicitud;
+    }
 
     public String getCodigoSolicitudServicio() {
         return codigoSolicitudServicio;

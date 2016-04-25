@@ -109,6 +109,7 @@ public class ServiciosDisponibles extends Fragment
 
                     Log.w("ALERTA", "Push notification is received!"+intent.getStringExtra("message"));
 
+
                     solicitudesServicios.clear();
                     //data.addAll(datas);
                     //notifyDataSetChanged();
@@ -199,6 +200,8 @@ public class ServiciosDisponibles extends Fragment
                 intent.putExtra("nombreUsuario",solicitudServicio.getNombreUsuario());
                 intent.putExtra("fechaSolicitud",solicitudServicio.getFechaSolicitudServicio());
                 intent.putExtra("telefonoUsuario",solicitudServicio.getTelefonoClienteSolicitudServicio());
+                intent.putExtra("direccionDomicilio",solicitudServicio.getDireccion());
+                intent.putExtra("costoSolicitud",solicitudServicio.getCostoSolicitud());
                 startActivity(intent);
 
                 sharedPreferences.putHashMapObjectServicio(hashTableSolicitudDetallada);
@@ -267,9 +270,11 @@ public class ServiciosDisponibles extends Fragment
                                     solicitudServicio.setNombreUsuario(object.getString("nombreCompleto"));
                                     solicitudServicio.setFechaSolicitudServicio(object.getString("fecSolicitudCliente"));
                                     solicitudServicio.setTelefonoClienteSolicitudServicio(object.getString("telefonoUsuario"));
+                                    solicitudServicio.setDireccion(object.getString("direccionDomicilio"));
 
                                     solicitudServicio.setUbicacionSolicitudServicio(object.getString("ubicacionCliente"));
-                                   // solicitudServicio.setEstadoSolicitud(object.getString("esAtendida"));
+                                    solicitudServicio.setCostoSolicitud(object.getString("costoSolicitud"));
+                                    // solicitudServicio.setEstadoSolicitud(object.getString("esAtendida"));
 
                                     solicitudesServicios.add(solicitudServicio);
                                     listadoServicios = object.getJSONArray("servicios");
@@ -529,7 +534,7 @@ public class ServiciosDisponibles extends Fragment
             }
         };
 
-        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 6, DefaultRetryPolicy.DEFAULT_MAX_RETRIES));
+//        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 6, DefaultRetryPolicy.DEFAULT_MAX_RETRIES));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
     }

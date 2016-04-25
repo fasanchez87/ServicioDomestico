@@ -4,10 +4,8 @@ import android.app.AlertDialog;
 import android.app.Service;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -31,8 +29,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -47,10 +43,11 @@ public class ServiceObtenerUbicacionEsteticista extends Service
     public static double latitud;
     public static double longitud;
     public static String fechaMovimiento;
+    private static final String TAG = "ServiceActualizarUbicacionProveedor";
 
-   AceptacionServicio aceptacionServicio;
+    AceptacionServicio aceptacionServicio;
 
-    public static final long NOTIFY_INTERVAL = 5 * 1000; // 10 seconds
+    public static final long NOTIFY_INTERVAL = 10 * 1000; // 5 seconds
     // run on another Thread to avoid crash
     private Handler mHandler = new Handler();
     // timer handling
@@ -73,9 +70,6 @@ public class ServiceObtenerUbicacionEsteticista extends Service
         gestion = new Gestion();
         sharedPreferences = new gestionSharedPreferences(getApplicationContext());
         aceptacionServicio = new AceptacionServicio();
-
-
-
     }
 
     @Override
@@ -129,12 +123,8 @@ public class ServiceObtenerUbicacionEsteticista extends Service
                 @Override
                 public void run()
                 {
-                                    // display toast
-
-
 
                     _webServiceObtenerUbicacionEsteticista();
-
 
                   /*  Toast.makeText(getApplicationContext(), getLatitud()+" : "+getLongitud()+" : "+getFechaMovimiento(),
                             Toast.LENGTH_SHORT).show();
@@ -147,13 +137,6 @@ public class ServiceObtenerUbicacionEsteticista extends Service
                 }
 
             });
-        }
-
-        private String getDateTime()
-        {
-            // get date time in custom format
-            SimpleDateFormat sdf = new SimpleDateFormat("[yyyy/MM/dd - HH:mm:ss]");
-            return sdf.format(new Date());
         }
 
     }
@@ -192,13 +175,6 @@ public class ServiceObtenerUbicacionEsteticista extends Service
     {
         _urlWebService = "http://52.72.85.214/ws/ObtenerUbicacionEsteticista";
 
-       /* String[] parts = locationUser.split(":");
-        final String latitudUsuario = parts[0];
-        final String longitudUsuario = parts[1];*/
-
-      /*  Toast.makeText(getApplicationContext(), "LATITUD::" + latitudUsuario + "  LONGITUD::" + longitudUsuario + " SERIALUSER:: " + serialUser,
-                Toast.LENGTH_SHORT).show();*/
-
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
                 new Response.Listener<JSONObject>()
                 {
@@ -221,10 +197,9 @@ public class ServiceObtenerUbicacionEsteticista extends Service
                                     setLongitud(Double.parseDouble(ubicacion.getJSONObject(i).getString("longitudUsuario").toString()));
                                     setFechaMovimiento(ubicacion.getJSONObject(i).getString("fecMovimiento").toString());
 
-                                    Log.i("ServiceObtenerUbicacionEsteticista",""+getLatitud());
-                                    Log.i("ServiceObtenerUbicacionEsteticista", ""+getLongitud());
-                                    Log.i("ServiceObtenerUbicacionEsteticista",""+getFechaMovimiento());
-
+                                    Log.i(TAG, "" + getLatitud());
+                                    Log.i(TAG, ""+getLongitud());
+                                    Log.i(TAG,""+getFechaMovimiento());
                                 }
 
                             }
@@ -233,7 +208,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
                                 if (!status)
                                 {
-                                  /*  AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
+                                  AlertDialog.Builder builder = new AlertDialog.Builder(ServiceObtenerUbicacionEsteticista.this);
                                     builder
                                             .setMessage(message.toString())
                                             .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
@@ -243,7 +218,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
                                                     //startActivity(intent);
                                                     //finish();
                                                 }
-                                            }).show();*/
+                                            }).show();
 
                                 }
 
@@ -388,7 +363,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
         };
 
-        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        //jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
     }

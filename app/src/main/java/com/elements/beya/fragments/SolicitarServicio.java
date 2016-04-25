@@ -15,12 +15,16 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +44,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.R;
 import com.elements.beya.activities.Gestion;
+import com.elements.beya.adapters.ServiciosAceptacionAdapter;
 import com.elements.beya.adapters.ServiciosAdapter;
 import com.elements.beya.beans.Proveedor;
 import com.elements.beya.beans.Servicio;
@@ -87,11 +92,12 @@ public class SolicitarServicio extends Fragment
     private ArrayList<Servicio> servicioList = new ArrayList<>();
     private ArrayList<Servicio> serviciosSeleccionadosList;
     private ArrayList<Proveedor> provedoresList;
+    private LinearLayout linearLayoutPrecioTotal;
 
     private RecyclerView recyclerView;
     private ServiciosAdapter mAdapter;
 
-    private Button buttonSeleccionarServicios;
+   // private Button buttonSeleccionarServicios;
 
     private Cache cache;
 
@@ -112,14 +118,10 @@ public class SolicitarServicio extends Fragment
     {
         super.onCreate(savedInstanceState);
 
-
-
         sharedPreferences = new gestionSharedPreferences(this.getActivity());
         provedoresList = new ArrayList<Proveedor>();
         serviciosSeleccionadosList = new ArrayList<Servicio>();
         cache = ControllerSingleton.getInstance().getReqQueue().getCache();
-
-
 
     }
 
@@ -129,7 +131,7 @@ public class SolicitarServicio extends Fragment
         // Inflate the layout for this fragment
 
 
-
+        setHasOptionsMenu(true);
 
         return inflater.inflate(R.layout.fragment_solicitar_servicio, container, false);
     }
@@ -139,13 +141,16 @@ public class SolicitarServicio extends Fragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
         valorTotalTextView = (TextView) this.getActivity().findViewById(R.id.valorTotalServiciosSeleccionadosSolicitarServicios);
+
+        linearLayoutPrecioTotal = (LinearLayout) getActivity().findViewById(R.id.linearLayoutPrecioTotalSolicitarServicioToMap);
 
 
         recyclerView = (RecyclerView) this.getActivity().findViewById(R.id.recycler_view);
 
         progressBar = (ProgressBar) this.getActivity().findViewById(R.id.toolbar_progress_bar);
-        buttonSeleccionarServicios = (Button) this.getActivity().findViewById(R.id.buttonSeleccionarServicioFragmentSolicitarServicio);
+        //buttonSeleccionarServicios = (Button) this.getActivity().findViewById(R.id.buttonSeleccionarServicioFragmentSolicitarServicio);
 
         checkBoxServicio = (CheckBox) this.getActivity().findViewById(R.id.checkBoxServicio);
 
@@ -160,19 +165,58 @@ public class SolicitarServicio extends Fragment
         recyclerView.addItemDecoration(new DividerItemDecoration(this.getActivity(), LinearLayoutManager.VERTICAL));
         recyclerView.setAdapter(mAdapter);
 
-        buttonSeleccionarServicios.setOnClickListener(new View.OnClickListener()
+       /* buttonSeleccionarServicios.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
+            }
+        });*/
+
+        recyclerView.addOnItemTouchListener(new RecyclerTouchListener(this.getActivity(), recyclerView, new ClickListener()
+        {
+            @Override
+            public void onClick(View view, int position)
+            {
+                Servicio servicio = servicioList.get(position);
+                //Toast.makeText(SolicitarServicio.this.getActivity().getApplicationContext(), servicio.getNombreServicio().toString() + " is selected!", Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void onLongClick(View view, int position)
+            {
+
+            }
+        }));
+
+        _webServiceGetServices();
+        mAdapter.notifyDataSetChanged();
+
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+    {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.solicitar_servicio_menu, menu);
+        /*SolicitarServicio.this.getActivity().getMenuInflater().inflate(R.menu.solicitar_servicio_menu, menu);*/
+        super.onCreateOptionsMenu(menu,inflater);
+
+    }
+
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.action_buscar_esteticista_on_map:
+
                 String data = "";
                 String serviciosEscogidosParaPush = "";
-
-
-                sharedPreferences.putString("valorTotalServicios",valorTotalTextView.getText().toString());
-
-
-
+                sharedPreferences.putString("valorTotalServiciosTemporalSolicitarServicio",valorTotalTextView.getText().toString());
 
                 List<Servicio> lista_servicios = ((ServiciosAdapter) mAdapter).getServiciosList();
 
@@ -209,7 +253,6 @@ public class SolicitarServicio extends Fragment
                                     //finish();
                                 }
                             }).show();
-                    return;
                 }
 
                 else
@@ -217,8 +260,14 @@ public class SolicitarServicio extends Fragment
                     //BORRAR ULTIMA COMA Y SEPARARLOS POR DOS PUNTOS ':'
                     String serviciosEscogidos = data.substring(0, data.lastIndexOf(","));
                     sharedPreferences.putString("serviciosEscogidos", serviciosEscogidos);
+                    sharedPreferences.putString("serviciosEscogidosEnSolicitarServicio", serviciosEscogidos);
+
+                  /*  Toast.makeText(SolicitarServicio.this.getActivity(),
+                            "Selected Services: \n" + serviciosEscogidos+" "+sharedPreferences.getString("valorTotalServicios"), Toast.LENGTH_LONG)
+                            .show();*/
+
                     Toast.makeText(SolicitarServicio.this.getActivity(),
-                            "Selected Services: \n" + serviciosEscogidos, Toast.LENGTH_LONG)
+                            "Selected Services: \n"+" "+sharedPreferences.getString("valorTotalServiciosTemporalSolicitarServicio"), Toast.LENGTH_LONG)
                             .show();
 
                     _webServiceGetProviderServicesOnMAP(serviciosEscogidos);
@@ -226,29 +275,13 @@ public class SolicitarServicio extends Fragment
                 }
 
 
-            }
-        });
-
-        recyclerView.addOnItemTouchListener(new RecyclerTouchListener(this.getActivity(), recyclerView, new ClickListener()
-        {
-            @Override
-            public void onClick(View view, int position)
-            {
-                Servicio servicio = servicioList.get(position);
-                //Toast.makeText(SolicitarServicio.this.getActivity().getApplicationContext(), servicio.getNombreServicio().toString() + " is selected!", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onLongClick(View view, int position)
-            {
-
-            }
-        }));
-
-        _webServiceGetServices();
-        mAdapter.notifyDataSetChanged();
-
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
+
+
+
 
     public boolean isFoundService() {
         return foundService;
@@ -584,7 +617,7 @@ public class SolicitarServicio extends Fragment
         _urlWebService = "http://52.72.85.214/ws/ObtenerServicios";
 
         progressBar.setVisibility(View.VISIBLE);
-        buttonSeleccionarServicios.setVisibility(View.GONE);
+//        buttonSeleccionarServicios.setVisibility(View.GONE);
 
 
         Cache.Entry entry = cache.get(_urlWebService);
@@ -641,7 +674,8 @@ public class SolicitarServicio extends Fragment
                             }
 
                             progressBar.setVisibility(View.GONE);
-                            buttonSeleccionarServicios.setVisibility(View.VISIBLE);
+                            linearLayoutPrecioTotal.setVisibility(View.VISIBLE);
+//                            buttonSeleccionarServicios.setVisibility(View.VISIBLE);
                             mAdapter.notifyDataSetChanged();
 
                         }
@@ -649,7 +683,7 @@ public class SolicitarServicio extends Fragment
                         {
 
                             progressBar.setVisibility(View.GONE);
-                            buttonSeleccionarServicios.setVisibility(View.GONE);
+                           // buttonSeleccionarServicios.setVisibility(View.GONE);
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(SolicitarServicio.this.getActivity());
                             builder
@@ -808,7 +842,7 @@ public class SolicitarServicio extends Fragment
                         }
 
                         progressBar.setVisibility(View.GONE);
-                        buttonSeleccionarServicios.setVisibility(View.GONE);
+                       // buttonSeleccionarServicios.setVisibility(View.GONE);
                     }
 
 

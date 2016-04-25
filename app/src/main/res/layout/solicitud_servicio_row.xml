@@ -14,7 +14,7 @@
 
     <TextView
         android:id="@+id/textViewCodigoSol"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/title"
         android:textSize="16dp"
         android:textStyle="bold"
         android:layout_alignParentTop="true"
@@ -79,11 +79,12 @@
         android:id="@+id/imageView2"
         android:src="@drawable/ic_pan_tool_black_24dp"
         android:layout_above="@+id/textViewHoraSolicitudServicio"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:visibility="visible"/>
 
     <TextView
         android:id="@+id/textViewCodigoSolicitud"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/title"
         android:textSize="16dp"
         android:textStyle="bold"
         android:layout_width="wrap_content"

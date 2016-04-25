@@ -9,6 +9,7 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.elements.beya.activities.AceptacionServicio;
 import com.elements.beya.activities.SolitudServicioDetallada;
+import com.elements.beya.adapters.ServiciosAdapter;
 import com.elements.beya.app.Config;
 import com.elements.beya.beans.Servicio;
 import com.elements.beya.vars.vars;
@@ -20,6 +21,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -35,14 +37,19 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.DrawableRes;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -139,10 +146,10 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
     private String _urlWebService;
 
-    private Button buttonSeleccionarServicioFragmentSolicitarServicio;
 
     Button buttonFindCoach;
     LocationManager lm;
+
 
     public MapFragmentUbicarProveedores()
     {
@@ -235,11 +242,13 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
 
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
 
+        setHasOptionsMenu(true);
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_map_fragment_ubicar_proveedores, container, false);
     }
@@ -324,21 +333,85 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
             cargarProveedoresServicios();
 
-            //EVENTO BOTON SOLICITAR SERVICIOS A LOS PROVEEDORES DE SERVICIO MEDIANTE PUSH.
-            buttonSeleccionarServicioFragmentSolicitarServicio = (Button) this.getActivity().
-                    findViewById(R.id.buttonSeleccionarServicioFragmentSolicitarServicio);
-            buttonSeleccionarServicioFragmentSolicitarServicio.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    _webServiceEnviarNotificacionPushATodos( sharedPreferences.getString("serialUsuario") );
-                }
-            });
+
 
         }
 
     }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+    {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.menu_ubicar_proveedores_on_map, menu);
+        /*SolicitarServicio.this.getActivity().getMenuInflater().inflate(R.menu.solicitar_servicio_menu, menu);*/
+        super.onCreateOptionsMenu(menu,inflater);
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.action_solicitar_servicio_onmap:
+                displayAlertDialog();
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+
+
+
+
+    public void displayAlertDialog()
+    {
+        LayoutInflater inflater = MapFragmentUbicarProveedores.this.getActivity().getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.layout_custom_dialog, null);
+        final TextInputLayout inputLayoutDireccionDomicilio = (TextInputLayout) alertLayout.findViewById(R.id.input_layout_direccion_domicilio);
+        final EditText editTextDireccionDomicilio = (EditText) alertLayout.findViewById(R.id.edit_text_direccion_domicilio);
+        final Button botonConfirmarDomicilio = (Button) alertLayout.findViewById(R.id.btn_confirmar_domiclio);
+
+
+        AlertDialog.Builder alert = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+        alert.setTitle("Direccion Domicilio");
+        alert.setView(alertLayout);
+        alert.setCancelable(false);
+        final AlertDialog dialog = alert.create();
+
+        botonConfirmarDomicilio.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+
+
+                String editTextDireccion = editTextDireccionDomicilio.getText().toString().trim();
+
+                if (editTextDireccion.isEmpty())
+                {
+                    inputLayoutDireccionDomicilio.setError("Digite dirección.");//cambiar a edittext en register!!
+                    view.requestFocus();
+
+                }
+                else
+                {
+                    _webServiceEnviarNotificacionPushATodos(sharedPreferences.getString("serialUsuario"));
+                    sharedPreferences.putString("direccionDomicilio",editTextDireccionDomicilio.getText().toString());
+                    dialog.dismiss();
+                }
+
+            }
+        });
+
+        dialog.show();
+
+
+    }
+
+
 
     public void cargarProveedoresServicios()
     {
@@ -820,6 +893,8 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                 headers.put("latitudCliente", "" + sharedPreferences.getDouble("latitudCliente", 0));
                 headers.put("longitudCliente", "" + sharedPreferences.getDouble("longitudCliente", 0));
                 headers.put("servicios", sharedPreferences.getString("serviciosEscogidos"));
+                headers.put("direccionDomicilio", sharedPreferences.getString("direccionDomicilio"));
+                headers.put("valorTotalServiciosTemporalSolicitarServicio", sharedPreferences.getString("valorTotalServiciosTemporalSolicitarServicio"));
                 headers.put("MyToken", sharedPreferences.getString("MyToken"));
                 return headers;
 

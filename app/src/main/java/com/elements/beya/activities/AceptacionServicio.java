@@ -20,6 +20,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -29,7 +31,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.ParseError;
@@ -43,12 +44,10 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
 import com.elements.beya.R;
 import com.elements.beya.adapters.ServiciosAceptacionAdapter;
-import com.elements.beya.adapters.ServiciosAdapter;
 
-import com.elements.beya.beans.Proveedor;
+import com.elements.beya.adapters.ServiciosAdapter;
 import com.elements.beya.beans.Servicio;
 import com.elements.beya.decorators.DividerItemDecoration;
-import com.elements.beya.services.ServiceActualizarUbicacionProveedor;
 import com.elements.beya.services.ServiceObtenerUbicacionEsteticista;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
@@ -59,7 +58,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -68,11 +66,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -86,11 +84,12 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
     NetworkImageView imagenEsteticista;
 
     TextView nombreEsteticista, apellidoEsteticista, kilometrosDistanciaEsteticista,
-             tiempoLlegadaEsteticista, valorTotalServiciosSeleccionados, telefonoEsteticistaAceptacionServicios;
+             tiempoLlegadaEsteticista, telefonoEsteticistaAceptacionServicios;
 
     public static TextView precioTemporalAceptacionServicios;
 
    public static TextView valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios;
+   public static TextView valorTotalServiciosSeleccionados;
 
     private String distancia;
     private String tiempo;
@@ -189,8 +188,17 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
         valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios = (TextView) findViewById(R.id.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios);
 
-        botonFinalizarOrdenServicio = (Button) this.findViewById(R.id.botonFinalizarServiciosEsteticistaAceptacionServicios);
-        botonCancelarOrdenServicio = (Button) this.findViewById(R.id.botonCancelarServicioEsteticistaAceptacionServicios);
+
+
+
+
+
+
+
+
+
+
+
        /* botonAceptarServicio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -341,7 +349,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
 
         cargarDatosEsteticista();
-        _webServiceGetAllServices();
+        _webServiceObtenerServiciosEsteticista();
 
         mAdapter.notifyDataSetChanged();
 
@@ -424,6 +432,142 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.action_cancelar_aceptacion_servicio:
+
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                builder
+                        .setMessage("¿Esta seguro de cancelar el servicio? tendrá un costo de 5.000 COP.")
+                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                //startActivity(intent);
+                                //finish();
+                            }
+                        }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                        //startActivity(intent);
+                        //finish();
+                    }
+                }).show();
+                return true;
+
+
+            case R.id.action_acentar_servicios_seleccionados:
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(AceptacionServicio.this);
+                builder1
+                        .setMessage("¿Esta seguro de agregar estos servicios? no se podrá volver a seleccionar servicios.")
+                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id)
+                            {
+                                String data = "";
+
+                                List<Servicio> lista_servicios = ((ServiciosAceptacionAdapter) mAdapter).getServiciosList();
+                                for (int i = 0; i < lista_servicios.size(); i++)
+                                {
+                                    Servicio servicio = lista_servicios.get(i);
+
+                                    if (servicio.isSelected() == true)
+                                    {
+                                        data = data+servicio.getId().toString()+",";
+
+                                    }
+                                }
+
+                                if(data.isEmpty())
+                                {
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                                    builder
+                                            .setMessage("Debe seleccionar al menos (1) Servicio a agregar.")
+                                            .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int id)
+                                                {
+                                                    //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                                    //startActivity(intent);
+                                                    //finish();
+                                                }
+                                            }).show();
+                                    return;
+                                }
+
+                                else
+
+                                {
+                                    //BORRAR ULTIMA COMA Y SEPARARLOS POR DOS PUNTOS ':'
+                                    String serviciosEscogidos = data.substring(0, data.lastIndexOf(","));
+                                    sharedPreferences.putString("serviciosAgregadosEnAceptacionServicio", serviciosEscogidos);
+                                    Toast.makeText(AceptacionServicio.this,
+                                            "Selected Services: \n" + serviciosEscogidos, Toast.LENGTH_LONG)
+                                            .show();
+
+                                   // _webServiceEnviarServiciosAgregadosEsteticista(serviciosEscogidos);
+
+
+
+                                }
+                            }
+                        }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id)
+                            {
+                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                //startActivity(intent);
+                                //finish();
+                            }
+                        }).show();
+                return true;
+
+
+            case R.id.action_finalizar_aceptacion_servicio:
+                AlertDialog.Builder builder2 = new AlertDialog.Builder(AceptacionServicio.this);
+                builder2
+                        .setMessage("¿Esta seguro de finalizar servicios? se pasara al cobro.")
+                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id)
+                            {
+                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                //startActivity(intent);
+                                //finish();
+                            }
+                        }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id)
+                    {
+                        //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                        //startActivity(intent);
+                        //finish();
+                    }
+                }).show();
+                return true;
+
+            default:
+
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_aceptacion_servicio, menu);
+        return true;
+    }
+
+    @Override
     public void onLocationChanged(Location location)
     {
         mLatitude = location.getLatitude();
@@ -474,7 +618,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
         String nombreUsuario = null, apellidoUsuario = null,
                imgUsuario=null,telefonoUsuario = null,serialUsuarioEsteticista = null,
-               distanciaUsuario, tiempoUsuario;
+               distanciaUsuario, tiempoLlegada;
 
         try
         {
@@ -491,10 +635,12 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
                 imgUsuario = servicio.getString("imgUsuario");
                 telefonoUsuario = servicio.getString("telefonoUsuario");
+                tiempoLlegada = servicio.getString("tiempoLlegadaEsteticista");
                 serialUsuarioEsteticista = servicio.getString("serialUsuario"); //Serial de Usuario Esteticista que acepta servicio.
                 //sharedPreferences.putString("serialUsuarioEsteticista", serialUsuarioEsteticista);
                 setSerialUsuarioEsteticista(serialUsuarioEsteticista);
-                _webServiceGetRoutesEsteticista();
+                kilometrosDistanciaEsteticista.setText("Estoy a: " + tiempoLlegada);
+                tiempoLlegadaEsteticista.setText("Llego en Aprox: " + tiempoLlegada);
             }
 
 
@@ -507,7 +653,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
             nombreEsteticista.setText(nombreUsuario);
             //apellidoEsteticista.setText(apellidoUsuario);
             telefonoEsteticistaAceptacionServicios.setText(telefonoUsuario);
-            precioTemporalAceptacionServicios.setText("Subtotal: "+sharedPreferences.getInt("totalServiciosEscogidosEnSolicitarServicio"));
+            precioTemporalAceptacionServicios.setText(""+sharedPreferences.getInt("totalServiciosEscogidosEnSolicitarServicio"));
             valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText(""+sharedPreferences.getInt("totalServiciosEscogidosEnSolicitarServicio"));
 
           /*  markerOptions = new MarkerOptions();
@@ -567,11 +713,13 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
     }
 
 
-    private void _webServiceGetAllServices()
+    private void _webServiceObtenerServiciosEsteticista()
     {
-        _urlWebService = "http://52.72.85.214/ws/ObtenerServicios";
+        _urlWebService = "http://52.72.85.214/ws/ObtenerServiciosOfrecidosEsteticista";
 
         //progressBar.setVisibility(View.VISIBLE);
+
+        Log.i("INFO: ", "" + getSerialUsuarioEsteticista() + " : " + "" + sharedPreferences.getString("serviciosEscogidosEnSolicitarServicio"));
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
                 new Response.Listener<JSONObject>()
@@ -609,7 +757,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                         catch (JSONException e)
                         {
 
-                            progressBar.setVisibility(View.GONE);
+                           // progressBar.setVisibility(View.GONE);
                             //buttonSeleccionarServicios.setVisibility(View.GONE);
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this.getApplicationContext());
@@ -778,17 +926,19 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                 HashMap<String, String> headers = new HashMap <String, String>();
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
+                headers.put("serialUsuarioEsteticista", getSerialUsuarioEsteticista());
+                headers.put("servicios",sharedPreferences.getString("serviciosEscogidosEnSolicitarServicio"));
                 headers.put("MyToken", sharedPreferences.getString("MyToken"));
                 return headers;
             }
         };
 
-        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+       // jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
     }
 
-    private void _webServiceGetRoutesEsteticista()
+    /*private void _webServiceGetRoutesEsteticista()
     {
 
         _urlWebService = "http://maps.google.com/maps/api/directions/json?origin="+this.getLatitudUsuario()+","+this.getLongitudUsuario()+
@@ -985,9 +1135,9 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
 
 
-        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        //jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
-    }
+    }*/
 
 }

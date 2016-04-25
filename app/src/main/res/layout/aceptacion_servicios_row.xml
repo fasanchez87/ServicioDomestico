@@ -12,6 +12,14 @@
     android:orientation="vertical">
 
     <TextView
+        android:id="@+id/textViewIDServicioAceptacionServicios"
+        android:textColor="@color/title"
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+
+    <TextView
         android:id="@+id/textViewNombreServicioAceptacionServicios"
         android:textColor="@color/title"
         android:textSize="16dp"

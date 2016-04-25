@@ -14,6 +14,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -24,14 +25,19 @@ import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -83,14 +89,16 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
     private String _urlWebServiceAceptarSolicitudServicio;
 
 
-
     private String ubicacionEsteticista;
     Double latitud, longitud;
 
     Button botonAceptarServicio, botonRechazarServicio;
 
     public TextView nombreClienteSolicitudServicioDetallada, telefonoClienteSolicitudServicioDetallada,
-            fechaClienteSolicitudServicioDetallada, precioClienteSolicitudServicioDetallada;
+            fechaClienteSolicitudServicioDetallada, precioClienteSolicitudServicioDetallada,DireccionClienteSolicitudServicioDetallada;
+
+
+    private String tiempoLlegada;
 
 
 
@@ -129,7 +137,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
     ArrayList<String> locationCliente;
 
 
-    private String keyCodigoSolicitudSeleccionado, keyCodigoClienteSolicitudSeleccionada, ubicacionCliente, nombreUsuario, fechaSolicitud, telefonoCliente;
+    private String keyCodigoSolicitudSeleccionado, costoSolicitud, direccionDomicilio,keyCodigoClienteSolicitudSeleccionada, ubicacionCliente, nombreUsuario, fechaSolicitud, telefonoCliente;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -147,21 +155,28 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         nombreUsuario = intent.getStringExtra("nombreUsuario");
         fechaSolicitud = intent.getStringExtra("fechaSolicitud");
         telefonoCliente = intent.getStringExtra("telefonoUsuario");
+        direccionDomicilio = intent.getStringExtra("direccionDomicilio");
+        costoSolicitud = intent.getStringExtra("costoSolicitud");
 
 
         gestion = new Gestion();
+
+        tiempoLlegada = "";
 
 
         TextView nombreClienteSolicitudServicioDetallada = (TextView) findViewById(R.id.nombreClienteSolicitudServicioDetallada);
         TextView telefonoClienteSolicitudServicioDetallada = (TextView) findViewById(R.id.telefonoClienteSolicitudServicioDetallada);
         TextView fechaClienteSolicitudServicioDetallada = (TextView) findViewById(R.id.fechaClienteSolicitudServicioDetallada);
-        TextView precioClienteSolicitudServicioDetallada = (TextView) findViewById(R.id.precioClienteSolicitudServicioDetallada);
+        precioClienteSolicitudServicioDetallada = (TextView) findViewById(R.id.precioClienteSolicitudServicioDetallada);
+        TextView DireccionClienteSolicitudServicioDetallada = (TextView) findViewById(R.id.DireccionClienteSolicitudServicioDetallada);
 
         nombreClienteSolicitudServicioDetallada.setText(nombreUsuario);
         fechaClienteSolicitudServicioDetallada.setText(fechaSolicitud);
-        precioClienteSolicitudServicioDetallada.setText("" + sharedPreferences.getString("valorTotalServicios"));
-
+        precioClienteSolicitudServicioDetallada.setText(costoSolicitud);
         telefonoClienteSolicitudServicioDetallada.setText(telefonoCliente);
+        DireccionClienteSolicitudServicioDetallada.setText(direccionDomicilio);
+
+
 
 
 
@@ -299,45 +314,9 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
             botonAceptarServicio = (Button) findViewById(R.id.buttonAceptarServicioViaPush);
             botonAceptarServicio.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
-                    builder
-                            .setMessage("¿Esta seguro de aceptar el servicio?" + "\n" + "Se procedera a atender la solicitud.")
-                            .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int id) {
-
-
-                                    _webServiceAceptarSolicitudServicios();
-                                /*    isCheckedSwitch = false;// PENDIENTE
-                                    sharedPreferences.putBoolean("isCheckedSwitch", isCheckedSwitch);
-
-                                    String statusOnline = "0";
-                                    stopService(new Intent(getBaseContext(), ServiceActualizarUbicacionProveedor.class));
-                                    sharedPreferences.putString("statusOnline", statusOnline);
-*/
-/*
-
-                                    NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-                                    Menu menu = navigationView.getMenu();
-                                    MenuItem item = menu.findItem(R.id.nav_activar_geolocalizacion);
-                                    switchActivarLocation = (SwitchCompat) MenuItemCompat.getActionView(item);
-                                    switchActivarLocation.setChecked(sharedPreferences.getBoolean("isCheckedSwitch"));
-                                   *//* Intent intent = new Intent(SolitudServicioDetallada.this, Gestion.class);
-                                    startActivity(intent);
-                                    finish();*/
-
-
-
-                                }
-                            }).setNegativeButton("Volver", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
-                            //startActivity(intent);
-                            //finish();
-                        }
-                    }).show();
+                public void onClick(View view)
+                {
+                    displayAlertDialog();
                 }
             });
 
@@ -380,6 +359,75 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         recyclerView.setAdapter(mAdapter);
         mAdapter.notifyDataSetChanged();
 
+
+
+    }
+
+    public void onRadioButtonClicked(View view) {
+        // Is the button now checked?
+        boolean checked = ((RadioButton) view).isChecked();
+
+        // Check which radio button was clicked
+        switch(view.getId()) {
+            case R.id.radioButtonDiezMinutos:
+                if (checked)
+                    // Pirates are the best
+                    tiempoLlegada = "10 Minutos";
+                    break;
+            case R.id.radioButtonTreintaMinutos:
+                if (checked)
+                    // Ninjas rule
+                    tiempoLlegada = "30 Minutos";
+
+                break;
+            case R.id.radioButtonCincuentaMinutos:
+                if (checked)
+                    // Ninjas rule
+                    tiempoLlegada = "50 Minutos";
+
+                break;
+        }
+    }
+
+    public void displayAlertDialog()
+    {
+        LayoutInflater inflater = getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.custom_dialog_aceptacion_servicio_esteticista, null);
+        RadioButton radioTiempoButton;
+
+        final RadioGroup RadioGroup = (RadioGroup) alertLayout.findViewById(R.id.radioGroupTiemposLlegadaEsteticista);
+        final Button buttonAceptarServicioDialogAceptacionServicio = (Button) alertLayout.findViewById(R.id.buttonAceptarServicioDialogAceptacionServicio);
+        final Button buttonCancelarServicioDialogAceptacionServicio = (Button) alertLayout.findViewById(R.id.buttonCancelarServicioDialogAceptacionServicio);
+
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle("Confirmar Solicitud");
+        alert.setView(alertLayout);
+        alert.setCancelable(false);
+        final AlertDialog dialog = alert.create();
+
+        buttonAceptarServicioDialogAceptacionServicio.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                _webServiceAceptarSolicitudServicios();
+                dialog.dismiss();
+            }
+        });
+
+        buttonCancelarServicioDialogAceptacionServicio.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                dialog.dismiss();
+
+            }
+        });
+
+
+
+        dialog.show();
 
 
     }
@@ -434,7 +482,6 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
 
                                             }
                                         }).show();
-
                             }
 
                             else
@@ -630,6 +677,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                 headers.put("serialUsuarioCliente", keyCodigoClienteSolicitudSeleccionada);
                 headers.put("codigoSolicitud", keyCodigoSolicitudSeleccionado);
                 headers.put("ubicacionEsteticista", getUbicacionEsteticista());
+                headers.put("tiempoLlegadaEsteticista", tiempoLlegada);
                 headers.put("MyToken", sharedPreferences.getString("MyToken"));
                 return headers;
 

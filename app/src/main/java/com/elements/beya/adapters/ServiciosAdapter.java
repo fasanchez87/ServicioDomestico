@@ -153,8 +153,8 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
 
                 }
 
-                sharedPreferences = new gestionSharedPreferences(v.getContext());
-                sharedPreferences.putInt("valorTotalServicios",valorTotal);
+               /* sharedPreferences = new gestionSharedPreferences(v.getContext());
+                sharedPreferences.putInt("valorTotalServicios",valorTotal);*/
 
 
             }
