@@ -19,6 +19,10 @@ public class SolicitudServicio
     private String telefonoClienteSolicitudServicio;
 
 
+
+    private String imagenClienteSolicitudServicio;
+
+
     private String HoraSolicitudServicio;
     private String UbicacionSolicitudServicio;
     private String LugarSolicitudServicio;
@@ -41,7 +45,8 @@ public class SolicitudServicio
     }
 
     public SolicitudServicio(String codigoSolicitudServicio , String FechaSolicitudServicio,
-                             String UbicacionSolicitudServicio, String codigoClienteSolicitudServicio , String nombreUsuario, String telefonoClienteSolicitudServicio)
+                             String UbicacionSolicitudServicio, String codigoClienteSolicitudServicio , String nombreUsuario,
+                             String telefonoClienteSolicitudServicio, String imagenClienteSolicitudServicio)
     {
         this.codigoSolicitudServicio = codigoSolicitudServicio;
         this.codigoClienteSolicitudServicio = codigoClienteSolicitudServicio;
@@ -49,6 +54,15 @@ public class SolicitudServicio
         this.UbicacionSolicitudServicio = UbicacionSolicitudServicio;
         this.nombreUsuario = nombreUsuario;
         this.telefonoClienteSolicitudServicio = telefonoClienteSolicitudServicio;
+        this.imagenClienteSolicitudServicio = imagenClienteSolicitudServicio;
+    }
+
+    public String getImagenClienteSolicitudServicio() {
+        return imagenClienteSolicitudServicio;
+    }
+
+    public void setImagenClienteSolicitudServicio(String imagenClienteSolicitudServicio) {
+        this.imagenClienteSolicitudServicio = imagenClienteSolicitudServicio;
     }
 
     public String getDireccion() {

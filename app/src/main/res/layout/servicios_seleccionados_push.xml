@@ -13,7 +13,6 @@
 
     <TextView
         android:id="@+id/textViewNombreServicioServiciosSeleccionadosPush"
-        android:textColor="@color/title"
         android:textSize="16dp"
         android:textStyle="bold"
         android:layout_width="match_parent"
@@ -38,7 +37,7 @@
         android:id="@+id/textViewValorServicioServiciosSeleccionadosPush"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="17,000 COP"
+        android:text="17.000"
         android:layout_below="@+id/textViewDescServicioServiciosSeleccionadosPush"
         android:layout_toEndOf="@+id/imageItemService" />
 

@@ -18,6 +18,7 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.elements.beya.R;
 import com.elements.beya.activities.AceptacionServicio;
+import com.elements.beya.activities.ListaServiciosCliente;
 import com.elements.beya.beans.Servicio;
 import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
@@ -136,6 +137,7 @@ public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosA
                         public void run() {
 
                             AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText("" + valorAcarreado);
+                            ListaServiciosCliente.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText("" + valorAcarreado);
 
                         }
                     });
@@ -154,6 +156,8 @@ public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosA
                         public void run() {
 
                             AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText("" + valorAcarreado);
+                            ListaServiciosCliente.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText("" + valorAcarreado);
+
 
                         }
                     });

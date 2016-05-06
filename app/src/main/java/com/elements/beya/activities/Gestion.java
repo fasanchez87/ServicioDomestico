@@ -7,8 +7,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.provider.SyncStateContract;
 import android.support.v4.app.Fragment;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
@@ -42,7 +44,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.R;
 import com.elements.beya.app.Config;
 import com.elements.beya.fragments.Configuracion;
-import com.elements.beya.fragments.MapFragmentUbicarProveedores;
+import com.elements.beya.fragments.Historial;
 import com.elements.beya.fragments.ServiciosDisponibles;
 import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.fragments.Soporte;
@@ -77,6 +79,7 @@ public class Gestion extends AppCompatActivity
 
 
 
+    LocationManager locationManager;
 
     //GUARDAR OPCION SELECTED SWITCH.
     private boolean isCheckedSwitch;
@@ -91,6 +94,14 @@ public class Gestion extends AppCompatActivity
         setContentView(R.layout.activity_gestion);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+        {
+            showGPSDisabledAlertToUser();
+        }
 
         mRegistrationBroadcastReceiver = new BroadcastReceiver()
         {
@@ -171,7 +182,32 @@ public class Gestion extends AppCompatActivity
                     Log.e("CHECKED", "onCheckedChanged" + isChecked);
                     statusOnline = "1";
                     sharedPreferences.putString("statusOnline",statusOnline );
-                    startService(new Intent(getBaseContext(), ServiceActualizarUbicacionProveedor.class));
+
+                    if( haveNetworkConnection() )
+                    {
+                        startService(new Intent(getBaseContext(), ServiceActualizarUbicacionProveedor.class));
+
+                    }
+
+                    else
+                    {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(Gestion.this);
+                        builder
+                                .setMessage("Se ha perdido la conexión a internet, revise e intente de nuevo.")
+                                .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                        //startActivity(intent);
+                                        //finish();
+                                        switchActivarLocation.setChecked(false);
+                                    }
+                                }).show();
+                    }
+
+
+
+
                 }
 
                 else
@@ -218,8 +254,6 @@ public class Gestion extends AppCompatActivity
             if (tipoUsuario.equals("E"))
             {
 
-
-
                 //MOSTRAMOS POR DEFECTO EL NAV MIS SERVICIOS CUANDO ES ESTETICISTA
                 progressBar.setVisibility(View.VISIBLE);
 
@@ -256,6 +290,49 @@ public class Gestion extends AppCompatActivity
 
     }
 
+
+
+
+    private  boolean haveNetworkConnection()
+    {
+        boolean haveConnectedWifi =  false ;
+        boolean haveConnectedMobile =  false ;
+
+        ConnectivityManager cm =  (ConnectivityManager) getSystemService ( Context . CONNECTIVITY_SERVICE );
+        NetworkInfo [] netInfo = cm . getAllNetworkInfo ();
+        for  ( NetworkInfo ni : netInfo )
+        {
+            if  ( ni . getTypeName (). equalsIgnoreCase ( "WIFI" ))
+                if  ( ni . isConnected ())
+                    haveConnectedWifi =  true ;
+            if  ( ni . getTypeName (). equalsIgnoreCase ( "MOBILE" ))
+                if  ( ni . isConnected ())
+                    haveConnectedMobile =  true ;
+        }
+        return haveConnectedWifi || haveConnectedMobile ;
+    }
+
+    private void showGPSDisabledAlertToUser(){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage("Su GPS esta apagado, para que Beya funcione debe encenderlo, ¿desea hacerlo?")
+                .setCancelable(false)
+                .setPositiveButton("Encender GPS",
+                        new DialogInterface.OnClickListener(){
+                            public void onClick(DialogInterface dialog, int id){
+                                Intent callGPSSettingIntent = new Intent(
+                                        android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                startActivity(callGPSSettingIntent);
+                            }
+                        });/*);
+        alertDialogBuilder.setNegativeButton("Cancelar",
+                new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog, int id){
+                        dialog.cancel();
+                    }
+                });*/
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.show();
+    }
 
 
 
@@ -339,8 +416,12 @@ public class Gestion extends AppCompatActivity
 
             case R.id.nav_activar_geolocalizacion:
                 progressBar.setVisibility(View.VISIBLE);
-
                 fragmentClass = ServiciosDisponibles.class;
+                break;
+
+            case R.id.nav_historial_servicios:
+                progressBar.setVisibility(View.VISIBLE);
+                fragmentClass = Historial.class;
                 break;
 
             case R.id.nav_soporte:
@@ -378,8 +459,6 @@ public class Gestion extends AppCompatActivity
 
                     }
                 }).show();
-
-
 
             default:
                 fragmentClass = SolicitarServicio.class;
@@ -423,6 +502,13 @@ public class Gestion extends AppCompatActivity
 
         // register new push message receiver
         // by doing this, the activity will be notified each time a new message arrives
+
+       /* if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+        {
+            showGPSDisabledAlertToUser();
+        }*/
+
+
         LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
                 new IntentFilter(Config.PUSH_NOTIFICATION));
     }

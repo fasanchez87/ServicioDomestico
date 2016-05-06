@@ -1,9 +1,6 @@
-<?xml version="1.1" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.elements.beya">
-
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
 
     <permission
         android:name="com.elements.beya.permission.MAPS_RECEIVE"
@@ -16,7 +13,13 @@
      used to check app background / foreground status
     -->
     <uses-permission android:name="android.permission.REAL_GET_TASKS" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.BATTERY_STATS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- START Added for GCM -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -31,10 +34,9 @@
     <uses-permission android:name="com.elements.beya.permission.MAPS_RECEIVE" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
-    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!--     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <uses-feature
@@ -140,7 +142,18 @@
         <activity
             android:name=".activities.AceptacionServicioEsteticista"
             android:label="@string/title_activity_aceptacion_servicio_esteticista"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.ListaServiciosEsteticista"
+            android:label="Servicios Agregados" />
+        <activity
+            android:name=".activities.ListaServiciosCliente"
+            android:label="Servicios Disponibles" />
+        <activity android:name=".activities.ListaServiciosRevisarEsteticista" />
+        <activity android:name=".activities.DetalleServicioHistorial"
+            android:label="Detalle Solicitud" >
+
+        </activity>
     </application>
 
 </manifest>

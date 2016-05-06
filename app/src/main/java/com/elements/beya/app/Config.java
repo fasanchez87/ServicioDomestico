@@ -19,6 +19,9 @@ public class Config
     public static final String REGISTRATION_COMPLETE = "registrationComplete";
     public static final String PUSH_NOTIFICATION = "pushNotification";
     public static final String PUSH_NOTIFICATION_PANTALLA = "MapFragmentUbicarProveedores";
+    public static final String PUSH_NOTIFICATION_FINALIZAR_SERVICIO_ESTETICISTA = "pushNotificationFinalizarServicio";
+    public static final String PUSH_NOTIFICATION_CANCELAR_SERVICIO_ESTETICISTA = "pushNotificationCancelarServicio";
+    public static final String PUSH_NOTIFICATION_LLEGADA_ESTETICISTA = "pushNotificationLlegadaEsteticista";
 
     // type of push messages
     public static final int PUSH_TYPE_CHATROOM = 1;

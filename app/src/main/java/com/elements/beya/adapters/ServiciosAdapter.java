@@ -82,9 +82,11 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
     {
         final Servicio servicio = serviciosList.get(position);
 
+
+
         if(servicio.getImagen().isEmpty())
         {
-
+            holder.imagenServicio.setVisibility(View.GONE);
         }
 
         holder.imagenServicio.setImageUrl(servicio.getImagen(), imageLoader);
@@ -126,7 +128,8 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
                         public void run()
                         {
 
-                          SolicitarServicio.valorTotalTextView.setText(""+valorTotal);
+                          SolicitarServicio.valorTotalTextView.setText("" + valorTotal);
+
 
                         }
                     });
@@ -152,6 +155,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
                     });
 
                 }
+                Toast.makeText(v.getContext(), ""+valorTotal, Toast.LENGTH_LONG).show();
 
                /* sharedPreferences = new gestionSharedPreferences(v.getContext());
                 sharedPreferences.putInt("valorTotalServicios",valorTotal);*/

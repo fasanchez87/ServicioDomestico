@@ -62,7 +62,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class SolicitarServicio extends Fragment
 {
     // TODO: Rename parameter arguments, choose names that match
@@ -144,6 +143,7 @@ public class SolicitarServicio extends Fragment
 
         valorTotalTextView = (TextView) this.getActivity().findViewById(R.id.valorTotalServiciosSeleccionadosSolicitarServicios);
 
+
         linearLayoutPrecioTotal = (LinearLayout) getActivity().findViewById(R.id.linearLayoutPrecioTotalSolicitarServicioToMap);
 
 
@@ -216,6 +216,7 @@ public class SolicitarServicio extends Fragment
 
                 String data = "";
                 String serviciosEscogidosParaPush = "";
+
                 sharedPreferences.putString("valorTotalServiciosTemporalSolicitarServicio",valorTotalTextView.getText().toString());
 
                 List<Servicio> lista_servicios = ((ServiciosAdapter) mAdapter).getServiciosList();
@@ -388,6 +389,8 @@ public class SolicitarServicio extends Fragment
 
                                     sharedPreferences.putInt("totalServiciosEscogidosEnSolicitarServicio",
                                             Integer.parseInt(valorTotalTextView.getText().toString()));
+
+                                    ServiciosAdapter.valorTotal=0;
 
 
                                 }

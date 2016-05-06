@@ -1,71 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context=".activities.Login"
     android:background="@color/colorBlanco"
-    >
-
-    <!--<android.support.design.widget.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
-
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-    </android.support.design.widget.AppBarLayout>-->
+    android:fitsSystemWindows="true"
+    tools:context=".activities.Login">
 
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:fillViewport="true"
-        >
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:orientation="vertical"
             android:descendantFocusability="beforeDescendants"
-            android:focusableInTouchMode="true">
-
-
+            android:focusableInTouchMode="true"
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
+                android:gravity="top"
                 android:orientation="vertical"
-                android:gravity="bottom"
                 android:paddingLeft="20dp"
-                android:paddingRight="20dp"
-                >
-
-
-
-
-                <ImageView
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:id="@+id/imageView"
-                    android:layout_centerHorizontal="true"
-                    android:layout_centerVertical="true"
-                    android:layout_gravity="center"
-                    android:adjustViewBounds="true"
-                    android:cropToPadding="true"
-                    android:gravity="center"
-                    android:src="@mipmap/beya_logo"/>
+                android:paddingRight="20dp">
 
                 <Space
                     android:layout_width="match_parent"
@@ -77,15 +39,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColorHint="@color/colorAccent">
+
                     <EditText
                         android:id="@+id/input_email"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:backgroundTint="@color/colorAccent"
                         android:hint="Cambiar Nombre"
                         android:inputType="text"
-                        android:backgroundTint="@color/colorAccent"
-                        android:textColorHint="@color/colorAccent"
-                        android:textColor="@color/colorAccent"/>
+                        android:textColor="@color/colorAccent"
+                        android:textColorHint="@color/colorAccent" />
                 </android.support.design.widget.TextInputLayout>
 
 
@@ -99,12 +62,11 @@
                         android:id="@+id/input_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColorHint="@color/colorAccent"
-                        android:textColor="@color/colorAccent"
                         android:backgroundTint="@color/colorAccent"
                         android:hint="Cambiar Apellido"
                         android:inputType="text"
-                        />
+                        android:textColor="@color/colorAccent"
+                        android:textColorHint="@color/colorAccent" />
                 </android.support.design.widget.TextInputLayout>
 
                 <android.support.design.widget.TextInputLayout
@@ -117,12 +79,11 @@
                         android:id="@+id/input_password_cambiar_email"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColorHint="@color/colorAccent"
-                        android:textColor="@color/colorAccent"
                         android:backgroundTint="@color/colorAccent"
                         android:hint="Cambiar Email"
                         android:inputType="text"
-                        />
+                        android:textColor="@color/colorAccent"
+                        android:textColorHint="@color/colorAccent" />
                 </android.support.design.widget.TextInputLayout>
 
 
@@ -130,7 +91,7 @@
                     android:id="@+id/btn_signup"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="40dp"
+                    android:layout_marginTop="10dp"
                     android:background="@drawable/css_buttons"
                     android:text="Guardar Cambios"
                     android:textColor="@android:color/white" />
@@ -140,22 +101,15 @@
                     android:layout_height="40dp" />
 
 
-
-
-
-
-
-
-
             </LinearLayout>
 
             <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:orientation="vertical"
                 android:layout_alignParentBottom="true"
                 android:layout_gravity="bottom"
-                android:gravity="bottom">
+                android:gravity="bottom"
+                android:orientation="vertical">
 
 
                 <LinearLayout
@@ -163,11 +117,10 @@
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:layout_centerVertical="true"
+                    android:layout_marginBottom="20dp"
                     android:orientation="vertical"
                     android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:layout_marginBottom="20dp"
-                    >
+                    android:paddingRight="20dp">
 
                     <ProgressBar
                         android:id="@+id/progressBar"
@@ -181,25 +134,22 @@
                         android:visibility="gone" />
 
                     <TextView
+                        android:id="@+id/textViewProgressBar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:text=""
-                        android:id="@+id/textViewProgressBar"
-                        android:textColor="@color/colorAccent"
+                        android:layout_above="@id/progressBar"
                         android:layout_alignParentBottom="true"
                         android:layout_centerHorizontal="true"
                         android:layout_gravity="center"
-                        android:layout_above="@id/progressBar"
-                        android:visibility="gone"/>
+                        android:text=""
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textColor="@color/colorAccent"
+                        android:visibility="gone" />
 
 
                 </LinearLayout>
 
             </RelativeLayout>
-
-
-
 
 
         </RelativeLayout>

@@ -17,7 +17,9 @@ import com.google.android.gms.gcm.GcmListenerService;
 
 import com.elements.beya.app.Config;
 import org.json.JSONArray;
-import me.leolin.shortcutbadger.ShortcutBadger;
+
+//import me.leolin.shortcutbadger.ShortcutBadger;
+//import me.leolin.shortcutbadger.ShortcutBadger;
 
 
 public class MyGcmPushReceiver extends GcmListenerService
@@ -48,6 +50,8 @@ public class MyGcmPushReceiver extends GcmListenerService
         String pantallaMostrarPushAndroid = bundle.getString("pantallaMostrarPushAndroid");
         String datosEsteticista = bundle.getString("datosEsteticista");//aqui esta el error
         String datosCliente = bundle.getString("datosCliente");//aqui esta el error
+        String codigoSolicitud = bundle.getString("codigoSolicitud");//aqui esta el error
+        String codigoEsteticista = bundle.getString("codigoEsteticista");//aqui esta el error
         Log.e(TAG, "From: " + from);
         Log.e(TAG, "Title: " + title);
         Log.e(TAG, "message: " + message);
@@ -58,7 +62,7 @@ public class MyGcmPushReceiver extends GcmListenerService
         sharedPreferences = new gestionSharedPreferences(getApplicationContext());
         countPush=0;
         sharedPreferences.putInt("countPush", countPush = sharedPreferences.getInt("countPush") + 1);
-        ShortcutBadger.applyCount(this, sharedPreferences.getInt("countPush")); //for 1.1.4
+        //ShortcutBadger.applyCount(this, sharedPreferences.getInt("countPush")); //for 1.1.4
 
         if (!isBackground)
         {
@@ -100,10 +104,13 @@ public class MyGcmPushReceiver extends GcmListenerService
                 if(pantallaMostrarPushAndroid.equals("pushNotificationAceptacionServicio"))
                 {
 
-                    //Creamos un intent receiver de modo que apenas llegue me lleve a la activity cuando se acepta un servicio.
+                    //Creamos un intent receiver de modo que apenas llegue me lleve a la activity onMap para poder que se cierre el dialog de espera
+                    //del cliente.
                     Intent pushNotification = new Intent(Config.PUSH_NOTIFICATION_PANTALLA);
                     pushNotification.putExtra("datosEsteticista", datosEsteticista);
                     pushNotification.putExtra("datosCliente", datosCliente);
+                    pushNotification.putExtra("codigoSolicitud", codigoSolicitud);
+                    pushNotification.putExtra("codigoEsteticista", codigoEsteticista);
                     LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotification);
 
                     // play notification sound
@@ -138,6 +145,51 @@ public class MyGcmPushReceiver extends GcmListenerService
 
          else
         {
+
+            if(pantallaMostrarPushAndroid.equals("pushNotificationFinalizarServicio"))
+            {
+                //Creamos un intent receiver de modo que apenas llegue me lleve a la activity onMap para poder que se cierre el dialog de espera
+                //del cliente.
+                Intent pushNotification = new Intent(Config.PUSH_NOTIFICATION_FINALIZAR_SERVICIO_ESTETICISTA);
+                pushNotification.putExtra("codigoSolicitud", codigoSolicitud);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotification);
+                // play notification sound
+                NotificationUtils notificationUtils = new NotificationUtils();
+                notificationUtils.playNotificationSound();
+
+            }
+
+            else
+
+
+            if(pantallaMostrarPushAndroid.equals("pushNotificationCancelarServicio"))
+            {
+                //Creamos un intent receiver de modo que apenas llegue me lleve a la activity onMap para poder que se cierre el dialog de espera
+                //del cliente.
+                Intent pushNotification = new Intent(Config.PUSH_NOTIFICATION_CANCELAR_SERVICIO_ESTETICISTA);
+                pushNotification.putExtra("codigoSolicitud", codigoSolicitud);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotification);
+                // play notification sound
+                NotificationUtils notificationUtils = new NotificationUtils();
+                notificationUtils.playNotificationSound();
+
+            }
+
+            else
+
+            if(pantallaMostrarPushAndroid.equals("pushNotificationLlegadaEsteticista"))
+            {
+                //Creamos un intent receiver de modo que apenas llegue me lleve a la activity onMap para poder que se cierre el dialog de espera
+                //del cliente.
+                Intent pushNotifica = new Intent(Config.PUSH_NOTIFICATION_LLEGADA_ESTETICISTA);
+                pushNotifica.putExtra("codigoSolicitud", codigoSolicitud);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotifica);
+                // play notification sound
+                NotificationUtils notificationUtils = new NotificationUtils();
+                notificationUtils.playNotificationSound();
+
+            }
+
             // the push notification is silent, may be other operations needed
             // like inserting it in to SQLite
             // podemos almacenar los mensajes si en el backend se desea almacenar los mensajes enviados

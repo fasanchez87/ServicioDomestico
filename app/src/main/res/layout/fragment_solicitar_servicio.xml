@@ -53,16 +53,16 @@
             android:layout_gravity="center_vertical" />
     </LinearLayout>
 
-   <!-- <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="BUSCAR"
-        android:id="@+id/buttonSeleccionarServicioFragmentSolicitarServicio"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_weight="0"
-        android:background="@drawable/css_button_rectangular"
-        android:textColor="#FFFFFF"/>-->
+    <!-- <Button
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:text="BUSCAR"
+         android:id="@+id/buttonSeleccionarServicioFragmentSolicitarServicio"
+         android:layout_alignParentBottom="true"
+         android:layout_alignParentStart="true"
+         android:layout_weight="0"
+         android:background="@drawable/css_button_rectangular"
+         android:textColor="#FFFFFF"/>-->
 
 
 

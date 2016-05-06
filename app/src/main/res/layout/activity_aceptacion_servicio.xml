@@ -56,14 +56,15 @@
             android:orientation="horizontal"
             android:visibility="visible">
 
-            <com.android.volley.toolbox.NetworkImageView
-                android:id="@+id/imagenEsteticistaAceptacionServicios"
-                android:layout_width="60dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="center_vertical"
+            <com.elements.beya.CircularImageView.CircularNetworkImageView
+                android:id="@+id/imagenClienteSolicitudServicioDetallada"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_alignParentTop="true"
+                android:layout_gravity="center"
                 android:adjustViewBounds="true"
-                android:cropToPadding="true"
                 android:padding="2dip"
+                android:paddingRight="6dp"
                 android:visibility="visible"
 
                 />
@@ -78,8 +79,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingLeft="6dp"
-                    android:text="Fabio Andres Sanchez Mejia"
-                    android:textStyle="bold" />
+                    android:text="Fabio Andres Sanchez Mejia" />
 
 
                 <TextView
@@ -87,8 +87,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingLeft="6dp"
-                    android:text="3108360219"
-                    android:textStyle="bold" />
+                    android:text="3108360219" />
 
                 <TextView
                     android:id="@+id/kilometrosEsteticistaAceptacionServicios"
@@ -105,8 +104,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingLeft="6dp"
-                    android:text="Llego en aprox: "
-                    android:textStyle="bold" />
+                    android:text="Llego en aprox: " />
 
 
                 <LinearLayout
@@ -120,15 +118,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingLeft="6dp"
-                        android:text="Subtotal: "
-                        android:textStyle="bold" />
+                        android:text="Subtotal: " />
 
                     <TextView
                         android:id="@+id/precioTemporalAceptacionServicios"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="130.000 COP"
-                        android:textStyle="bold" />
+                        android:text="130.000 COP" />
                 </LinearLayout>
 
 
@@ -161,7 +157,8 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_weight="1"
-            android:scrollbars="vertical" />
+            android:scrollbars="vertical"
+            android:visibility="gone"/>
 
 
         <LinearLayout
@@ -170,7 +167,7 @@
             android:background="@color/colorAccent"
             android:gravity="center"
             android:orientation="horizontal"
-            android:visibility="visible">
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/nombreCliedfsdfnteAceptacionServicio"

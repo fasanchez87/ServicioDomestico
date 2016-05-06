@@ -73,13 +73,16 @@
         android:layout_alignBottom="@+id/textViewValorServicio"
         android:layout_alignStart="@+id/textViewIDServicio" />-->
 
+<!--
+    android:scaleType="fitXY"
+    le quite esto al NetworkImageView abajo!
+-->
 
     <com.android.volley.toolbox.NetworkImageView
         android:id="@+id/imageItemService"
         android:layout_width="100dp"
         android:paddingRight="6dp"
         android:layout_height="100dp"
-        android:scaleType="fitXY"
         android:src="@drawable/ic_blower"
         android:adjustViewBounds="true"
         android:layout_gravity="center"

@@ -14,6 +14,10 @@ public class Servicio
 
 
 
+    private String indicaSolicitado;
+
+
+
     private boolean isSelected;
 
     public Servicio()
@@ -39,6 +43,14 @@ public class Servicio
         this.imagen = imagen;
         this.isSelected = isSelected;
 
+    }
+
+    public String getIndicaSolicitado() {
+        return indicaSolicitado;
+    }
+
+    public void setIndicaSolicitado(String indicaSolicitado) {
+        this.indicaSolicitado = indicaSolicitado;
     }
 
     public String getImagen() {

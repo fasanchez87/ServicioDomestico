@@ -1,17 +1,18 @@
 package com.elements.beya.activities;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -20,17 +21,23 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.ParseError;
@@ -42,22 +49,31 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
+import com.elements.beya.CircularImageView.CircularNetworkImageView;
 import com.elements.beya.R;
 import com.elements.beya.adapters.ServiciosAceptacionAdapter;
 
 import com.elements.beya.adapters.ServiciosAdapter;
+import com.elements.beya.app.Config;
 import com.elements.beya.beans.Servicio;
 import com.elements.beya.decorators.DividerItemDecoration;
+import com.elements.beya.services.ServiceActualizarUbicacionProveedor;
 import com.elements.beya.services.ServiceObtenerUbicacionEsteticista;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -66,6 +82,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,32 +92,43 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
-public class AceptacionServicio extends AppCompatActivity implements LocationListener, GoogleMap.OnMarkerClickListener
-{
+import me.leolin.shortcutbadger.ShortcutBadger;
 
 
 
-    NetworkImageView imagenEsteticista;
+
+
+public class AceptacionServicio extends AppCompatActivity implements LocationListener, GoogleMap.OnMarkerClickListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
     TextView nombreEsteticista, apellidoEsteticista, kilometrosDistanciaEsteticista,
-             tiempoLlegadaEsteticista, telefonoEsteticistaAceptacionServicios;
+            tiempoLlegadaEsteticista, telefonoEsteticistaAceptacionServicios;
+
+    private String calificacionEsteticista;
+
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
+
 
     public static TextView precioTemporalAceptacionServicios;
 
-   public static TextView valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios;
-   public static TextView valorTotalServiciosSeleccionados;
+    private MenuItem menuLlegadaEsteticista;
+    private MenuItem menuCancelarServicio;
+
+
+    CircularNetworkImageView imagenEsteticista;
+
+    public static TextView valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios;
+    public static TextView valorTotalServiciosSeleccionados;
 
     private String distancia;
     private String tiempo;
 
     ServiceObtenerUbicacionEsteticista serviceObtenerUbicacionEsteticista;
     private Timer mTimer = null;
-    public static final long NOTIFY_INTERVAL = 2 * 1000; // 5 seconds
-
+    public static final long NOTIFY_INTERVAL = 7 * 1000; // 5 seconds
 
     private Handler mHandler = new Handler();
-
 
     public static String serialUsuarioEsteticista;
 
@@ -134,6 +162,9 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
     CheckBox checkBoxServicio;
 
+    Location mCurrentLocation;
+
+
     public SwitchCompat switchActivarLocation;
 
     private gestionSharedPreferences sharedPreferences;
@@ -151,11 +182,23 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
     private String datosEsteticista;
     private String datosCliente;
+    private String codigoSolicitud;
     MarkerOptions options;
     Marker mapMarker;
     LatLng latLng;
+    private static final String TAG = "ACEPTACION SERVICIO";
+    LocationRequest mLocationRequest;
+    private static final long INTERVAL = 1000 * 1;
+    private static final long FASTEST_INTERVAL = 1000 * 1;
 
 
+    protected void createLocationRequest()
+    {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -165,55 +208,63 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarAceptacionServicio);
         setSupportActionBar(toolbar);
 
+        Log.d(TAG, "onCreate ...............................");
+        if (!isGooglePlayServicesAvailable())
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this.getApplicationContext());
+            builder
+                    .setMessage("not google play services availables now!")
+                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                            //startActivity(intent);
+                            finish();
+                        }
+                    }).show();
+
+        }
+
+        createLocationRequest();
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+
+        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(Config.PUSH_NOTIFICATION_FINALIZAR_SERVICIO_ESTETICISTA)) {
+                    String codigoSolicitud = intent.getExtras().getString("codigoSolicitud");
+                    displayAlertDialogFinalizarServicioCliente(codigoSolicitud);
+                }
+            }
+        };
+
+        calificacionEsteticista = "";
+
         serviceObtenerUbicacionEsteticista = new ServiceObtenerUbicacionEsteticista();
 
         precioTemporalAceptacionServicios = (TextView) findViewById(R.id.precioTemporalAceptacionServicios);
 
-
-
         sharedPreferences = new gestionSharedPreferences(this);
 
-        sharedPreferences = new gestionSharedPreferences(this);
         allServices = new ArrayList<Servicio>();
 
         recyclerView = (RecyclerView) this.findViewById(R.id.recycler_view_servicios_agregar_aceptacionServicios);
 
-        imagenEsteticista = (NetworkImageView) this.findViewById(R.id.imagenEsteticistaAceptacionServicios);
+        imagenEsteticista = ((CircularNetworkImageView) findViewById(R.id.imagenClienteSolicitudServicioDetallada));
 
-        nombreEsteticista = (TextView)this.findViewById(R.id.nombreEsteticistaAceptacionServicios);
-        kilometrosDistanciaEsteticista = (TextView)this.findViewById(R.id.kilometrosEsteticistaAceptacionServicios);
-        tiempoLlegadaEsteticista = (TextView)this.findViewById(R.id.tiempoLlegadaEsteticistaAceptacionServicios);
-        valorTotalServiciosSeleccionados = (TextView)this.findViewById(R.id.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios);
-        telefonoEsteticistaAceptacionServicios = (TextView)this.findViewById(R.id.telefonoEsteticistaAceptacionServicios);
+
+        nombreEsteticista = (TextView) this.findViewById(R.id.nombreEsteticistaAceptacionServicios);
+        kilometrosDistanciaEsteticista = (TextView) this.findViewById(R.id.kilometrosEsteticistaAceptacionServicios);
+        tiempoLlegadaEsteticista = (TextView) this.findViewById(R.id.tiempoLlegadaEsteticistaAceptacionServicios);
+        valorTotalServiciosSeleccionados = (TextView) this.findViewById(R.id.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios);
+        telefonoEsteticistaAceptacionServicios = (TextView) this.findViewById(R.id.telefonoEsteticistaAceptacionServicios);
 
         valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios = (TextView) findViewById(R.id.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios);
-
-
-
-
-
-
-
-
-
-
-
-
-       /* botonAceptarServicio.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
-                builder
-                        .setMessage("¿Esta seguro de aceptar el servicio?" + "\n" + "Se procedera a atender la solicitud.")
-                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-
-
-                    }
-                }).show();
-            }
-        });*/
 
         checkBoxServicio = (CheckBox) this.findViewById(R.id.checkBoxServicio);
 
@@ -221,123 +272,46 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
 
-
         mGoogleMap = ((SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapaSeguimientoEsteticistaAceptacionServicios)).getMap();
 
-        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this.getBaseContext());
-
-        if (savedInstanceState == null)
-        {
+        if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
-            if(extras == null)
-            {
-                datosEsteticista= null;
-                datosCliente= null;
+            if (extras == null) {
+                datosEsteticista = null;
+                datosCliente = null;
+                codigoSolicitud = null;
+            } else {
+                datosEsteticista = extras.getString("datosEsteticista");
+                datosCliente = extras.getString("datosCliente");
+                codigoSolicitud = extras.getString("codigoSolicitud");
             }
-            else
-            {
-                datosEsteticista= extras.getString("datosEsteticista");
-                datosCliente= extras.getString("datosCliente");
-            }
-        }
-
-        else
-        {
-            datosEsteticista= (String) savedInstanceState.getSerializable("datosEsteticista");
-            datosCliente= (String) savedInstanceState.getSerializable("datosCliente");
+        } else {
+            datosEsteticista = (String) savedInstanceState.getSerializable("datosEsteticista");
+            datosCliente = (String) savedInstanceState.getSerializable("datosCliente");
+            codigoSolicitud = (String) savedInstanceState.getSerializable("codigoSolicitud");
         }
 
         Log.w("ACEPTACION SERVICIO", datosEsteticista);
 
+        mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
+        mGoogleMap.getUiSettings().setCompassEnabled(true);
+        mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        mGoogleMap.setMyLocationEnabled(true);
 
-        if (status != ConnectionResult.SUCCESS)
-        { // Google Play Services are not available
-
-            int requestCode = 10;
-            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status, this, requestCode);
-            dialog.show();
+        if (ActivityCompat.checkSelfPermission(this.getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getApplicationContext(),
+                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
             return;
-        }
-
-        else
-        {
-
-            mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
-            mGoogleMap.getUiSettings().setCompassEnabled(true);
-            mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
-            mGoogleMap.setMyLocationEnabled(true);
-
-            if (ActivityCompat.checkSelfPermission(this.getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) !=
-                    PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getApplicationContext(),
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-                {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return;
-
-                }
-
-
-            //Location location = locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-           /* if (location!=null){
-                double longitude = location.getLongitude();
-                double latitude = location.getLatitude();
-                String locLat = String.valueOf(latitude)+","+String.valueOf(longitude);
-            }*/
-
-
-            LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-            // Creating a criteria object to retrieve provider
-            Criteria criteria = new Criteria();
-
-            // Getting the name of the best provider
-            String provider = locationManager.getBestProvider(criteria, false);
-
-            // Getting Current Location From GPS
-            Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-            if (location != null)
-            {
-                onLocationChanged(location);
-                mLatitude = location.getLatitude();
-                mLongitude = location.getLongitude();
-            }
-
-
-
-            locationManager.requestLocationUpdates(provider, 90000, 0, this);
-
-           /* mLatitude = location.getLatitude();
-            mLongitude = location.getLongitude();*/
-
-            //SE OBTIENE LAS COORDENADAS DEL CLIENTE QUE SOLICITA EL SERVICIO.
-          /*  sharedPreferences.putDouble("latitudCliente", mLatitude);
-            sharedPreferences.putDouble("longitudCliente",mLongitude);*/
-
-           // cargarProveedoresServicios();
-
-            //EVENTO BOTON SOLICITAR SERVICIOS A LOS PROVEEDORES DE SERVICIO MEDIANTE PUSH.
-          /*  buttonSeleccionarServicioFragmentSolicitarServicio = (Button) this.getActivity().
-                    findViewById(R.id.buttonSeleccionarServicioFragmentSolicitarServicio);
-            buttonSeleccionarServicioFragmentSolicitarServicio.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    _webServiceEnviarNotificacionPushATodos( sharedPreferences.getString("serialUsuario") );
-                }
-            });*/
 
         }
-
-        //_webServiceGetRoutesEsteticista();
 
         mAdapter = new ServiciosAceptacionAdapter(allServices);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getApplicationContext());
@@ -346,15 +320,9 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         recyclerView.setAdapter(mAdapter);
 
-
-
         cargarDatosEsteticista();
-        _webServiceObtenerServiciosEsteticista();
 
         mAdapter.notifyDataSetChanged();
-
-
-        startService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));
 
         // TODO Auto-generated method stub
         if (mTimer != null)
@@ -369,21 +337,70 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
             mTimer = new Timer();
         }
         // schedule task
-        mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
-
-
-        //startService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));
-
-
-
-
-       /* if (imageLoader == null)
-            imageLoader = ControllerSingleton.getInstance().getImageLoader();
-        */
-
-
+        mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), (7 * 1000), NOTIFY_INTERVAL);
 
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart fired ..............");
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop fired ..............");
+        mGoogleApiClient.disconnect();
+        Log.d(TAG, "isConnected ...............: " + mGoogleApiClient.isConnected());
+    }
+
+    private boolean isGooglePlayServicesAvailable() {
+        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (ConnectionResult.SUCCESS == status) {
+            return true;
+        } else {
+            GooglePlayServicesUtil.getErrorDialog(status, this, 0).show();
+            return false;
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.d(TAG, "onConnected - isConnected ...............: " + mGoogleApiClient.isConnected());
+        startLocationUpdates();
+    }
+
+    protected void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED)
+        {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        PendingResult<Status> pendingResult = LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, this);
+        Log.d(TAG, "Location update started ..............: ");
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.d(TAG, "Connection failed: " + connectionResult.toString());
+    }
+
 
     class TimeDisplayTimerTask extends TimerTask
     {
@@ -416,6 +433,8 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                     //mapMarker.setTitle(""+serviceObtenerUbicacionEsteticista.getFechaMovimiento());
                     Log.d("AceptacionServicio", "Marker added.............................");
 
+                    //BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET))
+
 
                 }
 
@@ -431,23 +450,55 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
     }
 
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+    }
+
+    @Override
+    public void onPause() {
+        LocalBroadcastManager.getInstance(this.getApplicationContext()).unregisterReceiver(mRegistrationBroadcastReceiver);
+        //mTimer.cancel();
+        super.onPause();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+       /* // register GCM registration complete receiver
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(Config.REGISTRATION_COMPLETE));*/
+        //ShortcutBadger.removeCount(this.getApplicationContext()); //for 1.1.4
+
+        // register new push message receiver
+        // by doing this, the activity will be notified each time a new message arrives
+        LocalBroadcastManager.getInstance(this.getApplicationContext()).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(Config.PUSH_NOTIFICATION_FINALIZAR_SERVICIO_ESTETICISTA));
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         switch (item.getItemId())
         {
-            case R.id.action_cancelar_aceptacion_servicio:
-
+            case R.id.action_llego_esteticista:
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
                 builder
-                        .setMessage("¿Esta seguro de cancelar el servicio? tendrá un costo de 5.000 COP.")
+                        .setMessage("¿Ha llegado el Esteticista a su domicilio?")
                         .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int id) {
-                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
-                                //startActivity(intent);
-                                //finish();
+                            public void onClick(DialogInterface dialog, int id)
+                            {
+
+                                _webNotificarLlegadaEsteticista(codigoSolicitud);
+                                stopService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));
+                                menuLlegadaEsteticista.setVisible(false);
+                                menuCancelarServicio.setVisible(false);
                             }
                         }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
                     @Override
@@ -461,86 +512,26 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
 
             case R.id.action_acentar_servicios_seleccionados:
-                AlertDialog.Builder builder1 = new AlertDialog.Builder(AceptacionServicio.this);
-                builder1
-                        .setMessage("¿Esta seguro de agregar estos servicios? no se podrá volver a seleccionar servicios.")
-                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id)
-                            {
-                                String data = "";
 
-                                List<Servicio> lista_servicios = ((ServiciosAceptacionAdapter) mAdapter).getServiciosList();
-                                for (int i = 0; i < lista_servicios.size(); i++)
-                                {
-                                    Servicio servicio = lista_servicios.get(i);
-
-                                    if (servicio.isSelected() == true)
-                                    {
-                                        data = data+servicio.getId().toString()+",";
-
-                                    }
-                                }
-
-                                if(data.isEmpty())
-                                {
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
-                                    builder
-                                            .setMessage("Debe seleccionar al menos (1) Servicio a agregar.")
-                                            .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int id)
-                                                {
-                                                    //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
-                                                    //startActivity(intent);
-                                                    //finish();
-                                                }
-                                            }).show();
-                                    return;
-                                }
-
-                                else
-
-                                {
-                                    //BORRAR ULTIMA COMA Y SEPARARLOS POR DOS PUNTOS ':'
-                                    String serviciosEscogidos = data.substring(0, data.lastIndexOf(","));
-                                    sharedPreferences.putString("serviciosAgregadosEnAceptacionServicio", serviciosEscogidos);
-                                    Toast.makeText(AceptacionServicio.this,
-                                            "Selected Services: \n" + serviciosEscogidos, Toast.LENGTH_LONG)
-                                            .show();
-
-                                   // _webServiceEnviarServiciosAgregadosEsteticista(serviciosEscogidos);
-
-
-
-                                }
-                            }
-                        }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id)
-                            {
-                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
-                                //startActivity(intent);
-                                //finish();
-                            }
-                        }).show();
+                Intent intent = new Intent(AceptacionServicio.this, ListaServiciosCliente.class);
+                intent.putExtra("codigoSolicitud", codigoSolicitud);
+                intent.putExtra("datosCliente", datosCliente);
+                startActivity(intent);
+                //finish();
                 return true;
 
 
-            case R.id.action_finalizar_aceptacion_servicio:
+            case R.id.action_cancelar_servicio:
                 AlertDialog.Builder builder2 = new AlertDialog.Builder(AceptacionServicio.this);
                 builder2
-                        .setMessage("¿Esta seguro de finalizar servicios? se pasara al cobro.")
+                        .setMessage("¿Esta seguro de cancelar el servicio? Tendrá una penalidad de 5.000 COP")
                         .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
                         {
                             @Override
                             public void onClick(DialogInterface dialog, int id)
                             {
-                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
-                                //startActivity(intent);
-                                //finish();
+                                String indicaMulta = "1";
+                                _webServiceCancelarSolicitudServicioCliente(codigoSolicitud, indicaMulta);
                             }
                         }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener()
                 {
@@ -551,7 +542,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                         //startActivity(intent);
                         //finish();
                     }
-                }).show();
+                }).setCancelable(false).show();
                 return true;
 
             default:
@@ -560,48 +551,67 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         }
     }
 
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_aceptacion_servicio, menu);
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        menuLlegadaEsteticista.setVisible(true);
+        menuCancelarServicio.setVisible(true);
+        super.onPrepareOptionsMenu(menu);
         return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater=getMenuInflater();
+        inflater.inflate(R.menu.menu_aceptacion_servicio, menu);
+        menuLlegadaEsteticista = (MenuItem) menu.findItem(R.id.action_llego_esteticista);
+        menuCancelarServicio = (MenuItem) menu.findItem(R.id.action_cancelar_servicio);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public void onLocationChanged(Location location)
     {
-        mLatitude = location.getLatitude();
-        mLongitude = location.getLongitude();
+        Log.d(TAG, "Firing onLocationChanged..............................................");
+        mCurrentLocation = location;
+        mLatitude = mCurrentLocation.getLatitude();
+        mLongitude = mCurrentLocation.getLongitude();
         LatLng latLng = new LatLng(mLatitude, mLongitude);
 
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+        //mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        //mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(100));
+
+        //updateUI();
     }
 
-    public String getUbicacionEsteticista()
+    private void updateUI()
     {
-        return ubicacionEsteticista;
+        Log.d(TAG, "UI update initiated .............");
+        if (null != mCurrentLocation) {
+            String lat = String.valueOf(mCurrentLocation.getLatitude());
+            String lng = String.valueOf(mCurrentLocation.getLongitude());
+
+
+            Toast.makeText(getApplicationContext(),"At Time: " + "\n" +
+                            "Latitude: " + lat + "\n" +
+                            "Longitude: " + lng + "\n" +
+                            "Accuracy: " + mCurrentLocation.getAccuracy() + "\n" +
+                            "Provider: " + mCurrentLocation.getProvider(),
+                    Toast.LENGTH_SHORT).show();
+
+
+
+        } else {
+            Log.d(TAG, "location is null ...............");
+        }
     }
 
-    public void setUbicacionEsteticista(String ubicacionEsteticista)
-    {
-        this.ubicacionEsteticista = ubicacionEsteticista;
-    }
 
-    public static double getLongitudUsuario() {
-        return longitudUsuario;
-    }
 
     public void setLongitudUsuario(double longitudUsuario) {
         this.longitudUsuario = longitudUsuario;
-    }
-
-    public static double getLatitudUsuario() {
-        return latitudUsuario;
-    }
-
-    public static String getSerialUsuarioEsteticista() {
-        return serialUsuarioEsteticista;
     }
 
     public void setSerialUsuarioEsteticista(String serialUsuarioEsteticista) {
@@ -612,13 +622,12 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         this.latitudUsuario = latitudUsuario;
     }
 
-
     public void cargarDatosEsteticista()
     {
 
         String nombreUsuario = null, apellidoUsuario = null,
-               imgUsuario=null,telefonoUsuario = null,serialUsuarioEsteticista = null,
-               distanciaUsuario, tiempoLlegada;
+                imgUsuario=null,telefonoUsuario = null,serialUsuarioEsteticista = null,
+                distanciaUsuario, tiempoLlegada;
 
         try
         {
@@ -642,8 +651,6 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                 kilometrosDistanciaEsteticista.setText("Estoy a: " + tiempoLlegada);
                 tiempoLlegadaEsteticista.setText("Llego en Aprox: " + tiempoLlegada);
             }
-
-
 
             if (imageLoader == null)
                 imageLoader = ControllerSingleton.getInstance().getImageLoader();
@@ -673,37 +680,93 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         }
     }
 
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras)
+    public void onRadioButtonClicked(View view)
     {
+        // Is the button now checked?
+        boolean checked = ((RadioButton) view).isChecked();
 
+        // Check which radio button was clicked
+        switch(view.getId())
+        {
+            case R.id.radioButton1Estrellas:
+                if (checked)
+                    // Pirates are the best
+                    calificacionEsteticista = "1";
+                break;
+            case R.id.radioButton2Estrellas:
+                if (checked)
+                    // Ninjas rule
+                    calificacionEsteticista = "2";
+                break;
+            case R.id.radioButton3Estrellas:
+                if (checked)
+                    // Ninjas rule
+                    calificacionEsteticista = "3";
+                break;
+            case R.id.radioButton4Estrellas:
+                if (checked)
+                    // Ninjas rule
+                    calificacionEsteticista = "4";
+                break;
+            case R.id.radioButton5Estrellas:
+                if (checked)
+                    // Ninjas rule
+                    calificacionEsteticista = "5";
+                break;
+        }
     }
 
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider)
+    public void displayAlertDialogFinalizarServicioCliente(final String codigoSolicitud)
     {
+        LayoutInflater inflater = getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.custom_dialog_finalizar_cliente, null);
+        RadioButton radioTiempoButton;
 
-    }
+        final RadioGroup RadioGroup = (RadioGroup) alertLayout.findViewById(R.id.radioGroupCalificacionEsteticista);
+        final Button buttonEnviarCalificacionEsteticista = (Button) alertLayout.findViewById(R.id.buttonEnviarCalificacionEsteticista);
+        final EditText editTextObservacionClienteFinalizarServicio = (EditText) alertLayout.findViewById(R.id.editTextObservacionClienteFinalizarServicio);
 
-    public String getDistancia() {
-        return distancia;
-    }
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle("Calificación Servicio");
+        alert.setView(alertLayout);
+        alert.setCancelable(false);
+        final AlertDialog dialog = alert.create();
 
-    public void setDistancia(String distancia) {
-        this.distancia = distancia;
-    }
+        buttonEnviarCalificacionEsteticista.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                /*stopService(new Intent(getBaseContext(), ServiceActualizarUbicacionProveedor.class));
+                stopService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));*/
+                sharedPreferences.remove("valorTotalServiciosTemporalSolicitarServicio");
+                sharedPreferences.remove("serviciosEscogidos");
+                sharedPreferences.remove("serviciosEscogidosEnSolicitarServicio");
+                sharedPreferences.remove("proveedores");
+                sharedPreferences.remove("latitudCliente");
+                sharedPreferences.remove("longitudCliente");
+                sharedPreferences.remove("direccionDomicilio");
+                sharedPreferences.remove("serviciosEscojidosListaServiciosCliente");
+                sharedPreferences.remove("serviciosEscogidosEnListaServiciosCliente");
 
-    public String getTiempo() {
-        return tiempo;
-    }
+                Servicio servicio = new Servicio();
+                servicio = null;
 
-    public void setTiempo(String tiempo) {
-        this.tiempo = tiempo;
+                String comentarioCliente = editTextObservacionClienteFinalizarServicio.getText().toString();
+                _webServiceCalificarServicio(codigoSolicitud, comentarioCliente, calificacionEsteticista);
+                dialog.dismiss();
+                Intent intent = new Intent(AceptacionServicio.this, Gestion.class);
+                startActivity(intent);
+
+                stopService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));
+
+                finish();
+            }
+        });
+
+        dialog.show();
+
+
     }
 
     @Override
@@ -712,16 +775,11 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         return false;
     }
 
-
-    private void _webServiceObtenerServiciosEsteticista()
+    private void _webServiceCalificarServicio( final String codigoSolicitud, final String comentario, final String calificacionEsteticista)
     {
-        _urlWebService = "http://52.72.85.214/ws/ObtenerServiciosOfrecidosEsteticista";
+        _urlWebService = "http://52.72.85.214/ws/CalificarServicio";
 
-        //progressBar.setVisibility(View.VISIBLE);
-
-        Log.i("INFO: ", "" + getSerialUsuarioEsteticista() + " : " + "" + sharedPreferences.getString("serviciosEscogidosEnSolicitarServicio"));
-
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, _urlWebService, null,
                 new Response.Listener<JSONObject>()
                 {
 
@@ -730,34 +788,37 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                     {
                         try
                         {
+                            Boolean status = response.getBoolean("status");
                             String message = response.getString("message");
-                            Log.w("Mensaje : ", message);
-                            JSONArray servicios = response.getJSONArray("result");
-                            JSONObject object;
 
-                            for (int i = 0; i <= servicios.length()-1; i++)
+                            if(status)
                             {
-                                object = servicios.getJSONObject(i);
-
-                                Servicio servicio = new Servicio();
-                                servicio.setImagen(object.getString("imagenServicio"));
-                                servicio.setId(object.getString("codigoServicio"));
-                                servicio.setNombreServicio(object.getString("nombreServicio"));
-                                servicio.setDescripcionServicio(object.getString("descripcionServicio"));
-                                servicio.setValorServicio(object.getString("valorServicio"));
-                                allServices.add(servicio);
 
                             }
 
-                            //progressBar.setVisibility(View.GONE);
-                            //buttonSeleccionarServicios.setVisibility(View.VISIBLE);
-                            mAdapter.notifyDataSetChanged();
+                            else
+                            {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this.getApplicationContext());
+                                builder
+                                        .setMessage(message)
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                                //startActivity(intent);
+                                                //finish();
+                                            }
+                                        }).show();
+                            }
+
+
+
 
                         }
                         catch (JSONException e)
                         {
 
-                           // progressBar.setVisibility(View.GONE);
+                            // progressBar.setVisibility(View.GONE);
                             //buttonSeleccionarServicios.setVisibility(View.GONE);
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this.getApplicationContext());
@@ -926,25 +987,25 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                 HashMap<String, String> headers = new HashMap <String, String>();
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
-                headers.put("serialUsuarioEsteticista", getSerialUsuarioEsteticista());
-                headers.put("servicios",sharedPreferences.getString("serviciosEscogidosEnSolicitarServicio"));
+                headers.put("codigoSolicitud", codigoSolicitud);
+                headers.put("observaServicio", comentario);
+                headers.put("calificacionServicio", calificacionEsteticista);
                 headers.put("MyToken", sharedPreferences.getString("MyToken"));
                 return headers;
             }
         };
 
-       // jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        // jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
     }
 
-    /*private void _webServiceGetRoutesEsteticista()
+
+    private void _webNotificarLlegadaEsteticista( final String codigoSolicitud )
     {
+        _urlWebService = "http://52.72.85.214/ws/NotificarLlegadaEsteticista";
 
-        _urlWebService = "http://maps.google.com/maps/api/directions/json?origin="+this.getLatitudUsuario()+","+this.getLongitudUsuario()+
-                "&destination="+mLatitude+","+mLongitude+"&"+"sensor=false";
-
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, _urlWebService, null,
                 new Response.Listener<JSONObject>()
                 {
 
@@ -953,25 +1014,40 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                     {
                         try
                         {
+                            Boolean status = response.getBoolean("status");
+                            String message = response.getString("message");
 
-                            JSONArray routeArray = response.getJSONArray("routes");
-                            JSONObject routes = routeArray.getJSONObject(0);
+                            if(status)
+                            {
 
-                            JSONArray newTempARr = routes.getJSONArray("legs");
-                            JSONObject newDisTimeOb = newTempARr.getJSONObject(0);
+                            }
 
-                            JSONObject distOb = newDisTimeOb.getJSONObject("distance");
-                            JSONObject timeOb = newDisTimeOb.getJSONObject("duration");
+                            else
+                            {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this.getApplicationContext());
+                                builder
+                                        .setMessage(message)
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                                //startActivity(intent);
+                                                //finish();
+                                            }
+                                        }).show();
+                            }
 
-                            kilometrosDistanciaEsteticista.setText("Estoy a: " + distOb.getString("text"));
-                            tiempoLlegadaEsteticista.setText("Llego en Aprox: " + timeOb.getString("text"));
+
 
 
                         }
                         catch (JSONException e)
                         {
 
-                           AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this.getApplicationContext());
+                            // progressBar.setVisibility(View.GONE);
+                            //buttonSeleccionarServicios.setVisibility(View.GONE);
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this.getApplicationContext());
                             builder
                                     .setMessage(e.getMessage().toString())
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
@@ -982,6 +1058,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                                             //finish();
                                         }
                                     }).show();
+
                             e.printStackTrace();
                         }
 
@@ -1079,9 +1156,6 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                                             //finish();
                                         }
                                     }).show();
-
-
-
                         }
 
                         else
@@ -1131,13 +1205,276 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                     }
 
 
-                });
+                })
+        {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError
+            {
+                HashMap<String, String> headers = new HashMap <String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
+                headers.put("codigoSolicitud", codigoSolicitud);
+                headers.put("MyToken", sharedPreferences.getString("MyToken"));
+                return headers;
+            }
+        };
 
-
-
-        //jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        // jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
-    }*/
+    }
+
+    public void _webServiceCancelarSolicitudServicioCliente(final String codigoSolicitud, final String indicaMulta)
+    {
+        _urlWebService = "http://52.72.85.214/ws/CancelarSolicitud";
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, _urlWebService, null,
+                new Response.Listener<JSONObject>()
+                {
+                    @Override
+                    public void onResponse(JSONObject response)
+                    {
+                        try
+                        {
+                            Boolean status = response.getBoolean("status");
+                            String message = response.getString("message");
+
+                            if(status)
+                            {
+
+                                AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                                builder
+                                .setMessage(message)
+                                .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id)
+                                    {
+                                        sharedPreferences.remove("valorTotalServiciosTemporalSolicitarServicio");
+                                        sharedPreferences.remove("serviciosEscogidos");
+                                        sharedPreferences.remove("serviciosEscogidosEnSolicitarServicio");
+                                        sharedPreferences.remove("proveedores");
+                                        sharedPreferences.remove("latitudCliente");
+                                        sharedPreferences.remove("longitudCliente");
+                                        sharedPreferences.remove("direccionDomicilio");
+                                        sharedPreferences.remove("serviciosEscojidosListaServiciosCliente");
+                                        sharedPreferences.remove("serviciosEscogidosEnListaServiciosCliente");
+
+                                        Servicio servicio = new Servicio();
+                                        servicio = null;
+
+                                        Intent intent = new Intent(AceptacionServicio.this, Gestion.class);
+                                        startActivity(intent);
+                                        stopService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));
+                                        finish();
+                                    }
+                                }).setCancelable(false).show();
+                            }
+
+                            else
+                            {
+                               AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                                builder
+                                        .setMessage("Error cancelando la solicitud, intente de nuevo")
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                        {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int id)
+                                            {
+                                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                                //startActivity(intent);
+                                                //finish();
+                                            }
+                                        }).setCancelable(false).show();
+                            }
+                        }
+                        catch (JSONException e)
+                        {
+
+
+                            //progressBar.setVisibility(View.GONE);
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                            builder
+                                    .setMessage(e.getMessage().toString())
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+
+
+                            e.printStackTrace();
+                        }
+                    }
+
+                },
+
+
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+
+                        if (error instanceof TimeoutError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                            builder
+                                    .setMessage("Error de conexión, sin respuesta del servidor.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                            progressBar.setVisibility(View.GONE);
+
+                        }
+
+                        else
+
+                        if (error instanceof NoConnectionError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                            builder
+                                    .setMessage("Por favor, conectese a la red.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                            progressBar.setVisibility(View.GONE);
+
+                        }
+
+                        else
+
+                        if (error instanceof AuthFailureError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                            builder
+                                    .setMessage("Error de autentificación en la red, favor contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                            progressBar.setVisibility(View.GONE);
+
+                        }
+
+                        else
+
+                        if (error instanceof ServerError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                            builder
+                                    .setMessage("Error server, sin respuesta del servidor.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                            progressBar.setVisibility(View.GONE);
+
+                        }
+
+                        else
+
+                        if (error instanceof NetworkError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                            builder
+                                    .setMessage("Error de red, contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                            progressBar.setVisibility(View.GONE);
+                        }
+
+                        else
+
+                        if (error instanceof ParseError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                            builder
+                                    .setMessage("Error de conversión Parser, contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                            progressBar.setVisibility(View.GONE);
+
+                        }
+
+                    }
+
+                })
+        {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError
+            {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
+                headers.put("codigoSolicitud", codigoSolicitud);
+                headers.put("indicaMulta", indicaMulta);
+                headers.put("MyToken", sharedPreferences.getString("MyToken"));
+                return headers;
+
+
+            }
+        };
+
+        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 6, DefaultRetryPolicy.DEFAULT_MAX_RETRIES));
+        ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
+    }
+
+
+
+
+
 
 }

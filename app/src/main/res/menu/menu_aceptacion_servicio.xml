@@ -7,23 +7,26 @@
         android:orderInCategory="100"
         app:showAsAction="never" />-->
 
-    <item android:id="@+id/action_finalizar_aceptacion_servicio"
-        android:title="Finalizar servicio"
-        android:icon="@drawable/ic_gavel_white_24dp"
-        android:orderInCategory="100"
-        app:showAsAction="ifRoom" />
+
 
     <item android:id="@+id/action_acentar_servicios_seleccionados"
         android:title="Acentar seleccion"
-        android:icon="@drawable/ic_done_all_white_24dp"
+        android:icon="@drawable/ic_note_add_white_24dp"
         android:orderInCategory="100"
         app:showAsAction="ifRoom" />
 
-    <item android:id="@+id/action_cancelar_aceptacion_servicio"
-        android:title="Cancelar servicio"
-        android:icon="@drawable/ic_highlight_off_white_24dp"
+    <item android:id="@+id/action_llego_esteticista"
+        android:title="¿LLego el esteticista?"
+        android:icon="@drawable/ic_drive_eta_white_24dp"
         android:orderInCategory="100"
         app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/action_cancelar_servicio"
+        android:title="Cancelar Servicio"
+        android:icon="@drawable/ic_highlight_off_white_24dp"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom"
+        android:visible="true"/>
 
 
 

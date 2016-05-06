@@ -25,6 +25,7 @@
     <string name="title_activity_solitud_servicio_detallada">Servicio</string>
     <string name="title_activity_aceptacion_servicio_esteticista">AceptacionServicioEsteticista
     </string>
+    <string name="title_activity_lista_servicios_cliente">ListaServiciosCliente</string>
 
 
 </resources>

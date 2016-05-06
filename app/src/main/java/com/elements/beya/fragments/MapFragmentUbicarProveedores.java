@@ -1,5 +1,6 @@
 package com.elements.beya.fragments;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,6 +13,7 @@ import com.elements.beya.activities.SolitudServicioDetallada;
 import com.elements.beya.adapters.ServiciosAdapter;
 import com.elements.beya.app.Config;
 import com.elements.beya.beans.Servicio;
+import com.elements.beya.services.ServiceObtenerUbicacionEsteticista;
 import com.elements.beya.vars.vars;
 
 import android.app.ProgressDialog;
@@ -32,9 +34,10 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.DrawableRes;
 import android.support.design.widget.TextInputLayout;
@@ -94,19 +97,36 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import me.leolin.shortcutbadger.ShortcutBadger;
 
+import static com.google.android.gms.internal.zzir.runOnUiThread;
 
-public class MapFragmentUbicarProveedores extends Fragment implements LocationListener, GoogleMap.OnMarkerClickListener
+
+public class MapFragmentUbicarProveedores extends Fragment implements LocationListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener
 {
 
     GoogleMap mGoogleMap;
@@ -115,12 +135,27 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     private Marker marker;
     private MarkerOptions markerOptions;
 
+    private static final long INTERVAL = 1000 * 5;
+    private static final long FASTEST_INTERVAL = 1000 * 1;
+    Button btnFusedLocation;
+    TextView tvLocation;
+
+    Location mCurrentLocation;
+    String mLastUpdateTime;
+
+
     private String TAG = MapFragmentUbicarProveedores.class.getSimpleName();
 
     private BroadcastReceiver mRegistrationBroadcastReceiver;
 
-    ProgressDialog progressDialog;
+    public static ProgressDialog progressDialog;
 
+    private Timer mTimer = null;
+    public static final long TIEMPO_LIMITE = 30 * 1000; // 1 minute
+    public static final long TIEMPO_INICIO = 1 * 1000; // 1 seconds
+    private Handler mHandler = new Handler();
+
+    public static AlertDialog.Builder alertEsperaEsteticista;
 
 
     JSONArray jsonArray;
@@ -131,7 +166,6 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     private View mCustomMarkerView;
     private ImageView mMarkerImageView;
 
-
     public vars vars;
 
     private gestionSharedPreferences sharedPreferences;
@@ -141,8 +175,19 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     String[] mPlaceType = null;
     String[] mPlaceTypeName = null;
 
-    double mLatitude = 0;
-    double mLongitude = 0;
+    LocationRequest mLocationRequest;
+
+
+    public static double getmLatitude() {
+        return mLatitude;
+    }
+
+    public static void setmLatitude(double mLatitude) {
+        MapFragmentUbicarProveedores.mLatitude = mLatitude;
+    }
+
+    public static double mLatitude = 0;
+    public static double mLongitude = 0;
 
     private String _urlWebService;
 
@@ -150,9 +195,15 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     Button buttonFindCoach;
     LocationManager lm;
 
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
 
-    public MapFragmentUbicarProveedores()
-    {
+
+    public MapFragmentUbicarProveedores() {
         // Required empty public constructor
     }
 
@@ -161,183 +212,173 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     {
 
         super.onCreate(savedInstanceState);
-
         sharedPreferences = new gestionSharedPreferences(this.getActivity());
-
         vars = new vars();
 
 
         mRegistrationBroadcastReceiver = new BroadcastReceiver()
         {
             @Override
-            public void onReceive(Context context, Intent intent)
-            {
-                if (intent.getAction().equals(Config.PUSH_NOTIFICATION_PANTALLA))
-                {
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(Config.PUSH_NOTIFICATION_PANTALLA)) {
                     // new push notification is received
-
-
                     progressDialog.dismiss();
 
                     String datosEsteticista = intent.getExtras().getString("datosEsteticista");
                     String datosCliente = intent.getExtras().getString("datosCliente");
+                    String codigoSolicitud = intent.getExtras().getString("codigoSolicitud");
+                    String codigoEsteticista = intent.getExtras().getString("codigoEsteticista");
+/*
+                    Intent serviceIntentOrdenServicio = new Intent("ServiceObtenerUbicacionEsteticista");
+*/
+                    Intent serviceIntentOrdenServicio = new Intent(context,ServiceObtenerUbicacionEsteticista.class);
 
-                    /*sharedPreferences.remove("datosEsteticista");
-                    sharedPreferences.putString("datosEsteticista",intent.getExtras().getString("datosEsteticista"));*/
-
-                    Intent ordenServicio = new Intent(MapFragmentUbicarProveedores.this.getActivity(), AceptacionServicio.class);
-                    ordenServicio.putExtra("datosEsteticista", datosEsteticista);
-                    ordenServicio.putExtra("datosCliente", datosCliente);
-                    startActivity(ordenServicio);
-
-                  /*  try
-                    {
-                        jsonArray = new JSONArray( datosEsteticista );
-
-                        for (int i = 0; i < jsonArray.length(); i++)
-                        {
-
-                            JSONObject servicio = jsonArray.getJSONObject(i);
-                            Log.w(TAG , "servicio en push: "+servicio.getString("nombresUsuario"));
-                            Log.w(TAG , "servicio en push: "+servicio.getString("apellidosUsuario"));
-                            Log.w(TAG , "servicio en push: "+servicio.getString("latitudUsuario"));
-                            Log.w(TAG , "servicio en push: "+servicio.getString("longitudUsuario"));
-
-                        }
+                    serviceIntentOrdenServicio.putExtra("datosEsteticista", datosEsteticista);
+                    serviceIntentOrdenServicio.putExtra("datosCliente", datosCliente);
+                    serviceIntentOrdenServicio.putExtra("codigoSolicitud", codigoSolicitud);
+                    serviceIntentOrdenServicio.putExtra("codigoEsteticista", codigoEsteticista);
+                    context.startService(serviceIntentOrdenServicio);
+                    //startService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));
 
 
-                    }
-                    catch (JSONException e)
-                    {
-                        e.printStackTrace();
-                    }*/
 
-                    Log.w("ALERTA", "Push notification is received!"+intent.getStringExtra("datosEsteticista"));
+                    Log.w("ALERTA", "Push notification is received!" + intent.getStringExtra("datosEsteticista"));
                     Toast.makeText(MapFragmentUbicarProveedores.this.getActivity(), "SERVICIO ACEPTADO: " +
                             intent.getExtras().getString("datosEsteticista"), Toast.LENGTH_LONG).show();
 
-                   /* solicitudesServicios.clear();
-                    //data.addAll(datas);
-                    //notifyDataSetChanged();
-
-                    _webServiceGetSolicitudesServicios();
-                    mAdapter.notifyDataSetChanged();
-                    ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
-
-
-                    Toast.makeText(ServiciosDisponibles.this.getActivity(), "Push notification is received!" +
-                            intent.getExtras().getString("message"), Toast.LENGTH_LONG).show();*/
                 }
             }
         };
 
         mCustomMarkerView = ((LayoutInflater) MapFragmentUbicarProveedores.this.getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_info_market_map, null);
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
 
-        //findCoachMap();
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mGoogleMap = ((SupportMapFragment) getChildFragmentManager()
+                .findFragmentById(R.id.map)).getMap();
+
+        createLocationRequest();
+        mGoogleApiClient = new GoogleApiClient.Builder(MapFragmentUbicarProveedores.this.getActivity())
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+        if (!isGooglePlayServicesAvailable()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+            builder
+                    .setMessage("SIN SOPORTE DE GOOGLE PLAY SERVICES.")
+                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                            //startActivity(intent);
+                            //finish();
+                        }
+                    }).show();
+        }
+
+        mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
+        mGoogleMap.getUiSettings().setCompassEnabled(true);
+        mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        mGoogleMap.setMyLocationEnabled(true);
+
+
+        if (ActivityCompat.checkSelfPermission(MapFragmentUbicarProveedores.this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapFragmentUbicarProveedores.this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+
+
+        cargarProveedoresServicios();
 
     }
 
 
 
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        Log.d(TAG, "onStart fired ..............");
+        mGoogleApiClient.connect();
+    }
+
+    public static double getmLongitude() {
+        return mLongitude;
+    }
+
+    public static void setmLongitude(double mLongitude) {
+        MapFragmentUbicarProveedores.mLongitude = mLongitude;
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        Log.d(TAG, "onStop fired ..............");
+        mGoogleApiClient.disconnect();
+        Log.d(TAG, "isConnected ...............: " + mGoogleApiClient.isConnected());
+    }
+
+
+    private boolean isGooglePlayServicesAvailable()
+    {
+        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(MapFragmentUbicarProveedores.this.getActivity());
+        if (ConnectionResult.SUCCESS == status)
+        {
+            return true;
+        }
+        else
+        {
+            GooglePlayServicesUtil.getErrorDialog(status, MapFragmentUbicarProveedores.this.getActivity(), 0).show();
+            return false;
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle)
+    {
+        Log.d(TAG, "onConnected - isConnected ...............: " + mGoogleApiClient.isConnected());
+        startLocationUpdates();
+    }
+
+    protected void startLocationUpdates()
+    {
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            return;
+        }
+
+        PendingResult<Status> pendingResult = LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, this);
+        Log.d(TAG, "Location update started ..............: ");
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
+                             Bundle savedInstanceState) {
 
         setHasOptionsMenu(true);
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_map_fragment_ubicar_proveedores, container, false);
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
 
-
-        mGoogleMap = ((SupportMapFragment) getChildFragmentManager()
-                .findFragmentById(R.id.map)).getMap();
-
-
-        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this.getActivity().getBaseContext());
-
-
-        if (status != ConnectionResult.SUCCESS) { // Google Play Services are not available
-
-            int requestCode = 10;
-            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status, this.getActivity(), requestCode);
-            dialog.show();
-            return;
-
-        } else
-
-        {
-
-            mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
-            mGoogleMap.getUiSettings().setCompassEnabled(true);
-            mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
-            mGoogleMap.setMyLocationEnabled(true);
-
-            if (ActivityCompat.checkSelfPermission(this.getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) !=
-                    PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getActivity(),
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-
-            }
-
-
-            //Location location = locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-           /* if (location!=null){
-                double longitude = location.getLongitude();
-                double latitude = location.getLatitude();
-                String locLat = String.valueOf(latitude)+","+String.valueOf(longitude);
-            }*/
-
-
-            LocationManager locationManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
-
-            // Creating a criteria object to retrieve provider
-            Criteria criteria = new Criteria();
-
-            // Getting the name of the best provider
-            String provider = locationManager.getBestProvider(criteria, false);
-
-            // Getting Current Location From GPS
-            Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-            if (location != null) {
-                onLocationChanged(location);
-                mLatitude = location.getLatitude();
-                mLongitude = location.getLongitude();
-            }
-
-            locationManager.requestLocationUpdates(provider, 90000, 0, this);
-
-           /* mLatitude = location.getLatitude();
-            mLongitude = location.getLongitude();*/
-
-            //SE OBTIENE LAS COORDENADAS DEL CLIENTE QUE SOLICITA EL SERVICIO.
-            sharedPreferences.putDouble("latitudCliente", mLatitude);
-            sharedPreferences.putDouble("longitudCliente",mLongitude);
-
-            cargarProveedoresServicios();
-
-
-
-        }
-
-    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
@@ -345,9 +386,10 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.menu_ubicar_proveedores_on_map, menu);
         /*SolicitarServicio.this.getActivity().getMenuInflater().inflate(R.menu.solicitar_servicio_menu, menu);*/
-        super.onCreateOptionsMenu(menu,inflater);
+        super.onCreateOptionsMenu(menu, inflater);
 
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
@@ -361,9 +403,6 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                 return super.onOptionsItemSelected(item);
         }
     }
-
-
-
 
 
     public void displayAlertDialog()
@@ -381,25 +420,20 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         alert.setCancelable(false);
         final AlertDialog dialog = alert.create();
 
-        botonConfirmarDomicilio.setOnClickListener(new View.OnClickListener()
-        {
+        botonConfirmarDomicilio.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
 
 
                 String editTextDireccion = editTextDireccionDomicilio.getText().toString().trim();
 
-                if (editTextDireccion.isEmpty())
-                {
+                if (editTextDireccion.isEmpty()) {
                     inputLayoutDireccionDomicilio.setError("Digite dirección.");//cambiar a edittext en register!!
                     view.requestFocus();
 
-                }
-                else
-                {
+                } else {
                     _webServiceEnviarNotificacionPushATodos(sharedPreferences.getString("serialUsuario"));
-                    sharedPreferences.putString("direccionDomicilio",editTextDireccionDomicilio.getText().toString());
+                    sharedPreferences.putString("direccionDomicilio", editTextDireccionDomicilio.getText().toString());
                     dialog.dismiss();
                 }
 
@@ -412,13 +446,10 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     }
 
 
-
-    public void cargarProveedoresServicios()
-    {
+    public void cargarProveedoresServicios() {
 
 
-        for( int i = 0; i <= sharedPreferences.getListObject("proveedores", Proveedor.class).size()-1; i++ )
-        {
+        for (int i = 0; i <= sharedPreferences.getListObject("proveedores", Proveedor.class).size() - 1; i++) {
 
             mMarkerImageView = (ImageView) mCustomMarkerView.findViewById(R.id.imagenProveedorCustomInfoMarket);
 
@@ -426,14 +457,13 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
             mGoogleMap.setInfoWindowAdapter(new IconizedWindowAdapter(getActivity().getLayoutInflater()));
 
             markerOptions = new MarkerOptions();
-            final LatLng latLng = new LatLng( Double.parseDouble(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getLatitudUsuario()),
+            final LatLng latLng = new LatLng(Double.parseDouble(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getLatitudUsuario()),
                     Double.parseDouble(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getLongitudUsuario()));
 
             markerOptions.position(latLng);
             markerOptions.title(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getNombreProveedor().toString() + " " + sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getApellidoProveedor());
             markerOptions.snippet(sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getEmailProveedor().toString());
             markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.beya_logo_on_map));
-
 
 /*
             Glide.with(MapFragmentUbicarProveedores.this.getActivity()).
@@ -457,35 +487,34 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
         }
 
-       /* mGoogleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
-        {
-
-            @Override
-            public boolean onMarkerClick(Marker arg0)
-            {
-
-                *//*String name = arg0.getTitle().toString();
-                Intent intent = new Intent(Map.this, Perfil.class);
-                intent.putExtra("name",name);
-                startActivity(intent);
-                finish();
-*//*
-                return true;
-            }
-
-        });*/
 
     }
 
     @Override
     public void onPause() {
-        LocalBroadcastManager.getInstance(MapFragmentUbicarProveedores.this.getActivity()).unregisterReceiver(mRegistrationBroadcastReceiver);
         super.onPause();
+        LocalBroadcastManager.getInstance(MapFragmentUbicarProveedores.this.getActivity()).unregisterReceiver(mRegistrationBroadcastReceiver);
+        stopLocationUpdates();
+    }
+
+    protected void stopLocationUpdates()
+    {
+        LocationServices.FusedLocationApi.removeLocationUpdates(
+                mGoogleApiClient, this);
+        Log.d(TAG, "Location update stopped .......................");
+
     }
 
     @Override
     public void onResume()
     {
+
+
+        if (mGoogleApiClient.isConnected()) {
+            startLocationUpdates();
+            Log.d(TAG, "Location update resumed .....................");
+        }
+
         super.onResume();
 
        /* // register GCM registration complete receiver
@@ -497,6 +526,8 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         // by doing this, the activity will be notified each time a new message arrives
         LocalBroadcastManager.getInstance(MapFragmentUbicarProveedores.this.getActivity()).registerReceiver(mRegistrationBroadcastReceiver,
                 new IntentFilter(Config.PUSH_NOTIFICATION_PANTALLA));
+
+
     }
 
 
@@ -510,60 +541,50 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     @Override
     public void onLocationChanged(Location location)
     {
-        mLatitude = location.getLatitude();
-        mLongitude = location.getLongitude();
-        LatLng latLng = new LatLng(mLatitude, mLongitude);
-
+        Log.d(TAG, "Firing onLocationChanged..............................................");
+        mCurrentLocation = location;
+        LatLng latLng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+        sharedPreferences.putDouble("latitudCliente", mCurrentLocation.getLatitude());
+        sharedPreferences.putDouble("longitudCliente", mCurrentLocation.getLongitude());
+        //updateUI();
+    }
 
-        sharedPreferences.putDouble("latitudCliente", mLatitude);
-        sharedPreferences.putDouble("longitudCliente",mLongitude);
+    private void updateUI()
+    {
+        Log.d(TAG, "UI update initiated .............");
+        if (null != mCurrentLocation)
+        {
+            String lat = String.valueOf(mCurrentLocation.getLatitude());
+            String lng = String.valueOf(mCurrentLocation.getLongitude());
+
+            Toast.makeText(MapFragmentUbicarProveedores.this.getActivity(), "At Time: " + mLastUpdateTime + "\n" +
+                    "Latitude: " + lat + "\n" +
+                    "Longitude: " + lng + "\n" +
+                    "Accuracy: " + mCurrentLocation.getAccuracy() + "\n" +
+                    "Provider: " + mCurrentLocation.getProvider(), Toast.LENGTH_LONG).show();
+        }
+        else
+        {
+            Log.d(TAG, "location is null ...............");
+        }
+    }
 
 
+
+    @Override
+    public void onConnectionSuspended(int i)
+    {
     }
 
 
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras)
+    public void onConnectionFailed(ConnectionResult connectionResult)
     {
+        Log.d(TAG, "Connection failed: " + connectionResult.toString());
 
     }
-
-
-
-    /**
-     * Called when the provider is enabled by the user.
-     *
-     * @param provider the name of the location provider associated with this
-     *                 update.
-     */
-    @Override
-    public void onProviderEnabled(String provider)
-    {
-
-    }
-
-    /**
-     * Called when the provider is disabled by the user. If requestLocationUpdates
-     * is called on an already disabled provider, this method is called
-     * immediately.
-     *
-     * @param provider the name of the location provider associated with this
-     *                 update.
-     */
-    @Override
-    public void onProviderDisabled(String provider)
-    {
-
-    }
-
-    @Override
-    public boolean onMarkerClick(Marker marker)
-    {
-        return false;
-    }
-
 
 
     public class IconizedWindowAdapter implements GoogleMap.InfoWindowAdapter
@@ -657,7 +678,9 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     {
         _urlWebService = "http://52.72.85.214/ws/SendPushNotificationForALL";
 
-        Log.e(TAG, " Se escojieron: "+sharedPreferences.getString("serviciosEscogidos"));
+        Log.e(TAG, "Se escojieron: "+""+sharedPreferences.getString("serviciosEscogidos"));
+        Log.e(TAG, "PRUEBA LATITUD " +""+sharedPreferences.getDouble("latitudCliente", 0));
+        Log.e(TAG, "PRUEBA LONGITUD " +""+sharedPreferences.getDouble("longitudCliente", 0));
 
 
         indicaAndroid = vars.indicaAndroid;
@@ -681,6 +704,51 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                                         "Por favor espere un momento, se está asigando un esteticista a su solicitud de servicio.");
                                 progressDialog.setCanceledOnTouchOutside(false);
                                 progressDialog.setCancelable(false);
+
+
+                                //MUESTRO EL AVISO DURANTE 10 SEGUNDOS Y LUEGO LO CIERRO.
+                                new CountDownTimer(TIEMPO_LIMITE, TIEMPO_INICIO)
+                                {
+
+                                    @Override
+                                    public void onTick(long millisUntilFinished)
+                                    {
+                                        // TODO Auto-generated method stub
+
+                                    }
+
+                                    @Override
+                                    public void onFinish()
+                                    {
+                                        // TODO Auto-generated method stub
+
+                                        progressDialog.dismiss();
+
+                                       /* alertEsperaEsteticista = new AlertDialog.Builder(getActivity().getApplicationContext());
+                                        alertEsperaEsteticista
+                                        .setMessage("No se encuentran esteticistas disponibles en este momento.")
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                        {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int id)
+                                            {
+                                                android.support.v4.app.FragmentManager fragmentManager = getFragmentManager();
+                                                android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                                                fragmentTransaction.replace(R.id.frame_container, new SolicitarServicio());
+                                                fragmentTransaction.commit();
+
+                                            }
+                                        }).show();*/
+
+
+                                        //cancelar servicio
+
+                                    }
+                                }.start();
+
+
+
+
 
                               /*  AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
                                 builder

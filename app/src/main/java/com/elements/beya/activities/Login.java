@@ -49,6 +49,8 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
+//import com.testfairy.TestFairy;
+//import com.testfairy.TestFairy;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -105,6 +107,8 @@ public class Login extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        //TestFairy.begin(this, "3ff5c9c8a83c68a375d949773fea322f2b47cef1"); // e.g "0000111122223333444455566667777788889999";
+
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -118,6 +122,8 @@ public class Login extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().hide();
         getSupportActionBar().setDisplayShowHomeEnabled(false);
+
+
 
         String fontPath = "fonts/Raleway-Medium.ttf";
 

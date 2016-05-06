@@ -1,7 +1,7 @@
 package com.elements.beya.gcm;
 
 /**
- * Created by FABiO on 23/02/2016.
+
  * This service invokes onTokenRefresh() method whenever there is a change in gcm registration token.
  */
 import android.content.Intent;

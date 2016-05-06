@@ -23,6 +23,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.elements.beya.R;
+import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
@@ -37,15 +38,22 @@ public class GcmIntentService extends IntentService
 
     private static final String TAG = GcmIntentService.class.getSimpleName();
 
+
+    gestionSharedPreferences sharedPreferences;
+
     public GcmIntentService()
     {
         super(TAG);
+        //sharedPreferences = new gestionSharedPreferences(this.getApplicationContext());
+
     }
 
     public static final String KEY = "key";
     public static final String TOPIC = "topic";
     public static final String SUBSCRIBE = "subscribe";
     public static final String UNSUBSCRIBE = "unsubscribe";
+
+
 
 
     @Override
@@ -83,6 +91,9 @@ public class GcmIntentService extends IntentService
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String token = null;
 
+        this.sendBroadcast(new Intent("com.google.android.intent.action.GTALK_HEARTBEAT"));
+        this.sendBroadcast(new Intent("com.google.android.intent.action.MCS_HEARTBEAT"));
+
 
         try
         {
@@ -115,6 +126,13 @@ public class GcmIntentService extends IntentService
     {
         // Send the registration token to our server
         // to keep it in MySQL
+
+        if(!token.isEmpty())
+        {
+            //sharedPreferences.putString("TOKEN",token);
+
+        }
+
 
     }
 

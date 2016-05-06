@@ -8,7 +8,8 @@
     android:layout_height="match_parent"
     android:background="@color/colorBlanco"
     android:fitsSystemWindows="true"
-    tools:context=".activities.Login">
+    tools:context=".activities.Login"
+    >
 
     <!--<android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -28,7 +29,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:background="@color/colorBlanco">
 
 
 
@@ -54,17 +56,7 @@
                     android:layout_height="20dp" />
 
 
-                <ImageView
-                    android:id="@+id/imageView"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:layout_centerHorizontal="true"
-                    android:layout_centerVertical="true"
-                    android:layout_gravity="center"
-                    android:adjustViewBounds="true"
-                    android:cropToPadding="true"
-                    android:gravity="center"
-                    android:src="@mipmap/beya_logo" />
+
 
                 <Space
                     android:layout_width="match_parent"
@@ -78,11 +70,11 @@
 
 
                     <EditText
-                        android:id="@+id/input_email"
+                        android:id="@+id/input_email_soporte"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:backgroundTint="@color/colorAccent"
-                        android:hint="@string/hint_email"
+                        android:hint="Asunto"
                         android:inputType="text"
                         android:textColor="@color/colorAccent"
                         android:textColorHint="@color/colorAccent" />
@@ -95,11 +87,11 @@
                     android:textColorHint="@color/colorAccent">
 
                     <EditText
-                        android:id="@+id/input_password"
+                        android:id="@+id/input_mensaje_soporte"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:backgroundTint="@color/colorAccent"
-                        android:hint="Escriba su observación"
+                        android:hint="Mensaje"
                         android:inputType="text"
                         android:textColor="@color/colorAccent"
                         android:textColorHint="@color/colorAccent" />
@@ -107,10 +99,10 @@
 
 
                 <Button
-                    android:id="@+id/btn_signup"
+                    android:id="@+id/boton_enviar_soporte"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="40dp"
+                    android:layout_marginTop="10dp"
                     android:background="@drawable/css_buttons"
                     android:text="Enviar"
                     android:textColor="@android:color/white" />
@@ -145,7 +137,7 @@
                     android:paddingRight="20dp">
 
                     <ProgressBar
-                        android:id="@+id/progressBar"
+                        android:id="@+id/progressBarSoporte"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_alignParentBottom="true"
@@ -153,7 +145,7 @@
                         android:layout_gravity="center"
                         android:indeterminateTint="@color/colorAccent"
                         android:indeterminateTintMode="src_atop"
-                        android:visibility="visible" />
+                        android:visibility="gone" />
 
                     <TextView
                         android:id="@+id/textViewProgressBar"

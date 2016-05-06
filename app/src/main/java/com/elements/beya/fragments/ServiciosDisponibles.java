@@ -11,6 +11,7 @@ import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,6 +23,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -59,7 +61,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import me.leolin.shortcutbadger.ShortcutBadger;
+//import me.leolin.shortcutbadger.ShortcutBadger;
+
+//import me.leolin.shortcutbadger.ShortcutBadger;
 
 public class ServiciosDisponibles extends Fragment
 {
@@ -74,7 +78,12 @@ public class ServiciosDisponibles extends Fragment
     private ServiciosDisponiblesAdapter mAdapter;
     private BroadcastReceiver mRegistrationBroadcastReceiver;
 
+    private TextView textViewAvisoSinSolicitudesServicio;
+
     HashMap <String, ArrayList<Servicio>> hashTableSolicitudDetallada;
+
+    private SwipeRefreshLayout refreshLayout;
+
 
     boolean active= false;
 
@@ -116,7 +125,7 @@ public class ServiciosDisponibles extends Fragment
 
                     _webServiceGetSolicitudesServicios();
                     mAdapter.notifyDataSetChanged();
-                    ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
+                    //ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
 
 
                     Toast.makeText(ServiciosDisponibles.this.getActivity(), "Push notification is received!" + intent.getExtras().getString("message"), Toast.LENGTH_LONG).show();
@@ -146,7 +155,7 @@ public class ServiciosDisponibles extends Fragment
        /* // register GCM registration complete receiver
         LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
                 new IntentFilter(Config.REGISTRATION_COMPLETE));*/
-        ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
+        //ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
 
         // register new push message receiver
         // by doing this, the activity will be notified each time a new message arrives
@@ -169,10 +178,11 @@ public class ServiciosDisponibles extends Fragment
     {
         super.onViewCreated(view, savedInstanceState);
 
-        ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
+        //ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
         sharedPreferences.remove("countPush");
 
         progressBar = (ProgressBar) this.getActivity().findViewById(R.id.toolbar_progress_bar);
+        //textViewAvisoSinSolicitudesServicio = (TextView) this.getActivity().findViewById(R.id.textViewAvisoSinSolicitudesServicio);
         recyclerViewServiciosDisponibles = (RecyclerView) this.getActivity().findViewById(R.id.recycler_view_servicios_disponibles);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this.getActivity().getApplicationContext());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -186,22 +196,21 @@ public class ServiciosDisponibles extends Fragment
         recyclerViewServiciosDisponibles.setAdapter(mAdapter);
 
         recyclerViewServiciosDisponibles.addOnItemTouchListener(new RecyclerTouchListener(this.getActivity(),
-                recyclerViewServiciosDisponibles, new ClickListener()
-        {
+                recyclerViewServiciosDisponibles, new ClickListener() {
             @Override
-            public void onClick(View view, int position)
-            {
+            public void onClick(View view, int position) {
                 SolicitudServicio solicitudServicio = solicitudesServicios.get(position);
 
                 Intent intent = new Intent(ServiciosDisponibles.this.getActivity(), SolitudServicioDetallada.class);
-                intent.putExtra("codigoSolicitud",solicitudServicio.getCodigoSolicitudServicio());
-                intent.putExtra("codigoCliente",solicitudServicio.getCodigoClienteSolicitudServicio());
-                intent.putExtra("ubicacionCliente",solicitudServicio.getUbicacionSolicitudServicio());
-                intent.putExtra("nombreUsuario",solicitudServicio.getNombreUsuario());
-                intent.putExtra("fechaSolicitud",solicitudServicio.getFechaSolicitudServicio());
-                intent.putExtra("telefonoUsuario",solicitudServicio.getTelefonoClienteSolicitudServicio());
-                intent.putExtra("direccionDomicilio",solicitudServicio.getDireccion());
-                intent.putExtra("costoSolicitud",solicitudServicio.getCostoSolicitud());
+                intent.putExtra("codigoSolicitud", solicitudServicio.getCodigoSolicitudServicio());
+                intent.putExtra("codigoCliente", solicitudServicio.getCodigoClienteSolicitudServicio());
+                intent.putExtra("ubicacionCliente", solicitudServicio.getUbicacionSolicitudServicio());
+                intent.putExtra("nombreUsuario", solicitudServicio.getNombreUsuario());
+                intent.putExtra("fechaSolicitud", solicitudServicio.getFechaSolicitudServicio());
+                intent.putExtra("telefonoUsuario", solicitudServicio.getTelefonoClienteSolicitudServicio());
+                intent.putExtra("direccionDomicilio", solicitudServicio.getDireccion());
+                intent.putExtra("costoSolicitud", solicitudServicio.getCostoSolicitud());
+                intent.putExtra("imgUsuario", solicitudServicio.getImagenClienteSolicitudServicio());
                 startActivity(intent);
 
                 sharedPreferences.putHashMapObjectServicio(hashTableSolicitudDetallada);
@@ -209,8 +218,7 @@ public class ServiciosDisponibles extends Fragment
             }
 
             @Override
-            public void onLongClick(View view, int position)
-            {
+            public void onLongClick(View view, int position) {
 
             }
         }));
@@ -218,6 +226,28 @@ public class ServiciosDisponibles extends Fragment
         //progressBar.setVisibility(View.VISIBLE);
         _webServiceGetSolicitudesServicios();
         mAdapter.notifyDataSetChanged();
+
+
+        // Obtener el refreshLayout
+        refreshLayout = (SwipeRefreshLayout) this.getActivity().findViewById(R.id.swipeRefreshServiciosDisponibles);
+
+        refreshLayout.setColorSchemeResources(
+                R.color.colorAccent
+
+        );
+
+// Iniciar la tarea asíncrona al revelar el indicador
+        refreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+
+                        solicitudesServicios.clear();
+                        _webServiceGetSolicitudesServicios();
+                        mAdapter.notifyDataSetChanged();
+                    }
+                }
+        );
 
     }
 
@@ -271,6 +301,7 @@ public class ServiciosDisponibles extends Fragment
                                     solicitudServicio.setFechaSolicitudServicio(object.getString("fecSolicitudCliente"));
                                     solicitudServicio.setTelefonoClienteSolicitudServicio(object.getString("telefonoUsuario"));
                                     solicitudServicio.setDireccion(object.getString("direccionDomicilio"));
+                                    solicitudServicio.setImagenClienteSolicitudServicio(object.getString("imgUsuario"));
 
                                     solicitudServicio.setUbicacionSolicitudServicio(object.getString("ubicacionCliente"));
                                     solicitudServicio.setCostoSolicitud(object.getString("costoSolicitud"));
@@ -298,6 +329,8 @@ public class ServiciosDisponibles extends Fragment
                                 }
                                 progressBar.setVisibility(View.GONE);
                                 mAdapter.notifyDataSetChanged();
+                                refreshLayout.setRefreshing(false);
+
 
                             }
 
@@ -315,6 +348,9 @@ public class ServiciosDisponibles extends Fragment
                                                 //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
                                                 //startActivity(intent);
                                                 //finish();
+                                                refreshLayout.setRefreshing(false);
+
+
                                             }
                                         }).show();
                                 progressBar.setVisibility(View.GONE);
