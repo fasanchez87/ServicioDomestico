@@ -19,6 +19,9 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -123,6 +126,9 @@ public class ServiciosDisponibles extends Fragment
                     //data.addAll(datas);
                     //notifyDataSetChanged();
 
+                   // progressBar.setVisibility(View.GONE);
+                    textViewAvisoSinSolicitudesServicio.setVisibility(View.GONE);
+                    recyclerViewServiciosDisponibles.setVisibility(View.VISIBLE);
                     _webServiceGetSolicitudesServicios();
                     mAdapter.notifyDataSetChanged();
                     //ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
@@ -138,6 +144,41 @@ public class ServiciosDisponibles extends Fragment
 
 
     }
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+    {
+        inflater.inflate(R.menu.menu_servicios_disponibles, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.action_update_servicio_onmap:
+
+                if(solicitudesServicios.isEmpty())
+                {
+                    progressBar.setVisibility(View.GONE);
+                    textViewAvisoSinSolicitudesServicio.setVisibility(View.VISIBLE);
+                    recyclerViewServiciosDisponibles.setVisibility(View.GONE);
+                }
+
+                solicitudesServicios.clear();
+                _webServiceGetSolicitudesServicios();
+                mAdapter.notifyDataSetChanged();
+
+
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
 
 
 
@@ -179,10 +220,12 @@ public class ServiciosDisponibles extends Fragment
         super.onViewCreated(view, savedInstanceState);
 
         //ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
+        setHasOptionsMenu(true);
+
         sharedPreferences.remove("countPush");
 
         progressBar = (ProgressBar) this.getActivity().findViewById(R.id.toolbar_progress_bar);
-        //textViewAvisoSinSolicitudesServicio = (TextView) this.getActivity().findViewById(R.id.textViewAvisoSinSolicitudesServicio);
+        textViewAvisoSinSolicitudesServicio = (TextView) this.getActivity().findViewById(R.id.textViewAvisoSinSolicitudesServicio);
         recyclerViewServiciosDisponibles = (RecyclerView) this.getActivity().findViewById(R.id.recycler_view_servicios_disponibles);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this.getActivity().getApplicationContext());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -229,25 +272,34 @@ public class ServiciosDisponibles extends Fragment
 
 
         // Obtener el refreshLayout
-        refreshLayout = (SwipeRefreshLayout) this.getActivity().findViewById(R.id.swipeRefreshServiciosDisponibles);
+        //refreshLayout = (SwipeRefreshLayout) this.getActivity().findViewById(R.id.swipeRefreshServiciosDisponibles);
 
-        refreshLayout.setColorSchemeResources(
+       /* refreshLayout.setColorSchemeResources(
                 R.color.colorAccent
 
-        );
+        );*/
 
 // Iniciar la tarea asíncrona al revelar el indicador
-        refreshLayout.setOnRefreshListener(
-                new SwipeRefreshLayout.OnRefreshListener() {
+/*        refreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener()
+                {
                     @Override
-                    public void onRefresh() {
+                    public void onRefresh()
+                    {
+
+                       *//* if(solicitudesServicios.isEmpty())
+                        {
+                            progressBar.setVisibility(View.GONE);
+                            textViewAvisoSinSolicitudesServicio.setVisibility(View.VISIBLE);
+                            recyclerViewServiciosDisponibles.setVisibility(View.GONE);
+                        }*//*
 
                         solicitudesServicios.clear();
                         _webServiceGetSolicitudesServicios();
                         mAdapter.notifyDataSetChanged();
                     }
                 }
-        );
+        );*/
 
     }
 
@@ -329,31 +381,17 @@ public class ServiciosDisponibles extends Fragment
                                 }
                                 progressBar.setVisibility(View.GONE);
                                 mAdapter.notifyDataSetChanged();
-                                refreshLayout.setRefreshing(false);
+                                //refreshLayout.setRefreshing(false);
 
 
                             }
 
                             else
                             {
-
-                                AlertDialog.Builder builder = new AlertDialog.Builder(ServiciosDisponibles.this.getActivity());
-                                builder
-                                        .setMessage("No existen solicitudes de servicio en este momento.")
-                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
-                                        {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int id)
-                                            {
-                                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
-                                                //startActivity(intent);
-                                                //finish();
-                                                refreshLayout.setRefreshing(false);
-
-
-                                            }
-                                        }).show();
                                 progressBar.setVisibility(View.GONE);
+                                textViewAvisoSinSolicitudesServicio.setVisibility(View.VISIBLE);
+                                recyclerViewServiciosDisponibles.setVisibility(View.GONE);
+
                             }
 
                         }

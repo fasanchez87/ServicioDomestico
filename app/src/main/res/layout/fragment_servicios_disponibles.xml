@@ -10,15 +10,6 @@
     android:background="#FFFFFF"
     android:orientation="vertical">
 
-
-
-    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/swipeRefreshServiciosDisponibles"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view_servicios_disponibles"
         android:layout_width="match_parent"
@@ -26,11 +17,9 @@
         android:scrollbars="vertical"
         android:layout_weight="1"/>
 
-    </android.support.v4.widget.SwipeRefreshLayout>
-
-    <!--<TextView
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="NO EXISTEN \n SOLICITUDES \n DE SERVICIO \n EN ESTE \nMOMENTO"
         android:gravity="center"
@@ -42,7 +31,7 @@
         android:textColor="#C4C4C4"
         android:visibility="gone"
 
-        />-->
+        />
 
 
 

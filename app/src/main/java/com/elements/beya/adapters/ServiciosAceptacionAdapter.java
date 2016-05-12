@@ -6,6 +6,7 @@ package com.elements.beya.adapters;
 
 import android.content.SharedPreferences;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,11 +21,14 @@ import com.elements.beya.R;
 import com.elements.beya.activities.AceptacionServicio;
 import com.elements.beya.activities.ListaServiciosCliente;
 import com.elements.beya.beans.Servicio;
+import com.elements.beya.beans.ValorServicio;
 import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 import static com.google.android.gms.internal.zzir.runOnUiThread;
 
@@ -39,6 +43,9 @@ public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosA
     private static int lastCheckedPos = 0;
 
     SharedPreferences sharedPreferences;
+
+
+
 
 
     public class MyViewHolder extends RecyclerView.ViewHolder
@@ -87,6 +94,7 @@ public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosA
         holder.checkServicio.setChecked(servicio.isSelected());
         holder.checkServicio.setTag(servicio);
 
+        valorAcarreado = ValorServicio.getValorServicio();
 
         //for default check in first item
         if(position == 0 && serviciosList.get(0).isSelected() && holder.checkServicio.isChecked())
@@ -106,7 +114,7 @@ public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosA
                 serviciosList.get(position).setSelected(cb.isChecked());
                 Toast.makeText(v.getContext(), "Clicked on Checkbox: " + cb.getText() + " is "+ cb.isChecked(), Toast.LENGTH_LONG).show();
 
-                //int clickedPos = ((Integer)cb.getTag()).intValue();
+                final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
 
                 if(cb.isChecked())
                 {
@@ -124,52 +132,58 @@ public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosA
 
 
 
-                valorTotal = Integer.parseInt(AceptacionServicio.precioTemporalAceptacionServicios.getText().toString());
+                //valorTotal = Integer.parseInt(AceptacionServicio.precioTemporalAceptacionServicios.getText().toString());
+
+
 
                 if(cb.isChecked())
                 {
-
-                    valorAcarreado = Integer.parseInt(AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.getText().toString());
+                    //valorAcarreado = Integer.parseInt(AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.getText().toString());
+                    //valorAcarreado = ValorServicio.getValorServicio();
 
                     valorAcarreado += Integer.parseInt(s.getValorServicio());
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
 
-                            AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText("" + valorAcarreado);
-                            ListaServiciosCliente.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText("" + valorAcarreado);
+                    Toast.makeText(v.getContext(), "valorAcarreado "+valorAcarreado, Toast.LENGTH_LONG).show();
+
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.
+                                    setText("" + nf.format(valorAcarreado));
+                            ListaServiciosCliente.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.
+                                    setText("" + nf.format(valorAcarreado));
+                            AceptacionServicio.precioTemporalAceptacionServicios.setText("" + nf.format(valorAcarreado));
 
                         }
                     });
-
-
 
                 }
 
                 else
                 {
-                    valorAcarreado = Integer.parseInt(AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.getText().toString());
+                    //valorAcarreado = Integer.parseInt(AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.getText().toString());
+                    //valorAcarreado = ValorServicio.getValorServicio();
 
                     valorAcarreado -= Integer.parseInt(s.getValorServicio());
+                    Toast.makeText(v.getContext(), "valorAcarreado "+valorAcarreado, Toast.LENGTH_LONG).show();
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
 
-                            AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText("" + valorAcarreado);
-                            ListaServiciosCliente.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText("" + valorAcarreado);
+                            AceptacionServicio.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.
+                                    setText("" + nf.format(valorAcarreado));
+                            ListaServiciosCliente.valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.
+                                    setText("" + nf.format(valorAcarreado));
 
 
                         }
                     });
                 }
 
-
-
-
-
-
-
-
+                ValorServicio.setValorServicio(valorAcarreado);
 
 
             }

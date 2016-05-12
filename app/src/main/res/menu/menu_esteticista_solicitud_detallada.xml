@@ -26,12 +26,13 @@
         android:icon="@drawable/ic_visibility_white_24dp"
         android:orderInCategory="100"
         app:showAsAction="ifRoom" />
-    <item android:id="@+id/action_cancelar_aceptacion_servicio_detallado"
-        android:title="Volver Servicios Disponibles"
+    <item android:id="@+id/action_cancelar_aceptacion_servicio_esteticista"
+        android:title="Cancelar Servicio"
         android:icon="@drawable/ic_highlight_off_white_24dp"
         android:orderInCategory="100"
         app:showAsAction="ifRoom"
         android:visible="false"/>
+
 
 
 

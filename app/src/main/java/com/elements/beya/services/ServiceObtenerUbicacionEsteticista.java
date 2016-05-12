@@ -24,6 +24,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.activities.AceptacionServicio;
 import com.elements.beya.activities.Gestion;
+import com.elements.beya.fragments.MapFragmentUbicarProveedores;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 
@@ -82,6 +83,11 @@ public class ServiceObtenerUbicacionEsteticista extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
+
+        MapFragmentUbicarProveedores.countDownTimer.cancel();
+//        MapFragmentUbicarProveedores.alertDialog.dismiss();
+        MapFragmentUbicarProveedores.alertDialogBuilder.show().dismiss();
+
         String datosEsteticista = intent.getStringExtra("datosEsteticista");
         String datosCliente = intent.getStringExtra("datosCliente");
         String codigoSolicitud = intent.getStringExtra("codigoSolicitud");

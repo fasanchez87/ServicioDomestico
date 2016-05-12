@@ -19,8 +19,26 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.R;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
+import com.elements.beya.volley.ControllerSingleton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by FABiO on 23/01/2016.
@@ -33,6 +51,12 @@ public class Registro extends AppCompatActivity
     TextInputLayout textInputLayoutEmailUser;
     TextInputLayout textInputLayoutClaveUser;
     TextInputLayout textInputLayoutDocumentoUser;
+
+
+
+    private boolean emailDisponible;
+
+    private String _urlWebService;
 
     public EditText EditTextNameUser;
     EditText EditTextApellidoUser;
@@ -85,8 +109,11 @@ public class Registro extends AppCompatActivity
         botonRegistroUsuario = (Button) findViewById(R.id.btn_siguiente);
         botonRegistroUsuario.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                intentToActivityPago();
+            public void onClick(View view)
+            {
+
+                _webServiceValidarEmail(EditTextEmailUser.getText().toString());
+
             }
         });
 
@@ -108,6 +135,14 @@ public class Registro extends AppCompatActivity
 
 
 
+    }
+
+    public boolean isEmailDisponible() {
+        return emailDisponible;
+    }
+
+    public void setEmailDisponible(boolean emailDisponible) {
+        this.emailDisponible = emailDisponible;
     }
 
     private boolean ValidarFormulario()
@@ -424,6 +459,248 @@ public class Registro extends AppCompatActivity
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+
+    private void _webServiceValidarEmail(final String emailUsuario)
+    {
+
+        _urlWebService = "http://52.72.85.214/ws/ValidarCorreo";
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
+                new Response.Listener<JSONObject>()
+                {
+                    @Override
+                    public void onResponse(JSONObject response)
+                    {
+                        try
+                        {
+                            Boolean status = response.getBoolean("status");
+                            String message =response.getString("message");
+
+                            if(status)
+                            {
+                                intentToActivityPago();
+                                //setEmailDisponible(true);
+                            }
+
+                            else
+
+                            if (!status)
+                            {
+
+                                AlertDialog.Builder builder = new AlertDialog.Builder(Registro.this);
+                                builder
+                                        .setMessage(message)
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                        {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int id)
+                                            {
+                                                //setEmailDisponible(false);
+
+                                            }
+                                        }).show().setCancelable(false);
+
+                            }
+
+
+
+                        }
+
+                        catch (JSONException e)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(Registro.this);
+                            builder
+                                    .setMessage(e.getMessage().toString())
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+
+
+                },
+
+                new Response.ErrorListener()
+                {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(Registro.this);
+
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(Registro.this);
+                        builder
+                                .setMessage(error.getMessage().toString())
+                                .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                        //startActivity(intent);
+                                        //finish();
+                                    }
+                                }).show();
+
+
+
+
+
+                        if (error instanceof TimeoutError)
+                        {
+
+                            builder
+                                    .setMessage("Error de conexión, sin respuesta del servidor.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+
+                        }
+
+                        else
+
+                        if (error instanceof NoConnectionError)
+                        {
+
+                            builder
+                                    .setMessage("Por favor, conectese a la red.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+
+                        }
+
+                        else
+
+                        if (error instanceof AuthFailureError)
+                        {
+
+                            builder
+                                    .setMessage("Error de autentificación en la red, favor contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+                        }
+
+                        else
+
+                        if (error instanceof ServerError)
+                        {
+
+                            builder
+                                    .setMessage("Error server, sin respuesta del servidor.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+
+                        }
+
+                        else
+
+                        if (error instanceof NetworkError)
+                        {
+
+                            builder
+                                    .setMessage("Error de red, contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+
+                        }
+
+                        else
+
+                        if (error instanceof ParseError)
+                        {
+
+
+                            builder
+                                    .setMessage("Error de conversión Parser, contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+                        }
+
+
+                    }
+                })
+
+        {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError
+            {
+                HashMap<String, String> headers = new HashMap <String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
+                headers.put("emailUsuario", emailUsuario);
+                return headers;
+            }
+
+        };
+
+        ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
+
     }
 
 }

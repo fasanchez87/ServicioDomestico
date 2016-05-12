@@ -4,10 +4,10 @@
     tools:context=".MainActivity">
 
     <item
-        android:id="@+id/action_solicitar_servicio_onmap"
-        android:icon="@drawable/ic_pan_tool_white_24dp"
+        android:id="@+id/action_update_servicio_onmap"
+        android:icon="@drawable/ic_cached_white_24dp"
         android:orderInCategory="100"
-        android:title="Solicitar servicio"
+        android:title="Actualizar"
         app:showAsAction="ifRoom" />
 
 </menu>

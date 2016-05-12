@@ -56,7 +56,9 @@ import com.elements.beya.adapters.ServiciosAceptacionAdapter;
 import com.elements.beya.adapters.ServiciosAdapter;
 import com.elements.beya.app.Config;
 import com.elements.beya.beans.Servicio;
+import com.elements.beya.beans.ValorServicio;
 import com.elements.beya.decorators.DividerItemDecoration;
+import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.services.ServiceActualizarUbicacionProveedor;
 import com.elements.beya.services.ServiceObtenerUbicacionEsteticista;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
@@ -83,11 +85,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -208,6 +212,8 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarAceptacionServicio);
         setSupportActionBar(toolbar);
 
+
+
         Log.d(TAG, "onCreate ...............................");
         if (!isGooglePlayServicesAvailable())
         {
@@ -233,13 +239,53 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
                 .build();
 
 
-        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
+        mRegistrationBroadcastReceiver = new BroadcastReceiver()
+        {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(Config.PUSH_NOTIFICATION_FINALIZAR_SERVICIO_ESTETICISTA)) {
+                if (intent.getAction().equals(Config.PUSH_NOTIFICATION_FINALIZAR_SERVICIO_ESTETICISTA))
+                {
                     String codigoSolicitud = intent.getExtras().getString("codigoSolicitud");
                     displayAlertDialogFinalizarServicioCliente(codigoSolicitud);
                 }
+
+                else
+
+                if (intent.getAction().equals(Config.PUSH_NOTIFICATION_CANCELAR_SERVICIO_ESTETICISTA))
+                {
+                    String codigoSolicitud = intent.getExtras().getString("codigoSolicitud");
+                    AlertDialog.Builder builder = new AlertDialog.Builder(AceptacionServicio.this);
+                    builder
+                            .setMessage("Lo sentimos, el servicio ha sido cancelado por el esteticista, por favor vuelva a solicitar el servicio.")
+                            .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id)
+                                {
+
+                                    sharedPreferences.remove("valorTotalServiciosTemporalSolicitarServicio");
+                                    sharedPreferences.remove("serviciosEscogidos");
+                                    sharedPreferences.remove("serviciosEscogidosEnSolicitarServicio");
+                                    sharedPreferences.remove("proveedores");
+                                    sharedPreferences.remove("latitudCliente");
+                                    sharedPreferences.remove("longitudCliente");
+                                    sharedPreferences.remove("direccionDomicilio");
+                                    sharedPreferences.remove("serviciosEscojidosListaServiciosCliente");
+                                    sharedPreferences.remove("serviciosEscogidosEnListaServiciosCliente");
+
+                                    Servicio servicio = new Servicio();
+                                    servicio = null;
+
+                                    Intent intent = new Intent(AceptacionServicio.this, Gestion.class);
+                                    startActivity(intent);
+                                    stopService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));
+                                    finish();
+                                }
+
+                    }).show().setCancelable(false);
+
+
+                }
+
             }
         };
 
@@ -478,6 +524,15 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         // by doing this, the activity will be notified each time a new message arrives
         LocalBroadcastManager.getInstance(this.getApplicationContext()).registerReceiver(mRegistrationBroadcastReceiver,
                 new IntentFilter(Config.PUSH_NOTIFICATION_FINALIZAR_SERVICIO_ESTETICISTA));
+
+
+        LocalBroadcastManager.getInstance(this.getApplicationContext()).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(Config.PUSH_NOTIFICATION_CANCELAR_SERVICIO_ESTETICISTA));
+
+
+
+
+
     }
 
     @Override
@@ -624,6 +679,8 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
     public void cargarDatosEsteticista()
     {
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
+
 
         String nombreUsuario = null, apellidoUsuario = null,
                 imgUsuario=null,telefonoUsuario = null,serialUsuarioEsteticista = null,
@@ -660,8 +717,14 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
             nombreEsteticista.setText(nombreUsuario);
             //apellidoEsteticista.setText(apellidoUsuario);
             telefonoEsteticistaAceptacionServicios.setText(telefonoUsuario);
-            precioTemporalAceptacionServicios.setText(""+sharedPreferences.getInt("totalServiciosEscogidosEnSolicitarServicio"));
-            valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText(""+sharedPreferences.getInt("totalServiciosEscogidosEnSolicitarServicio"));
+            precioTemporalAceptacionServicios.setText("" + nf.format(ValorServicio.getValorServicio()));
+            valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.setText
+                    ("" + SolicitarServicio.valorTotalTextView.getText());
+
+
+
+
+
 
           /*  markerOptions = new MarkerOptions();
             LatLng latLng = new LatLng(getLatitudUsuario(),getLongitudUsuario());//esto es lo dinamico!
@@ -1226,7 +1289,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
 
     public void _webServiceCancelarSolicitudServicioCliente(final String codigoSolicitud, final String indicaMulta)
     {
-        _urlWebService = "http://52.72.85.214/ws/CancelarSolicitud";
+        _urlWebService = "http://52.72.85.214/ws/CancelarSolicitudCliente";
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, _urlWebService, null,
                 new Response.Listener<JSONObject>()

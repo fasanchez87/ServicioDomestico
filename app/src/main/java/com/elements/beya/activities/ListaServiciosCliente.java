@@ -117,7 +117,6 @@ public class ListaServiciosCliente extends AppCompatActivity
                 setText("" + AceptacionServicio.precioTemporalAceptacionServicios.getText());
 
 
-
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this.getApplicationContext());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);

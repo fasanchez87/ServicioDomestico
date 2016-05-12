@@ -267,9 +267,9 @@ public class SolicitarServicio extends Fragment
                             "Selected Services: \n" + serviciosEscogidos+" "+sharedPreferences.getString("valorTotalServicios"), Toast.LENGTH_LONG)
                             .show();*/
 
-                    Toast.makeText(SolicitarServicio.this.getActivity(),
-                            "Selected Services: \n"+" "+sharedPreferences.getString("valorTotalServiciosTemporalSolicitarServicio"), Toast.LENGTH_LONG)
-                            .show();
+
+
+                    sharedPreferences.putInt("valorTotalServiciosAdapter", ServiciosAdapter.valorTotal);
 
                     _webServiceGetProviderServicesOnMAP(serviciosEscogidos);
 
@@ -387,8 +387,8 @@ public class SolicitarServicio extends Fragment
                                     fragmentTransaction.replace(R.id.frame_container, fragment);
                                     fragmentTransaction.commit();
 
-                                    sharedPreferences.putInt("totalServiciosEscogidosEnSolicitarServicio",
-                                            Integer.parseInt(valorTotalTextView.getText().toString()));
+                                   /* sharedPreferences.putInt("totalServiciosEscogidosEnSolicitarServicio",
+                                            Integer.parseInt(valorTotalTextView.getText().toString()));*/
 
                                     ServiciosAdapter.valorTotal=0;
 

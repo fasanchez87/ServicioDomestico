@@ -190,6 +190,21 @@ public class MyGcmPushReceiver extends GcmListenerService
 
             }
 
+            else
+
+            if(pantallaMostrarPushAndroid.equals("pushNotificationCancelarServicioEsteticista"))
+            {
+                //Creamos un intent receiver de modo que apenas llegue me lleve a la activity onMap para poder que se cierre el dialog de espera
+                //del cliente.
+                Intent pushNotifica = new Intent(Config.PUSH_NOTIFICATION_CANCELAR_SERVICIO_ESTETICISTA);
+                pushNotifica.putExtra("codigoSolicitud", codigoSolicitud);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(pushNotifica);
+                // play notification sound
+                NotificationUtils notificationUtils = new NotificationUtils();
+                notificationUtils.playNotificationSound();
+
+            }
+
             // the push notification is silent, may be other operations needed
             // like inserting it in to SQLite
             // podemos almacenar los mensajes si en el backend se desea almacenar los mensajes enviados

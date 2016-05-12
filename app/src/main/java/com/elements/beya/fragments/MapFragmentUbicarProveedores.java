@@ -151,12 +151,16 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     public static ProgressDialog progressDialog;
 
     private Timer mTimer = null;
-    public static final long TIEMPO_LIMITE = 30 * 1000; // 1 minute
+    public static final long TIEMPO_LIMITE = 180 * 1000; // 3 minute
     public static final long TIEMPO_INICIO = 1 * 1000; // 1 seconds
     private Handler mHandler = new Handler();
 
-    public static AlertDialog.Builder alertEsperaEsteticista;
+    private String codigoSolicitud;
 
+    public static CountDownTimer countDownTimer;
+
+    public static AlertDialog.Builder alertEsperaEsteticista;
+    public static AlertDialog alertDialog;
 
     JSONArray jsonArray;
 
@@ -177,6 +181,8 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
     LocationRequest mLocationRequest;
 
+    public static AlertDialog.Builder alertDialogBuilder;
+
 
     public static double getmLatitude() {
         return mLatitude;
@@ -195,7 +201,8 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     Button buttonFindCoach;
     LocationManager lm;
 
-    protected void createLocationRequest() {
+    protected void createLocationRequest()
+    {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(INTERVAL);
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
@@ -215,18 +222,22 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         sharedPreferences = new gestionSharedPreferences(this.getActivity());
         vars = new vars();
 
+        alertDialogBuilder = new AlertDialog.Builder(getActivity());
+
 
         mRegistrationBroadcastReceiver = new BroadcastReceiver()
         {
             @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(Config.PUSH_NOTIFICATION_PANTALLA)) {
+            public void onReceive(Context context, Intent intent)
+            {
+                if (intent.getAction().equals(Config.PUSH_NOTIFICATION_PANTALLA))
+                {
                     // new push notification is received
                     progressDialog.dismiss();
 
                     String datosEsteticista = intent.getExtras().getString("datosEsteticista");
                     String datosCliente = intent.getExtras().getString("datosCliente");
-                    String codigoSolicitud = intent.getExtras().getString("codigoSolicitud");
+                    codigoSolicitud = intent.getExtras().getString("codigoSolicitud");
                     String codigoEsteticista = intent.getExtras().getString("codigoEsteticista");
 /*
                     Intent serviceIntentOrdenServicio = new Intent("ServiceObtenerUbicacionEsteticista");
@@ -612,7 +623,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
 
 
-           // iv.setDefaultImageResId(R.drawable.ic_launcher);// poner imagen por default
+            // iv.setDefaultImageResId(R.drawable.ic_launcher);// poner imagen por default
             if (imageLoader == null)
                 imageLoader = ControllerSingleton.getInstance().getImageLoader();
 
@@ -694,6 +705,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                         try {
                             boolean status = response.getBoolean("status");
                             String message = response.getString("message");
+                            codigoSolicitud = response.getString("codigoSolicitud");
 
                             if(status)
                             {
@@ -707,7 +719,8 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
 
                                 //MUESTRO EL AVISO DURANTE 10 SEGUNDOS Y LUEGO LO CIERRO.
-                                new CountDownTimer(TIEMPO_LIMITE, TIEMPO_INICIO)
+
+                                countDownTimer = new CountDownTimer(TIEMPO_LIMITE, TIEMPO_INICIO)
                                 {
 
                                     @Override
@@ -724,21 +737,34 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
                                         progressDialog.dismiss();
 
-                                       /* alertEsperaEsteticista = new AlertDialog.Builder(getActivity().getApplicationContext());
-                                        alertEsperaEsteticista
-                                        .setMessage("No se encuentran esteticistas disponibles en este momento.")
-                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
-                                        {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int id)
-                                            {
-                                                android.support.v4.app.FragmentManager fragmentManager = getFragmentManager();
-                                                android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                                                fragmentTransaction.replace(R.id.frame_container, new SolicitarServicio());
-                                                fragmentTransaction.commit();
+                                        alertDialogBuilder = new AlertDialog.Builder(
+                                                getActivity());
+                                        // set title
+                                        alertDialogBuilder.setTitle("Aviso");
+                                        // set dialog message
+                                        alertDialogBuilder
+                                                .setMessage("En este momento no se encuentran esteticistas disponibles.")
+                                                .setCancelable(false)
+                                                .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int id)
+                                                    {
 
-                                            }
-                                        }).show();*/
+                                                        getActivity().stopService(new Intent(getActivity(), ServiceObtenerUbicacionEsteticista.class));
+                                                        String indicaMulta = "0";
+                                                        _webServiceCancelarSolicitudServicioCliente(codigoSolicitud,"0");
+                                                        Log.i("MAP FRAGMENT","codigoSolicitud : "+codigoSolicitud);
+
+                                                        android.support.v4.app.FragmentManager fragmentManager = getFragmentManager();
+                                                        android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                                                        fragmentTransaction.replace(R.id.frame_container, new SolicitarServicio());
+                                                        fragmentTransaction.commit();
+                                                    }
+                                                }).setCancelable(false);
+
+                                        // create alert dialog
+                                        alertDialog = alertDialogBuilder.create();
+                                        // show it
+                                        alertDialog.show();
 
 
                                         //cancelar servicio
@@ -840,9 +866,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                                         @Override
                                         public void onClick(DialogInterface dialog, int id)
                                         {
-                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
-                                            //startActivity(intent);
-                                            //finish();
+
                                         }
                                     }).show();
                         }
@@ -974,6 +998,238 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq,"");
 
     }
+
+    public void _webServiceCancelarSolicitudServicioCliente(final String codigoSolicitud, final String indicaMulta)
+    {
+        _urlWebService = "http://52.72.85.214/ws/CancelarSolicitudCliente";
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, _urlWebService, null,
+                new Response.Listener<JSONObject>()
+                {
+                    @Override
+                    public void onResponse(JSONObject response)
+                    {
+                        try
+                        {
+                            Boolean status = response.getBoolean("status");
+                            String message = response.getString("message");
+
+                            if(status)
+                            {
+
+                                sharedPreferences.remove("valorTotalServiciosTemporalSolicitarServicio");
+                                sharedPreferences.remove("serviciosEscogidos");
+                                sharedPreferences.remove("serviciosEscogidosEnSolicitarServicio");
+                                sharedPreferences.remove("proveedores");
+                                sharedPreferences.remove("latitudCliente");
+                                sharedPreferences.remove("longitudCliente");
+                                sharedPreferences.remove("direccionDomicilio");
+                                sharedPreferences.remove("serviciosEscojidosListaServiciosCliente");
+                                sharedPreferences.remove("serviciosEscogidosEnListaServiciosCliente");
+
+                                Servicio servicio = new Servicio();
+                                servicio = null;
+
+
+                            }
+
+                            else
+                            {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                builder
+                                        .setMessage("Error cancelando la solicitud, intente de nuevo")
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                        {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int id)
+                                            {
+                                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                                //startActivity(intent);
+                                                //finish();
+                                            }
+                                        }).setCancelable(false).show();
+                            }
+                        }
+                        catch (JSONException e)
+                        {
+
+
+                            //progressBar.setVisibility(View.GONE);
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder
+                                    .setMessage(e.getMessage().toString())
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+
+
+                            e.printStackTrace();
+                        }
+                    }
+
+                },
+
+
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+
+                        if (error instanceof TimeoutError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder
+                                    .setMessage("Error de conexión, sin respuesta del servidor.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+
+                        }
+
+                        else
+
+                        if (error instanceof NoConnectionError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder
+                                    .setMessage("Por favor, conectese a la red.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+                        }
+
+                        else
+
+                        if (error instanceof AuthFailureError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder
+                                    .setMessage("Error de autentificación en la red, favor contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+                        }
+
+                        else
+
+                        if (error instanceof ServerError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder
+                                    .setMessage("Error server, sin respuesta del servidor.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+                        }
+
+                        else
+
+                        if (error instanceof NetworkError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder
+                                    .setMessage("Error de red, contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+                        }
+
+                        else
+
+                        if (error instanceof ParseError)
+                        {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder
+                                    .setMessage("Error de conversión Parser, contacte a su proveedor de servicios.")
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
+                                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                            //startActivity(intent);
+                                            //finish();
+                                        }
+                                    }).show();
+
+                        }
+
+                    }
+
+                })
+        {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError
+            {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
+                headers.put("codigoSolicitud", codigoSolicitud);
+                headers.put("indicaMulta", indicaMulta);
+                headers.put("MyToken", sharedPreferences.getString("MyToken"));
+                return headers;
+
+
+            }
+        };
+
+        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 6, DefaultRetryPolicy.DEFAULT_MAX_RETRIES));
+        ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
+    }
+
 
 
 

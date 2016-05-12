@@ -790,10 +790,10 @@ public class Pago extends AppCompatActivity
                     {
                         try
                         {
-                            String status = response.getString("status");
+                            Boolean status = response.getBoolean("status");
                             String message =response.getString("message");
 
-                            if(status.equals("register_ok"))
+                            if(status)
                             {
 
                                 progressBarRegistroUsuario.setVisibility(View.GONE);
@@ -801,7 +801,7 @@ public class Pago extends AppCompatActivity
 
                                 AlertDialog.Builder builder = new AlertDialog.Builder(Pago.this);
                                 builder
-                                        .setMessage("El usuario ha sido creado exitosamente.")
+                                        .setMessage(message)
                                         .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int id) {
@@ -816,7 +816,7 @@ public class Pago extends AppCompatActivity
 
                             else
 
-                            if (response.getString("status").equals("register_failed"))
+                            if (!status)
                             {
 
                                 progressBarRegistroUsuario.setVisibility(View.GONE);
@@ -824,7 +824,7 @@ public class Pago extends AppCompatActivity
 
                                 AlertDialog.Builder builder = new AlertDialog.Builder(Pago.this);
                                 builder
-                                        .setMessage("El email registrado, ya existe en el sistema, por favor verifique e intente de nuevo")
+                                        .setMessage(message)
                                         .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int id) {
@@ -840,7 +840,6 @@ public class Pago extends AppCompatActivity
 
                             if(response.getString("status").equals("invalid_card"))
                             {
-
 
                                 progressBarRegistroUsuario.setVisibility(View.GONE);
                                 TextViewLabelProgressBar.setVisibility(View.GONE);

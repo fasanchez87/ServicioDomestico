@@ -4,6 +4,7 @@ package com.elements.beya.adapters;
  * Created by FABiO on 05/02/2016.
  */
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,11 +20,14 @@ import com.android.volley.toolbox.NetworkImageView;
 import com.elements.beya.R;
 import com.elements.beya.beans.Servicio;
 import com.elements.beya.beans.SolicitudServicio;
+import com.elements.beya.beans.ValorServicio;
 import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 import static com.google.android.gms.internal.zzir.runOnUiThread;
 
@@ -31,6 +35,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
 {
 
     private List<Servicio> serviciosList;
+    private Context mContext;
 
     private gestionSharedPreferences sharedPreferences;
 
@@ -38,6 +43,8 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
     public static int valorTotal = 0;
 
     ImageLoader imageLoader = ControllerSingleton.getInstance().getImageLoader();
+
+
 
 
     public class MyViewHolder extends RecyclerView.ViewHolder
@@ -56,6 +63,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
             valorServicio = (TextView) view.findViewById(R.id.textViewValorServicio);
             checkServicio = (CheckBox) view.findViewById(R.id.checkBoxServicio);
             imagenServicio = (NetworkImageView) view.findViewById(R.id.imageItemService);
+
         }
     }
 
@@ -65,6 +73,8 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
         this.serviciosList = serviciosList;
 
     }
+
+
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
@@ -111,6 +121,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
                 s.setSelected(cb.isChecked());
                 serviciosList.get(position).setSelected(cb.isChecked());
 
+                final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
 
 
               /*  Toast.makeText(v.getContext(), "Clicked on Checkbox: " + cb.getText() + " is "+ cb.isChecked(), Toast.LENGTH_LONG).show();
@@ -121,14 +132,15 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
                     //sumo si selecciona servicios
                     valorTotal = valorTotal+(Integer.parseInt(s.getValorServicio()));
                     //Toast.makeText(v.getContext(), ""+valorTotal, Toast.LENGTH_LONG).show();
-
                     runOnUiThread(new Runnable()
                     {
                         @Override
                         public void run()
                         {
 
-                          SolicitarServicio.valorTotalTextView.setText("" + valorTotal);
+                            //SolicitarServicio.valorTotalTextView.setText("" +(valorTotal));
+                            SolicitarServicio.valorTotalTextView.setText("" + nf.format(valorTotal));
+
 
 
                         }
@@ -149,13 +161,16 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
                         @Override
                         public void run() {
 
-                            SolicitarServicio.valorTotalTextView.setText("" + valorTotal);
+                            //SolicitarServicio.valorTotalTextView.setText("" + (valorTotal));
+                            SolicitarServicio.valorTotalTextView.setText("" + nf.format(valorTotal));
 
                         }
                     });
 
                 }
-                Toast.makeText(v.getContext(), ""+valorTotal, Toast.LENGTH_LONG).show();
+                ValorServicio.setValorServicio(valorTotal);
+                Toast.makeText(v.getContext(), ""+ValorServicio.getValorServicio(), Toast.LENGTH_LONG).show();
+
 
                /* sharedPreferences = new gestionSharedPreferences(v.getContext());
                 sharedPreferences.putInt("valorTotalServicios",valorTotal);*/

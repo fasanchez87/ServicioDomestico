@@ -84,8 +84,8 @@ public class ServiceActualizarUbicacionProveedor extends Service implements Loca
                 .build();
 
         mLocationRequest = new LocationRequest();
-        //mLocationRequest.setInterval(INTERVAL);
-        //mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+        mLocationRequest.setInterval(INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
@@ -232,6 +232,9 @@ public class ServiceActualizarUbicacionProveedor extends Service implements Loca
                     {
                         _webServiceUpdatePositionProvider( ( mLatitude + ":" + mLongitude ) ,
                                 sharedPreferences.getString("serialUsuario") , sharedPreferences.getString("statusOnline"));
+
+                        Toast.makeText(getApplicationContext(), mLatitude +"  "+ mLongitude,
+                                Toast.LENGTH_SHORT).show();
                     }
                     else
                     {
