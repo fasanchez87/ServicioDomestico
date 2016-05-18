@@ -17,7 +17,9 @@ import com.elements.beya.beans.Servicio;
 import com.elements.beya.decorators.DividerItemDecoration;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class ListaServiciosRevisarEsteticista extends AppCompatActivity
 {
@@ -52,6 +54,9 @@ public class ListaServiciosRevisarEsteticista extends AppCompatActivity
         setContentView(R.layout.activity_lista_servicios_revisar_esteticista);
 
         sharedPreferences = new gestionSharedPreferences(this);
+
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
+
 
         servicioList = new ArrayList<Servicio>();
 
@@ -99,7 +104,7 @@ public class ListaServiciosRevisarEsteticista extends AppCompatActivity
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         recyclerView.setAdapter(mAdapter);
 
-        valorTotalServiciosPorRevisarEsteticista.setText(costoSolicitud);
+        valorTotalServiciosPorRevisarEsteticista.setText(nf.format(Integer.parseInt(costoSolicitud)));
 
         mAdapter.notifyDataSetChanged();
 

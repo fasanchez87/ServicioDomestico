@@ -91,6 +91,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
     public void onBindViewHolder(final MyViewHolder holder, final int position)
     {
         final Servicio servicio = serviciosList.get(position);
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
 
 
 
@@ -105,7 +106,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
         holder.idServicio.setText(servicio.getId());
         holder.nombreServicio.setText(servicio.getNombreServicio());
         holder.descripcionServicio.setText(servicio.getDescripcionServicio());
-        holder.valorServicio.setText(servicio.getValorServicio());
+        holder.valorServicio.setText(nf.format(Integer.parseInt(servicio.getValorServicio())));
 
         holder.checkServicio.setChecked(servicio.isSelected());
         holder.checkServicio.setTag(servicio);

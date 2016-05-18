@@ -78,6 +78,7 @@
                     android:layout_height="wrap_content"
                     android:paddingLeft="6dp"
                     android:text="3108360219"
+                    android:autoLink="phone"
                     />
 
                 <TextView

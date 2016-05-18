@@ -226,16 +226,16 @@ public class Gestion extends AppCompatActivity
         if (!tipoUsuario.equals("E"))
         {
             menu.getItem(1).setVisible(false);
+            menu.getItem(0).getSubMenu().getItem(2).setVisible(false);
+
         }
 
         else if (tipoUsuario.equals("E"))
         {
             menu.getItem(0).getSubMenu().getItem(2).setVisible(false);
+            menu.getItem(0).getSubMenu().getItem(0).setVisible(false);
             Log.e("LEA :::: ", menu.getItem(0).getTitle().toString());
         }
-
-
-
 
         textViewnameUser = (TextView) navigationView.getHeaderView(0).findViewById(R.id.NombreUserHeaderNavGestion);
         textViewemailUser = (TextView) navigationView.getHeaderView(0).findViewById(R.id.EmailHeaderNavGestion);

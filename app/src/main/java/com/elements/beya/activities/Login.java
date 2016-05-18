@@ -1,5 +1,6 @@
 package com.elements.beya.activities;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,9 +8,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -41,6 +47,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.R;
 import com.elements.beya.app.Config;
+import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.gcm.GcmIntentService;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.vars.vars;
@@ -49,6 +56,10 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
 //import com.testfairy.TestFairy;
 //import com.testfairy.TestFairy;
 
@@ -61,7 +72,9 @@ import java.util.Map;
 /**
  * Created by FABiO on 23/01/2016.
  */
-public class Login extends AppCompatActivity
+public class Login extends AppCompatActivity implements LocationListener,OnMapReadyCallback,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener
 {
 
     TextView textBienvenidoLogin;
@@ -96,7 +109,13 @@ public class Login extends AppCompatActivity
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
+     *
+     *     GoogleApiClient mGoogleApiClient;
+
      */
+
+    GoogleApiClient mGoogleApiClient;
+
     private GoogleApiClient client;
 
     String indicaAndroid = "";
@@ -116,6 +135,9 @@ public class Login extends AppCompatActivity
         setContentView(R.layout.activity_login);
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
@@ -253,6 +275,8 @@ public class Login extends AppCompatActivity
 
     }
 
+
+
     private boolean checkPlayServices() {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
@@ -300,9 +324,165 @@ public class Login extends AppCompatActivity
         emailUser = emailLogin.getText().toString();
         claveUser = claveLogin.getText().toString();
 
-        _webServiceLogin(emailUser, claveUser);
+
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            checkLocationPermission();
+        }
+
+        else
+        {
+            _webServiceLogin(emailUser, claveUser);
+
+        }
+
 
     }
+
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
+    public void checkLocationPermission()
+    {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED)
+        {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION))
+            {
+
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+                //Prompt the user once explanation has been shown
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
+                builder.setTitle("ACTIVACION GPS")
+                        .setMessage("Es necesario que se active el GPS para operar la aplicación con éxito.")
+                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id)
+                            {
+                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                //startActivity(intent);
+                                //finish();
+                            }
+                        }).show();
+
+
+
+
+
+
+
+            }
+
+            else
+            {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+
+               /* AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
+                builder.setTitle("ACTIVACION GPS")
+                        .setMessage("Es necesario que se active el GPS para operar la aplicación con éxito.")
+                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id)
+                            {
+                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                //startActivity(intent);
+                                //finish();
+                            }
+                        }).show();*/
+
+
+
+
+            }
+
+
+        }
+
+        else
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)
+
+
+        {
+
+
+
+            Toast.makeText(this, "permiso true", Toast.LENGTH_LONG).show();
+            _webServiceLogin(emailUser, claveUser);
+
+
+
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults)
+    {
+        switch (requestCode)
+        {
+            case MY_PERMISSIONS_REQUEST_LOCATION:
+            {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED)
+                    {
+
+                        if (mGoogleApiClient == null)
+                        {
+                            buildGoogleApiClient();
+                        }
+
+                    }
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+    protected synchronized void buildGoogleApiClient()
+    {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+        mGoogleApiClient.connect();
+    }
+
 
     @Override
     protected void onPause() {
@@ -346,6 +526,10 @@ public class Login extends AppCompatActivity
 
                             if(status.equals("ok"))
                                 {
+
+
+
+
                                     String nombre = response.getString("nombresUsuario");
                                     String apellidos = response.getString("apellidosUsuario");
                                     String nombreUsuario = (nombre+" "+apellidos);
@@ -696,6 +880,31 @@ public class Login extends AppCompatActivity
         {
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+
     }
 
     private class RevisorText implements TextWatcher

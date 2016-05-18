@@ -57,9 +57,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class SolicitarServicio extends Fragment
@@ -74,6 +76,9 @@ public class SolicitarServicio extends Fragment
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private String _urlWebService;
+
+    final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
+
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -235,7 +240,7 @@ public class SolicitarServicio extends Fragment
                         serviciosSeleccionados.setId( servicio.getId() );
                         serviciosSeleccionados.setNombreServicio(servicio.getNombreServicio());
                         serviciosSeleccionados.setDescripcionServicio(servicio.getDescripcionServicio());
-                        serviciosSeleccionados.setValorServicio(servicio.getValorServicio());
+                        serviciosSeleccionados.setValorServicio(servicio.getValorServicio().toString());
                         serviciosSeleccionadosList.add(serviciosSeleccionados);
 
                     }

@@ -3,15 +3,18 @@ package com.elements.beya.activities;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Paint;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.format.Formatter;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -52,6 +55,11 @@ public class Registro extends AppCompatActivity
     TextInputLayout textInputLayoutClaveUser;
     TextInputLayout textInputLayoutDocumentoUser;
 
+    TextInputLayout textInputLayoutTelefonoUser;
+    TextInputLayout textInputLayoutDireccionUser;
+    TextInputLayout textInputLayoutCiudadUser;
+    TextInputLayout textInputLayoutDepartamentoUser;
+
 
 
     private boolean emailDisponible;
@@ -64,6 +72,11 @@ public class Registro extends AppCompatActivity
     EditText EditTextClaveUser;
     EditText EditTextDocumentoUser;
 
+    EditText EditTextTelefonoUser;
+    EditText EditTextDireccionUser;
+    EditText EditTextCiudadUser;
+    EditText EditTextDepartamentoUser;
+
     Button botonRegistroUsuario;
 
     private String nameFranquicia;
@@ -75,6 +88,11 @@ public class Registro extends AppCompatActivity
     public String emailUsuario;
     public String documentoUsuario;
     public String claveUsuario;
+
+    public String telefonoUsuario;
+    public String direccionUsuario;
+    public String ciudadUsuario;
+    public String departamentoUsuario;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -98,19 +116,28 @@ public class Registro extends AppCompatActivity
         textInputLayoutClaveUser = (TextInputLayout) findViewById(R.id.input_layout_clave_registro);
         textInputLayoutDocumentoUser = (TextInputLayout) findViewById(R.id.input_layout_documento_registro);
 
-
         EditTextNameUser = (EditText) findViewById(R.id.edit_text_nombre_registro);
         EditTextApellidoUser = (EditText) findViewById(R.id.edit_text_apellido_registro);
         EditTextEmailUser = (EditText) findViewById(R.id.edit_text_email_registro);
         EditTextClaveUser = (EditText) findViewById(R.id.edit_text_clave_registro);
         EditTextDocumentoUser = (EditText) findViewById(R.id.edit_text_documento_registro);
 
+        //INFORMACION ADICIONAL
+        textInputLayoutTelefonoUser = (TextInputLayout) findViewById(R.id.input_layout_telefono_registro);
+        textInputLayoutDireccionUser = (TextInputLayout) findViewById(R.id.input_layout_direccion_registro);
+        textInputLayoutCiudadUser = (TextInputLayout) findViewById(R.id.input_layout_ciudad_registro);
+        textInputLayoutDepartamentoUser = (TextInputLayout) findViewById(R.id.input_layout_departamento_registro);
+
+        EditTextTelefonoUser = (EditText) findViewById(R.id.edit_text_telefono_registro);
+        EditTextDireccionUser = (EditText) findViewById(R.id.edit_text_direccion_registro);
+        EditTextCiudadUser = (EditText) findViewById(R.id.edit_text_ciudad_registro);
+        EditTextDepartamentoUser = (EditText) findViewById(R.id.edit_text_departamento_registro);
+
 
         botonRegistroUsuario = (Button) findViewById(R.id.btn_siguiente);
         botonRegistroUsuario.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
 
                 _webServiceValidarEmail(EditTextEmailUser.getText().toString());
 
@@ -120,14 +147,24 @@ public class Registro extends AppCompatActivity
         EditTextNameUser.setText(sharedPreferences.getString("nombresUsuario"));
         EditTextApellidoUser.setText(sharedPreferences.getString("apellidosUsuario"));
         EditTextEmailUser.setText(sharedPreferences.getString("emailUsuario"));
-        EditTextClaveUser.setText(sharedPreferences.getString("claveUsuario"));
         EditTextDocumentoUser.setText(sharedPreferences.getString("documentoUsuario"));
+        EditTextTelefonoUser.setText(sharedPreferences.getString("telefonoUsuario"));
+        EditTextDireccionUser.setText(sharedPreferences.getString("direccionUsuario"));
+        EditTextCiudadUser.setText(sharedPreferences.getString("ciudadUsuario"));
+        EditTextDepartamentoUser.setText(sharedPreferences.getString("departamentoUsuario"));
+        EditTextClaveUser.setText(sharedPreferences.getString("claveUsuario"));
+
 
         EditTextNameUser.addTextChangedListener(new RevisorText(EditTextNameUser));
         EditTextApellidoUser.addTextChangedListener(new RevisorText(EditTextApellidoUser));
         EditTextEmailUser.addTextChangedListener(new RevisorText(EditTextEmailUser));
-        EditTextClaveUser.addTextChangedListener(new RevisorText(EditTextClaveUser));
         EditTextDocumentoUser.addTextChangedListener(new RevisorText(EditTextDocumentoUser));
+        EditTextTelefonoUser.addTextChangedListener(new RevisorText(EditTextTelefonoUser));
+        EditTextDireccionUser.addTextChangedListener(new RevisorText(EditTextDireccionUser));
+        EditTextCiudadUser.addTextChangedListener(new RevisorText(EditTextCiudadUser));
+        EditTextDepartamentoUser.addTextChangedListener(new RevisorText(EditTextDepartamentoUser));
+        EditTextClaveUser.addTextChangedListener(new RevisorText(EditTextClaveUser));
+
 
 
         //EditTextNumeroTarjetaCreditoUser.setText("377813200654045");
@@ -162,15 +199,38 @@ public class Registro extends AppCompatActivity
             return false;
         }
 
+        if (!validateDocumento())
+        {
+            return false;
+        }
+
+        if (!validateTelefono()) {
+            return false;
+        }
+
+
+        if (!validateDireccion())
+        {
+            return false;
+        }
+
+        if (!validateCiudad())
+        {
+            return false;
+        }
+
+        if (!validateDepartamento())
+        {
+            return false;
+        }
+
         if (!validateClave())
         {
             return false;
         }
 
-        if (!validateDocumento())
-        {
-            return false;
-        }
+
+
 
         return true;
 
@@ -194,16 +254,26 @@ public class Registro extends AppCompatActivity
             documentoUsuario = EditTextDocumentoUser.getText().toString();
             claveUsuario = EditTextClaveUser.getText().toString();
 
+            telefonoUsuario = EditTextTelefonoUser.getText().toString();
+            direccionUsuario = EditTextDireccionUser.getText().toString();
+            ciudadUsuario = EditTextCiudadUser.getText().toString();
+            departamentoUsuario = EditTextDepartamentoUser.getText().toString();
+
             sharedPreferences.clear();
 
-            sharedPreferences.putString("nombresUsuario",nombreUsuario);
-            sharedPreferences.putString("apellidosUsuario",apellidoUsuario);
-            sharedPreferences.putString("emailUsuario",emailUsuario);
-            sharedPreferences.putString("documentoUsuario",documentoUsuario);
+            sharedPreferences.putString("nombresUsuario", nombreUsuario);
+            sharedPreferences.putString("apellidosUsuario", apellidoUsuario);
+            sharedPreferences.putString("emailUsuario", emailUsuario);
+            sharedPreferences.putString("documentoUsuario", documentoUsuario);
             sharedPreferences.putString("claveUsuario",claveUsuario);
             sharedPreferences.putString("direccionIp", getDireccionIP());
             sharedPreferences.putString("sistemaOperativo", "Android");
             sharedPreferences.putString("tipoUsuario", "C");
+
+            sharedPreferences.putString("telefonoUsuario", telefonoUsuario);
+            sharedPreferences.putString("direccionUsuario", direccionUsuario);
+            sharedPreferences.putString("ciudadUsuario", ciudadUsuario);
+            sharedPreferences.putString("departamentoUsuario", departamentoUsuario);
 
             Intent intent = new Intent(Registro.this, Pago.class);
             startActivity(intent);
@@ -306,6 +376,18 @@ public class Registro extends AppCompatActivity
         return true;
     }
 
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedState) {
+        super.onRestoreInstanceState(savedState);
+    }
+
     private boolean validateDocumento()
     {
         if (EditTextDocumentoUser.getText().toString().trim().isEmpty())
@@ -331,6 +413,120 @@ public class Registro extends AppCompatActivity
 
         return true;
     }
+
+
+
+    private boolean validateTelefono()
+    {
+        if (EditTextTelefonoUser.getText().toString().trim().isEmpty())
+        {
+            textInputLayoutDocumentoUser.setError("Por favor, dígite numero de telefono");
+            requestFocus(EditTextTelefonoUser);
+            return false;
+        }
+
+        else
+
+        if(EditTextTelefonoUser.getText().toString().trim().length() < 5)
+        {
+            textInputLayoutDocumentoUser.setError("El telefono debe tener al menos 5 digitos");
+            requestFocus(EditTextTelefonoUser);
+            return false;
+        }
+
+        else
+        {
+            textInputLayoutTelefonoUser.setErrorEnabled(false);
+        }
+
+        return true;
+    }
+
+
+    private boolean validateDireccion()
+    {
+        if (EditTextDireccionUser.getText().toString().trim().isEmpty())
+        {
+            textInputLayoutDireccionUser.setError("Por favor, dígite su dirección");
+            requestFocus(EditTextDireccionUser);
+            return false;
+        }
+
+        else
+
+        if(EditTextDireccionUser.getText().toString().trim().length() < 10)
+        {
+            textInputLayoutDireccionUser.setError("La dirección tener al menos 10 digitos");
+            requestFocus(EditTextDireccionUser);
+            return false;
+        }
+
+        else
+        {
+            textInputLayoutDireccionUser.setErrorEnabled(false);
+        }
+
+        return true;
+    }
+
+
+    private boolean validateCiudad()
+    {
+        if (EditTextCiudadUser.getText().toString().trim().isEmpty())
+        {
+            textInputLayoutCiudadUser.setError("Por favor, dígite su ciudad");
+            requestFocus(EditTextCiudadUser);
+            return false;
+        }
+
+        else
+
+        if(EditTextCiudadUser.getText().toString().trim().length() < 3)
+        {
+            textInputLayoutCiudadUser.setError("La ciudad tener al menos 3 letras");
+            requestFocus(EditTextCiudadUser);
+            return false;
+        }
+
+        else
+        {
+            textInputLayoutCiudadUser.setErrorEnabled(false);
+        }
+
+        return true;
+    }
+
+
+    private boolean validateDepartamento()
+    {
+        if (EditTextDepartamentoUser.getText().toString().trim().isEmpty())
+        {
+            textInputLayoutDepartamentoUser.setError("Por favor, dígite su ciudad");
+            requestFocus(EditTextDepartamentoUser);
+            return false;
+        }
+
+        else
+
+        if(EditTextDepartamentoUser.getText().toString().trim().length() < 3)
+        {
+            textInputLayoutDepartamentoUser.setError("La ciudad tener al menos 3 letras");
+            requestFocus(EditTextDepartamentoUser);
+            return false;
+        }
+
+        else
+        {
+            textInputLayoutDepartamentoUser.setErrorEnabled(false);
+        }
+
+        return true;
+    }
+
+
+
+
+
 
     private static boolean isValidEmail(String email)
     {
@@ -386,6 +582,22 @@ public class Registro extends AppCompatActivity
                     validateClave();
                     break;
 
+                case R.id.edit_text_telefono_registro:
+                    validateTelefono();
+                    break;
+
+                case R.id.edit_text_direccion_registro:
+                    validateDireccion();
+                    break;
+
+                case R.id.edit_text_ciudad_registro:
+                    validateCiudad();
+                    break;
+
+                case R.id.edit_text_departamento_registro:
+                    validateDepartamento();
+                    break;
+
                 case R.id.edit_text_documento_registro:
                     validateDocumento();
                     break;
@@ -415,13 +627,13 @@ public class Registro extends AppCompatActivity
                                 //overridePendingTransition(R.anim.left_out, R.anim.left_in);
                             }
                         }).setNegativeButton("NO", new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id)
-                            {
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id)
+                    {
 
-                            }
-                        }).show();
+                    }
+                }).show();
 
                 return true;
         }
@@ -497,7 +709,10 @@ public class Registro extends AppCompatActivity
                                             @Override
                                             public void onClick(DialogInterface dialog, int id)
                                             {
-                                                //setEmailDisponible(false);
+                                                EditTextEmailUser.setFocusableInTouchMode(true);
+                                                EditTextEmailUser.requestFocus();
+                                                EditTextEmailUser.setPaintFlags(EditTextEmailUser.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+
 
                                             }
                                         }).show().setCancelable(false);
@@ -546,7 +761,7 @@ public class Registro extends AppCompatActivity
 
                         AlertDialog.Builder builder = new AlertDialog.Builder(Registro.this);
                         builder
-                                .setMessage(error.getMessage().toString())
+                                .setMessage(error.toString())
                                 .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int id) {

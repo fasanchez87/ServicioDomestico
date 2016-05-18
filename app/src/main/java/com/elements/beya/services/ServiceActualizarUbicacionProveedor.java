@@ -70,7 +70,6 @@ public class ServiceActualizarUbicacionProveedor extends Service implements Loca
 
     GoogleApiClient mGoogleApiClient;
 
-
     @Override
     public void onCreate()
     {
@@ -134,8 +133,7 @@ public class ServiceActualizarUbicacionProveedor extends Service implements Loca
             mTimer = new Timer();
         }
         // schedule task
-        mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 5000, NOTIFY_INTERVAL);
-        Toast.makeText(this, "Servicio en Ejecucion", Toast.LENGTH_SHORT).show();
+        mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 1000, NOTIFY_INTERVAL);
         return START_STICKY;
     }
 
@@ -161,13 +159,11 @@ public class ServiceActualizarUbicacionProveedor extends Service implements Loca
         mTimer.cancel();
         _webServiceUpdatePositionProvider((mLatitude + ":" + mLongitude),
                 sharedPreferences.getString("serialUsuario"), sharedPreferences.getString("statusOnline"));
-        Toast.makeText(this, "Servicio destruido", Toast.LENGTH_SHORT).show();
 
         Log.e(TAG, "onDestroy");
         mGoogleApiClient.disconnect();
         Log.d(TAG, "isConnected ...............: " + mGoogleApiClient.isConnected());
         super.onDestroy();
-
 
     }
 
@@ -233,8 +229,6 @@ public class ServiceActualizarUbicacionProveedor extends Service implements Loca
                         _webServiceUpdatePositionProvider( ( mLatitude + ":" + mLongitude ) ,
                                 sharedPreferences.getString("serialUsuario") , sharedPreferences.getString("statusOnline"));
 
-                        Toast.makeText(getApplicationContext(), mLatitude +"  "+ mLongitude,
-                                Toast.LENGTH_SHORT).show();
                     }
                     else
                     {

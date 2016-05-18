@@ -64,6 +64,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.leolin.shortcutbadger.ShortcutBadger;
+
 //import me.leolin.shortcutbadger.ShortcutBadger;
 
 //import me.leolin.shortcutbadger.ShortcutBadger;
@@ -131,17 +133,10 @@ public class ServiciosDisponibles extends Fragment
                     recyclerViewServiciosDisponibles.setVisibility(View.VISIBLE);
                     _webServiceGetSolicitudesServicios();
                     mAdapter.notifyDataSetChanged();
-                    //ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
-
-
-                    Toast.makeText(ServiciosDisponibles.this.getActivity(), "Push notification is received!" + intent.getExtras().getString("message"), Toast.LENGTH_LONG).show();
+                    ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
                 }
             }
         };
-
-
-
-
 
     }
 
@@ -184,7 +179,7 @@ public class ServiciosDisponibles extends Fragment
 
     @Override
     public void onPause() {
-        LocalBroadcastManager.getInstance(ServiciosDisponibles.this.getActivity()).unregisterReceiver(mRegistrationBroadcastReceiver);
+        //LocalBroadcastManager.getInstance(ServiciosDisponibles.this.getActivity()).unregisterReceiver(mRegistrationBroadcastReceiver);
         super.onPause();
     }
 
@@ -196,7 +191,7 @@ public class ServiciosDisponibles extends Fragment
        /* // register GCM registration complete receiver
         LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
                 new IntentFilter(Config.REGISTRATION_COMPLETE));*/
-        //ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
+        ShortcutBadger.removeCount(ServiciosDisponibles.this.getActivity()); //for 1.1.4
 
         // register new push message receiver
         // by doing this, the activity will be notified each time a new message arrives

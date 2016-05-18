@@ -2,7 +2,6 @@ package com.elements.beya.activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,11 +10,8 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -53,18 +49,14 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.CircularImageView.CircularNetworkImageView;
 import com.elements.beya.R;
-import com.elements.beya.adapters.ServiciosAdapter;
-import com.elements.beya.adapters.ServiciosDisponiblesAdapter;
+
 import com.elements.beya.adapters.ServiciosSeleccionadosPush;
 import com.elements.beya.app.Config;
-import com.elements.beya.beans.Proveedor;
 import com.elements.beya.beans.Servicio;
-import com.elements.beya.beans.SolicitudServicio;
-import com.elements.beya.beans.SolicitudServicioSeleccionada;
+
+import com.elements.beya.beans.ValorServicio;
 import com.elements.beya.decorators.DividerItemDecoration;
-import com.elements.beya.fragments.ServiciosDisponibles;
 import com.elements.beya.services.ServiceActualizarUbicacionProveedor;
-import com.elements.beya.services.ServiceObtenerUbicacionEsteticista;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 import com.google.android.gms.common.ConnectionResult;
@@ -84,14 +76,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class SolitudServicioDetallada extends AppCompatActivity implements LocationListener,
@@ -109,7 +101,8 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
     private String ubicacionEsteticista;
     Double latitud, longitud;
 
-    Button botonFinalizarServicio, buttonLlegadaEsteticista;
+    Button botonFinalizarServicio;
+    public static Button buttonLlegadaEsteticista;
 
     public TextView nombreClienteSolicitudServicioDetallada, telefonoClienteSolicitudServicioDetallada,
             fechaClienteSolicitudServicioDetallada,DireccionClienteSolicitudServicioDetallada;
@@ -145,6 +138,8 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
 
     GoogleApiClient mGoogleApiClient;
 
+
+
     Location mCurrentLocation;
 
 
@@ -157,8 +152,6 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
     public SwitchCompat switchActivarLocation;
     String datosCliente;
 
-
-
     private gestionSharedPreferences sharedPreferences;
 
     private ServiciosSeleccionadosPush mAdapter;
@@ -167,9 +160,6 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
 
     private String keyCodigoSolicitudSeleccionado, costoSolicitud, direccionDomicilio,keyCodigoClienteSolicitudSeleccionada,
             ubicacionCliente, nombreUsuario, fechaSolicitud, telefonoCliente,imgUsuario;
-
-
-
 
     private static final String TAG = "SOLICITUD SERVICIO DETALLADA";
     LocationRequest mLocationRequest;
@@ -194,6 +184,9 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         setContentView(R.layout.activity_solitud_servicio_detallada);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
+
 
         Log.d(TAG, "onCreate ...............................");
         if (!isGooglePlayServicesAvailable())
@@ -271,11 +264,9 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         costoSolicitud = intent.getStringExtra("costoSolicitud");
         imgUsuario = intent.getStringExtra("imgUsuario");
 
-
         gestion = new Gestion();
 
         tiempoLlegada = "";
-
 
         TextView nombreClienteSolicitudServicioDetallada = (TextView) findViewById(R.id.nombreClienteSolicitudServicioDetallada);
         TextView telefonoClienteSolicitudServicioDetallada = (TextView) findViewById(R.id.telefonoClienteSolicitudServicioDetallada);
@@ -284,10 +275,13 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         TextView DireccionClienteSolicitudServicioDetallada = (TextView) findViewById(R.id.DireccionClienteSolicitudServicioDetallada);
         CircularNetworkImageView imagenCliente = ((CircularNetworkImageView) findViewById(R.id.imagenClienteSolicitudServicioDetallada));
         imagenCliente.setImageUrl(imgUsuario, imageLoader);
+        imagenCliente.setErrorImageResId(R.drawable.user);
+        imagenCliente.setDefaultImageResId(R.drawable.user);
 
         nombreClienteSolicitudServicioDetallada.setText(nombreUsuario);
         fechaClienteSolicitudServicioDetallada.setText(fechaSolicitud);
-        precioClienteSolicitudServicioDetallada.setText(costoSolicitud);
+        precioClienteSolicitudServicioDetallada.setText(nf.format(Integer.parseInt(costoSolicitud)));
+        ValorServicio.setValorServicio(Integer.parseInt(costoSolicitud));
         telefonoClienteSolicitudServicioDetallada.setText(telefonoCliente);
         DireccionClienteSolicitudServicioDetallada.setText(direccionDomicilio);
 
@@ -295,22 +289,19 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         botonFinalizarServicio = (Button) findViewById(R.id.buttonFinalizarServicio);
         botonFinalizarServicio.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
                 builder
                         .setMessage("¿Esta seguro de finalizar el servicio?")
                         .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int id)
-                            {
+                            public void onClick(DialogInterface dialog, int id) {
                                 displayAlertDialogFinalizarServicio();
                             }
                         }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int id)
-                    {
+                    public void onClick(DialogInterface dialog, int id) {
                         //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
                         //startActivity(intent);
                         //finish();
@@ -410,16 +401,6 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
 
             }
 
-
-            //Location location = locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-           /* if (location!=null){
-                double longitude = location.getLongitude();
-                double latitude = location.getLatitude();
-                String locLat = String.valueOf(latitude)+","+String.valueOf(longitude);
-            }*/
-
-
-
             ubicacionEsteticista = mLatitude+","+mLongitude;
             setUbicacionEsteticista(ubicacionEsteticista);
 
@@ -428,11 +409,11 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
             markerOptions.position(latLng);
             markerOptions.title("Tu cliente aqui!");
 
-
-           // markerOptions.snippet("a 2 horas");
             markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.beya_logo_on_map));
 
             mGoogleMap.addMarker(markerOptions);
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(17));
 
         mAdapter = new ServiciosSeleccionadosPush(servicioList);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -469,8 +450,24 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
     }
 
     @Override
-    public void onPause() {
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedState) {
+        super.onRestoreInstanceState(savedState);
+    }
+
+
+
+    @Override
+    public void onPause()
+    {
+        //SI LA APP PIERDE EL FOCO, IGUALMENTE DEBERIA HABILITARSE EL BOTON DE "HE LLEGADO". POR ESO COMENTO ESTA LINEA.
+
         LocalBroadcastManager.getInstance(this.getApplicationContext()).unregisterReceiver(mRegistrationBroadcastReceiver);
+        buttonLlegadaEsteticista.setEnabled(true);
         super.onPause();
     }
 
@@ -493,8 +490,29 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                 new IntentFilter(Config.PUSH_NOTIFICATION_LLEGADA_ESTETICISTA));
     }
 
+
+    boolean ifBack = true;
+
     @Override
-    public void onConnected(Bundle bundle) {
+    public void onBackPressed()
+    {
+        if (ifBack)
+        {
+            //DISABLED BUTTON BACK
+            Toast.makeText(this,"TRUE.", Toast.LENGTH_LONG).show();
+        }
+
+        else
+        {
+            Toast.makeText(this,"false.", Toast.LENGTH_LONG).show();
+            super.onBackPressed(); // Process Back key  default behavior.
+        }
+
+    }
+
+    @Override
+    public void onConnected(Bundle bundle)
+    {
         Log.d(TAG, "onConnected - isConnected ...............: " + mGoogleApiClient.isConnected());
         startLocationUpdates();
     }
@@ -565,7 +583,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                 //cancelar servicio por parte del esteticista
                 AlertDialog.Builder builder2 = new AlertDialog.Builder(SolitudServicioDetallada.this);
                 builder2
-                        .setMessage("¿Esta seguro de cancelar el servicio? Tendrá una penalidad de 5.000 COP")
+                        .setMessage("¿Esta seguro de cancelar su asistencia a la solicitud de servicio?")
                         .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
                         {
                             @Override
@@ -612,18 +630,18 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
             case R.id.radioButtonDiezMinutos:
                 if (checked)
                     // Pirates are the best
-                    tiempoLlegada = "10 Minutos";
+                    tiempoLlegada = "10";
                     break;
             case R.id.radioButtonTreintaMinutos:
                 if (checked)
                     // Ninjas rule
-                    tiempoLlegada = "30 Minutos";
+                    tiempoLlegada = "30";
 
                 break;
             case R.id.radioButtonCincuentaMinutos:
                 if (checked)
                     // Ninjas rule
-                    tiempoLlegada = "50 Minutos";
+                    tiempoLlegada = "50";
 
                 break;
         }
@@ -695,14 +713,6 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
             @Override
             public void onClick(View view)
             {
-
-               /* stopService(new Intent(getBaseContext(), ServiceActualizarUbicacionProveedor.class));
-                stopService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));*/
-               /* isCheckedSwitch = false;
-                sharedPreferences.putBoolean("isCheckedSwitch", isCheckedSwitch);
-                statusOnline = "0";
-                sharedPreferences.putString("statusOnline", statusOnline);*/
-
                 //SERVICIO EN BACKGROUND PARA ACTUALIZAR LA UBICACION DEL PROVEEDOR.
                 isCheckedSwitch = true;
                 sharedPreferences.putBoolean("isCheckedSwitch", isCheckedSwitch);
@@ -717,11 +727,6 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                 Intent intent = new Intent(SolitudServicioDetallada.this, Gestion.class);
                 startActivity(intent);
                 finish();
-
-
-
-
-
             }
         });
 
@@ -1043,12 +1048,6 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
 
                             if(status)
                             {
-
-
-
-                               /* JSONObject json = response.getJSONObject("datosCliente");
-                                String name = json.getString("nombresUsuario");*/
-
                                 AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
                                 builder
                                         .setMessage("Solicitud de servicio en Marcha, guiese en el mapa para llegar donde su Cliente.")
@@ -1057,14 +1056,10 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                                             @Override
                                             public void onClick(DialogInterface dialog, int id)
                                             {
-                                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
-                                                //startActivity(intent);
-                                                //finish();
 
                                                 botonFinalizarServicio.setVisibility(View.VISIBLE);
                                                 buttonLlegadaEsteticista.setVisibility(View.VISIBLE);
                                                 botonFinalizarServicio.setEnabled(false);
-
 
                                             }
                                         }).show();
@@ -1518,16 +1513,11 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         if (null != mCurrentLocation) {
             String lat = String.valueOf(mCurrentLocation.getLatitude());
             String lng = String.valueOf(mCurrentLocation.getLongitude());
-
-
-            Toast.makeText(getApplicationContext(),"At Time: " + "\n" +
-                            "Latitude: " + lat + "\n" +
-                            "Longitude: " + lng + "\n" +
-                            "Accuracy: " + mCurrentLocation.getAccuracy() + "\n" +
-                            "Provider: " + mCurrentLocation.getProvider(),
-                    Toast.LENGTH_SHORT).show();
-
-
+            Log.d(TAG, "At Time: " + "\n" +
+                    "Latitude: " + lat + "\n" +
+                    "Longitude: " + lng + "\n" +
+                    "Accuracy: " + mCurrentLocation.getAccuracy() + "\n" +
+                    "Provider: " + mCurrentLocation.getProvider());
 
         } else {
             Log.d(TAG, "location is null ...............");

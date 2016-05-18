@@ -36,8 +36,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class DetalleServicioHistorial extends AppCompatActivity
@@ -68,6 +70,8 @@ public class DetalleServicioHistorial extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detalle_servicio_historial);
+
+
 
         servicioList = new ArrayList<Servicio>();
         sharedPreferences = new gestionSharedPreferences(this);
@@ -140,6 +144,9 @@ public class DetalleServicioHistorial extends AppCompatActivity
     {
         _urlWebService = "http://52.72.85.214/ws/DetalleHistorial";
 
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
+
+
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
                 new Response.Listener<JSONObject>()
                 {
@@ -170,7 +177,7 @@ public class DetalleServicioHistorial extends AppCompatActivity
                                 nombreEsteticistaDetalleHistorial.setText(object.getJSONObject("esteticista").getString("nombresUsuario") + " " +
                                         object.getJSONObject("esteticista").getString("apellidosUsuario"));
                                 calificacionDetalleHistorial.setText(object.getString("calificacionServicio"));
-                                valorSolicitudDetalleHistorial.setText(object.getString("valorSolicitud"));
+                                valorSolicitudDetalleHistorial.setText(nf.format(Integer.parseInt(object.getString("valorSolicitud"))));
 
                                 imgUsuario = object.getString("imgUsuario");
 

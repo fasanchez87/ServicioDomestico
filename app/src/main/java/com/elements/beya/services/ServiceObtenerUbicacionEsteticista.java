@@ -1,25 +1,17 @@
 package com.elements.beya.services;
 
-import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkError;
-import com.android.volley.NoConnectionError;
-import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.ServerError;
-import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.activities.AceptacionServicio;
@@ -52,7 +44,7 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
     AceptacionServicio aceptacionServicio;
 
-    public static final long NOTIFY_INTERVAL = 10 * 1000; // 10 seconds
+    public static final long NOTIFY_INTERVAL = 5 * 1000; // 5 seconds
     // run on another Thread to avoid crash
     private Handler mHandler;
     // timer handling
@@ -90,12 +82,14 @@ public class ServiceObtenerUbicacionEsteticista extends Service
 
         String datosEsteticista = intent.getStringExtra("datosEsteticista");
         String datosCliente = intent.getStringExtra("datosCliente");
+        String codigoCliente = intent.getStringExtra("codigoCliente");
         String codigoSolicitud = intent.getStringExtra("codigoSolicitud");
         codigoEsteticista = intent.getStringExtra("codigoEsteticista");
 
         Intent aceptacionServicio = new Intent(this,AceptacionServicio.class);
         aceptacionServicio.putExtra("datosEsteticista", datosEsteticista);
         aceptacionServicio.putExtra("datosCliente", datosCliente);
+        aceptacionServicio.putExtra("codigoCliente", codigoCliente);
         aceptacionServicio.putExtra("codigoSolicitud", codigoSolicitud);
         aceptacionServicio.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(aceptacionServicio);
@@ -114,7 +108,6 @@ public class ServiceObtenerUbicacionEsteticista extends Service
         }
         // schedule task
         mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 5000, NOTIFY_INTERVAL);
-        Toast.makeText(this, "Servicio Rastreo Ubicacion Esteticista: ACTIVO", Toast.LENGTH_SHORT).show();
         return START_STICKY;
     }
 
@@ -144,7 +137,6 @@ public class ServiceObtenerUbicacionEsteticista extends Service
         super.onDestroy();
         mTimer.cancel();
        // _webServiceObtenerUbicacionEsteticista();
-        Toast.makeText(this, "Servicio destruido", Toast.LENGTH_SHORT).show();
     }
 
     class TimeDisplayTimerTask extends TimerTask

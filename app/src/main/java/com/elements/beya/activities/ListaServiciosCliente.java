@@ -38,6 +38,7 @@ import com.elements.beya.R;
 import com.elements.beya.adapters.ServiciosAceptacionAdapter;
 import com.elements.beya.adapters.ServiciosAdapter;
 import com.elements.beya.beans.Servicio;
+import com.elements.beya.beans.ValorServicio;
 import com.elements.beya.decorators.DividerItemDecoration;
 import com.elements.beya.services.ServiceObtenerUbicacionEsteticista;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
@@ -53,9 +54,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
 
@@ -94,6 +97,9 @@ public class ListaServiciosCliente extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_servicios_cliente);
+
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
+
 
 
         sharedPreferences = new gestionSharedPreferences(this);
@@ -175,10 +181,6 @@ public class ListaServiciosCliente extends AppCompatActivity
         _webServiceObtenerServiciosEsteticista();
 
         mAdapter.notifyDataSetChanged();
-
-
-
-
 
     }
 
@@ -276,6 +278,16 @@ public class ListaServiciosCliente extends AppCompatActivity
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedState) {
+        super.onRestoreInstanceState(savedState);
     }
 
     public static String getSerialUsuarioEsteticista()
@@ -742,7 +754,7 @@ public class ListaServiciosCliente extends AppCompatActivity
                 headers.put("codigoSolicitud", codigoSolicitud);
                 headers.put("codigoServicios", serviciosEscogidos);
                 headers.put("codigoCliente", codigoCliente );
-                headers.put("totalValorServicio",  valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.getText().toString());
+                headers.put("totalValorServicio",  ""+ValorServicio.getValorServicio());
                 headers.put("MyToken", sharedPreferences.getString("MyToken"));
                 return headers;
             }

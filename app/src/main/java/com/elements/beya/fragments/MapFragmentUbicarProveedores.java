@@ -35,6 +35,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -43,6 +44,7 @@ import android.support.annotation.DrawableRes;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,6 +53,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -91,6 +94,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -219,6 +223,9 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     {
 
         super.onCreate(savedInstanceState);
+
+
+
         sharedPreferences = new gestionSharedPreferences(this.getActivity());
         vars = new vars();
 
@@ -237,6 +244,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
                     String datosEsteticista = intent.getExtras().getString("datosEsteticista");
                     String datosCliente = intent.getExtras().getString("datosCliente");
+                    String codigoCliente = intent.getExtras().getString("codigoCliente");
                     codigoSolicitud = intent.getExtras().getString("codigoSolicitud");
                     String codigoEsteticista = intent.getExtras().getString("codigoEsteticista");
 /*
@@ -246,6 +254,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
                     serviceIntentOrdenServicio.putExtra("datosEsteticista", datosEsteticista);
                     serviceIntentOrdenServicio.putExtra("datosCliente", datosCliente);
+                    serviceIntentOrdenServicio.putExtra("codigoCliente", codigoCliente);
                     serviceIntentOrdenServicio.putExtra("codigoSolicitud", codigoSolicitud);
                     serviceIntentOrdenServicio.putExtra("codigoEsteticista", codigoEsteticista);
                     context.startService(serviceIntentOrdenServicio);
@@ -253,9 +262,9 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
 
 
-                    Log.w("ALERTA", "Push notification is received!" + intent.getStringExtra("datosEsteticista"));
-                    Toast.makeText(MapFragmentUbicarProveedores.this.getActivity(), "SERVICIO ACEPTADO: " +
-                            intent.getExtras().getString("datosEsteticista"), Toast.LENGTH_LONG).show();
+                    //Log.w("ALERTA", "Push notification is received!" + intent.getStringExtra("datosEsteticista"));
+                   /* Toast.makeText(MapFragmentUbicarProveedores.this, "SERVICIO ACEPTADO: " +
+                            intent.getExtras().getString("datosEsteticista"), Toast.LENGTH_LONG).show();*/
 
                 }
             }
@@ -266,56 +275,69 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
     }
 
+
+
+
+
+
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(View view, Bundle savedInstanceState)
+    {
         super.onViewCreated(view, savedInstanceState);
         mGoogleMap = ((SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map)).getMap();
 
         createLocationRequest();
+
         mGoogleApiClient = new GoogleApiClient.Builder(MapFragmentUbicarProveedores.this.getActivity())
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
 
-        if (!isGooglePlayServicesAvailable()) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
-            builder
-                    .setMessage("SIN SOPORTE DE GOOGLE PLAY SERVICES.")
-                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
-                            //startActivity(intent);
-                            //finish();
-                        }
-                    }).show();
-        }
 
-        mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
-        mGoogleMap.getUiSettings().setCompassEnabled(true);
-        mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
-        mGoogleMap.setMyLocationEnabled(true);
+            if (!isGooglePlayServicesAvailable())
+            {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
+                builder
+                        .setMessage("SIN SOPORTE DE GOOGLE PLAY SERVICES.")
+                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                //startActivity(intent);
+                                //finish();
+                            }
+                        }).show();
+            }
+
+            mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
+            mGoogleMap.getUiSettings().setCompassEnabled(true);
+            mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
+            mGoogleMap.setMyLocationEnabled(true);
 
 
-        if (ActivityCompat.checkSelfPermission(MapFragmentUbicarProveedores.this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapFragmentUbicarProveedores.this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
+            if (ActivityCompat.checkSelfPermission(MapFragmentUbicarProveedores.this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) !=
+                    PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapFragmentUbicarProveedores.this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+
 
 
         cargarProveedoresServicios();
 
     }
+
+
+
 
 
 
@@ -364,6 +386,12 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     {
         Log.d(TAG, "onConnected - isConnected ...............: " + mGoogleApiClient.isConnected());
         startLocationUpdates();
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)
+        {
+            startLocationUpdates();
+        }
     }
 
     protected void startLocationUpdates()
@@ -488,8 +516,6 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                                     .position(latLng)
                                     .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomMarkerView, bitmap))).anchor(0.5f, 0.5f));
                             mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13f));
-
-
                         }
                     });*/
 
@@ -508,8 +534,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         stopLocationUpdates();
     }
 
-    protected void stopLocationUpdates()
-    {
+    protected void stopLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(
                 mGoogleApiClient, this);
         Log.d(TAG, "Location update stopped .......................");
@@ -540,6 +565,9 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
 
     }
+
+    boolean ifBack = true;
+
 
 
     /**
@@ -596,6 +624,12 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         Log.d(TAG, "Connection failed: " + connectionResult.toString());
 
     }
+
+
+
+
+
+
 
 
     public class IconizedWindowAdapter implements GoogleMap.InfoWindowAdapter
@@ -667,11 +701,9 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
 
 
 /*
-
             for( int i = 0; i <= sharedPreferences.getListObject("proveedores", Proveedor.class).size()-1; i++ )
             {
                 String img = sharedPreferences.getListObject("proveedores", Proveedor.class).get(i).getImgUsuario().toString();
-
                 iv.setImageUrl(img, imageLoader);
                 //iv.setErrorImageResId(R.drawable.ic_launcher);// en caso de error poner esta imagen.
             }*/
@@ -797,7 +829,6 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                                 sharedPreferences.putString("tipoUsuario", tipoUsuario);
                                 sharedPreferences.putString("serialUsuario", serialUsuario);
                                 finish();*//*
-
                                 //}
                                 //}).show();*/
 
@@ -1204,7 +1235,6 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                                             //finish();
                                         }
                                     }).show();
-
                         }
 
                     }
@@ -1226,7 +1256,6 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
             }
         };
 
-        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 6, DefaultRetryPolicy.DEFAULT_MAX_RETRIES));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
     }
 

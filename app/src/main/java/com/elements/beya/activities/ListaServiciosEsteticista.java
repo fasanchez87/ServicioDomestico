@@ -34,6 +34,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.R;
 import com.elements.beya.adapters.ServiciosSeleccionadosPush;
 import com.elements.beya.beans.Servicio;
+import com.elements.beya.beans.ValorServicio;
 import com.elements.beya.decorators.DividerItemDecoration;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
@@ -47,8 +48,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class ListaServiciosEsteticista extends AppCompatActivity
@@ -187,6 +190,8 @@ public class ListaServiciosEsteticista extends AppCompatActivity
     private void _webServiceObtenerServicioCliente()
     {
         _urlWebService = "http://52.72.85.214/ws/ServiciosSolicitud";
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
+
 
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
@@ -220,9 +225,10 @@ public class ListaServiciosEsteticista extends AppCompatActivity
                                 if (servicio.getIndicaSolicitado().equals("1"))
                                 {
                                     valorSolicitud = valorSolicitud+Integer.parseInt(object.getString("valorServicio"));
-                                    valorTotalServiciosListarServiciosEsteticista.setText(""+valorSolicitud);
-                                    valorTotalServiciosListarServiciosEsteticista.setText(""+valorSolicitud);
-                                    SolitudServicioDetallada.precioClienteSolicitudServicioDetallada.setText(""+valorSolicitud);
+                                    ValorServicio.setValorServicio(valorSolicitud);
+                                    valorTotalServiciosListarServiciosEsteticista.setText(""+nf.format(valorSolicitud));
+                                    valorTotalServiciosListarServiciosEsteticista.setText(""+nf.format(valorSolicitud));
+                                    SolitudServicioDetallada.precioClienteSolicitudServicioDetallada.setText(""+nf.format(valorSolicitud));
                                     allServicesCliente.add(servicio);
                                 }
 

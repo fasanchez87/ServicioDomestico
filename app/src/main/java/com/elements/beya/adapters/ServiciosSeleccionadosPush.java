@@ -19,7 +19,10 @@ import com.elements.beya.R;
 import com.elements.beya.beans.Servicio;
 import com.elements.beya.volley.ControllerSingleton;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
+
 public class ServiciosSeleccionadosPush extends RecyclerView.Adapter <ServiciosSeleccionadosPush.MyViewHolder>
 {
 
@@ -65,9 +68,12 @@ public class ServiciosSeleccionadosPush extends RecyclerView.Adapter <ServiciosS
     public void onBindViewHolder(MyViewHolder holder, final int position)
     {
         final Servicio servicio = serviciosList.get(position);
+
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
+
         holder.nombreServicio.setText(servicio.getNombreServicio());
         holder.descripcionServicio.setText(servicio.getDescripcionServicio());
-        holder.valorServicio.setText(servicio.getValorServicio());
+        holder.valorServicio.setText(nf.format(Integer.parseInt(servicio.getValorServicio())));
 
     }
 

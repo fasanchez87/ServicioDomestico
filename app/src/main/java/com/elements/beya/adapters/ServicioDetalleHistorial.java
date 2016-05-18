@@ -23,7 +23,9 @@ import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 import static com.google.android.gms.internal.zzir.runOnUiThread;
 
@@ -80,6 +82,9 @@ public class ServicioDetalleHistorial extends RecyclerView.Adapter <ServicioDeta
     {
         final Servicio servicio = serviciosDetalle.get(position);
 
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
+
+
         if(servicio.getImagen().isEmpty())
         {
             holder.imagenServicio.setVisibility(View.GONE);
@@ -91,7 +96,7 @@ public class ServicioDetalleHistorial extends RecyclerView.Adapter <ServicioDeta
         holder.idServicio.setText(servicio.getId());
         holder.nombreServicio.setText(servicio.getNombreServicio());
         holder.descripcionServicio.setText(servicio.getDescripcionServicio());
-        holder.valorServicio.setText(servicio.getValorServicio());
+        holder.valorServicio.setText(nf.format(Integer.parseInt(servicio.getValorServicio())));
 
     }
 

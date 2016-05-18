@@ -304,17 +304,20 @@ public class Pago extends AppCompatActivity
             Log.w("apellidosUsuario",sharedPreferences.getString("nombresUsuario"));
             Log.w("emailUsuario",sharedPreferences.getString("emailUsuario"));
             Log.w("documentoUsuario", sharedPreferences.getString("documentoUsuario"));
-            Log.w("claveUsuario",sharedPreferences.getString("claveUsuario"));
-            Log.w("direccionIp",sharedPreferences.getString("direccionIp"));
-            Log.w("sistemaOperativo",sharedPreferences.getString("sistemaOperativo"));
+            Log.w("claveUsuario", sharedPreferences.getString("claveUsuario"));
+            Log.w("direccionIp", sharedPreferences.getString("direccionIp"));
+            Log.w("sistemaOperativo", sharedPreferences.getString("sistemaOperativo"));
             Log.w("tipoUsuario", sharedPreferences.getString("tipoUsuario"));
 
 
-            _webServiceRegistroUsuario( tokenGCM, sharedPreferences.getString("nombresUsuario"), sharedPreferences.getString("apellidosUsuario"),
+            _webServiceRegistroUsuario(tokenGCM, sharedPreferences.getString("nombresUsuario"), sharedPreferences.getString("apellidosUsuario"),
                     sharedPreferences.getString("emailUsuario"), sharedPreferences.getString("documentoUsuario"),
                     sharedPreferences.getString("claveUsuario"), sharedPreferences.getString("direccionIp"),
                     sharedPreferences.getString("sistemaOperativo"), sharedPreferences.getString("tipoUsuario"), numeroTarjetaCredito,
-                    fechaVigencia, getNameFranquicia() );
+                    fechaVigencia, getNameFranquicia(),CVVTarjetaCredito, sharedPreferences.getString("telefonoUsuario"), sharedPreferences.getString("direccionUsuario"),
+                    sharedPreferences.getString("ciudadUsuario"), sharedPreferences.getString("departamentoUsuario"));
+
+
 
 
 
@@ -770,7 +773,9 @@ public class Pago extends AppCompatActivity
 
     private void _webServiceRegistroUsuario(final String tokenGCM , String nombre, String apellido, String email, String documento,
                                             String clave, String direccionIP, String sistemaOperativo, String tipoUsuario,
-                                            final String numeroTarjetaCredito, final String fechaVigencia, String tipoTarjeta)
+                                            final String numeroTarjetaCredito, final String fechaVigencia, final String CVVTarjetaCredito, String tipoTarjeta,
+                                            final String telefonoUsuario, final String direcionUsuario, final String ciudadUsuario,
+                                            final String departamentoUsuario)
 
 
 
@@ -1106,6 +1111,12 @@ public class Pago extends AppCompatActivity
                 headers.put("numeroTarjeta", numeroTarjetaCredito);
                 headers.put("fechaVigencia", fechaVigencia);
                 headers.put("tipoTarjeta", getNameFranquicia());
+                headers.put("fechaVigencia", CVVTarjetaCredito);
+
+                headers.put("telefonoUsuario", telefonoUsuario);
+                headers.put("direccionUsuario", direcionUsuario);
+                headers.put("ciudadUsuario", ciudadUsuario);
+                headers.put("departamentoUsuario", departamentoUsuario);
 
 
 

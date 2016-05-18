@@ -73,8 +73,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Nombre"
-                    android:inputType="text"
-                    android:backgroundTint="@color/colorAccent"
+                    android:inputType="textCapSentences"                    android:backgroundTint="@color/colorAccent"
                     android:textColorHint="@color/colorAccent"
                     android:textColor="@color/colorAccent"/>
             </android.support.design.widget.TextInputLayout>
@@ -91,8 +90,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Apellido"
-                    android:inputType="text"
-                    android:backgroundTint="@color/colorAccent"
+                    android:inputType="textCapSentences"                    android:backgroundTint="@color/colorAccent"
                     android:textColorHint="@color/colorAccent"
                     android:textColor="@color/colorAccent"/>
             </android.support.design.widget.TextInputLayout>
@@ -147,6 +145,92 @@
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="10dp" />
+
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/input_layout_telefono_registro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/colorAccent">
+
+                <EditText
+                    android:id="@+id/edit_text_telefono_registro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Teléfono"
+                    android:inputType="number"
+                    android:backgroundTint="@color/colorAccent"
+                    android:textColorHint="@color/colorAccent"
+                    android:textColor="@color/colorAccent"
+                    />
+            </android.support.design.widget.TextInputLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/input_layout_direccion_registro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/colorAccent">
+
+                <EditText
+                    android:id="@+id/edit_text_direccion_registro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Dirección"
+                    android:inputType="textCapCharacters"                    android:backgroundTint="@color/colorAccent"
+                    android:textColorHint="@color/colorAccent"
+                    android:textColor="@color/colorAccent"
+
+                    />
+            </android.support.design.widget.TextInputLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/input_layout_ciudad_registro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/colorAccent">
+
+                <EditText
+                    android:id="@+id/edit_text_ciudad_registro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Ciudad"
+                    android:inputType="textCapCharacters"                    android:backgroundTint="@color/colorAccent"
+                    android:textColorHint="@color/colorAccent"
+                    android:textColor="@color/colorAccent"
+                    />
+            </android.support.design.widget.TextInputLayout>
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/input_layout_departamento_registro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/colorAccent">
+
+                <EditText
+                    android:id="@+id/edit_text_departamento_registro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Departamento"
+                    android:inputType="textCapCharacters"                    android:backgroundTint="@color/colorAccent"
+                    android:textColorHint="@color/colorAccent"
+                    android:textColor="@color/colorAccent"
+                    />
+            </android.support.design.widget.TextInputLayout>
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
 
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/input_layout_clave_registro"

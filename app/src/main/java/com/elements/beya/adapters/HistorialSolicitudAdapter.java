@@ -25,7 +25,9 @@ import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 import static com.google.android.gms.internal.zzir.runOnUiThread;
 
@@ -70,11 +72,14 @@ public class HistorialSolicitudAdapter extends RecyclerView.Adapter <HistorialSo
     {
         final HistorialSolicitud historialItem = historialList.get(position);
 
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
+
+
         holder.idSolicitud.setText(historialItem.getIdSolicitud());
         holder.nombreSolicitud.setText(historialItem.getNombreSolicitud());
         holder.fechaSolicitud.setText(historialItem.getFechaSolicitud());
         holder.estadoSolicitud.setText(historialItem.getEstadoSolicitud());
-        holder.valorSolicitud.setText(historialItem.getValorSolicitud());
+        holder.valorSolicitud.setText(nf.format(Integer.parseInt(historialItem.getValorSolicitud())));
 
     }
 
