@@ -451,6 +451,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
         final TextInputLayout inputLayoutDireccionDomicilio = (TextInputLayout) alertLayout.findViewById(R.id.input_layout_direccion_domicilio);
         final EditText editTextDireccionDomicilio = (EditText) alertLayout.findViewById(R.id.edit_text_direccion_domicilio);
         final Button botonConfirmarDomicilio = (Button) alertLayout.findViewById(R.id.btn_confirmar_domiclio);
+        final Button btn_cancelar_domiclio = (Button) alertLayout.findViewById(R.id.btn_cancelar_domiclio);
 
 
         AlertDialog.Builder alert = new AlertDialog.Builder(MapFragmentUbicarProveedores.this.getActivity());
@@ -476,6 +477,14 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                     dialog.dismiss();
                 }
 
+            }
+        });
+
+        btn_cancelar_domiclio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+                dialog.dismiss();
             }
         });
 
@@ -528,9 +537,17 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
     }
 
     @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(MapFragmentUbicarProveedores.this.getActivity()).unregisterReceiver(mRegistrationBroadcastReceiver);
+
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
-        LocalBroadcastManager.getInstance(MapFragmentUbicarProveedores.this.getActivity()).unregisterReceiver(mRegistrationBroadcastReceiver);
+        //LocalBroadcastManager.getInstance(MapFragmentUbicarProveedores.this.getActivity()).unregisterReceiver(mRegistrationBroadcastReceiver);
         stopLocationUpdates();
     }
 

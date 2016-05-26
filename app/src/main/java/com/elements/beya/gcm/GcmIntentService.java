@@ -4,13 +4,9 @@ package com.elements.beya.gcm;
  * Created by FABiO on 23/02/2016.
  *
  * This service extends IntentService which acts as a background service. This service basically used for three purposes:
-
  1. To connect with gcm server and fetch the registration token. Uses registerGCM() method.
-
  2. Subscribe to a topic. Uses subscribeToTopic(“topic”) method.
-
  3. Unsubscribe from a topic. Uses unsubscribeFromTopic(“topic”) method.
-
  */
 
 
@@ -20,15 +16,12 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.elements.beya.R;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
-import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
-import java.io.IOException;
 import com.elements.beya.app.Config;
 
 

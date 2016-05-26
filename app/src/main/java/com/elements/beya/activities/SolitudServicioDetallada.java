@@ -424,6 +424,8 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         mAdapter.notifyDataSetChanged();
     }
 
+
+
     @Override
     public void onStart() {
         super.onStart();
@@ -437,7 +439,28 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         Log.d(TAG, "onStop fired ..............");
         mGoogleApiClient.disconnect();
         Log.d(TAG, "isConnected ...............: " + mGoogleApiClient.isConnected());
+
     }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this.getApplicationContext()).unregisterReceiver(mRegistrationBroadcastReceiver);
+
+    }
+
+    @Override
+    public void onPause()
+    {
+        //SI LA APP PIERDE EL FOCO, IGUALMENTE DEBERIA HABILITARSE EL BOTON DE "HE LLEGADO". POR ESO COMENTO ESTA LINEA.
+
+        //LocalBroadcastManager.getInstance(this.getApplicationContext()).unregisterReceiver(mRegistrationBroadcastReceiver);
+        //buttonLlegadaEsteticista.setEnabled(true);
+        super.onPause();
+    }
+
+
 
     private boolean isGooglePlayServicesAvailable() {
         int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -460,16 +483,41 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
     }
 
 
+    boolean ifBack = true;
 
     @Override
-    public void onPause()
+    public void onBackPressed()
     {
-        //SI LA APP PIERDE EL FOCO, IGUALMENTE DEBERIA HABILITARSE EL BOTON DE "HE LLEGADO". POR ESO COMENTO ESTA LINEA.
+        if (ifBack)
+        {
+            //DISABLED BUTTON BACK
+            //Toast.makeText(this,"TRUE.", Toast.LENGTH_LONG).show();
+        }
 
-        LocalBroadcastManager.getInstance(this.getApplicationContext()).unregisterReceiver(mRegistrationBroadcastReceiver);
-        buttonLlegadaEsteticista.setEnabled(true);
-        super.onPause();
+        else
+        {
+            Toast.makeText(this,"false.", Toast.LENGTH_LONG).show();
+            super.onBackPressed(); // Process Back key  default behavior.
+        }
+
     }
+
+  /*  @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if (keyCode == KeyEvent.KEYCODE_BACK)
+        {
+            sharedPreferences.remove(keyCodigoSolicitudSeleccionado);
+            this.finish();
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }*/
+
+
+
+
 
     @Override
     public void onResume()
@@ -491,24 +539,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
     }
 
 
-    boolean ifBack = true;
 
-    @Override
-    public void onBackPressed()
-    {
-        if (ifBack)
-        {
-            //DISABLED BUTTON BACK
-            Toast.makeText(this,"TRUE.", Toast.LENGTH_LONG).show();
-        }
-
-        else
-        {
-            Toast.makeText(this,"false.", Toast.LENGTH_LONG).show();
-            super.onBackPressed(); // Process Back key  default behavior.
-        }
-
-    }
 
     @Override
     public void onConnected(Bundle bundle)
@@ -756,11 +787,9 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         alert.setCancelable(false);
         final AlertDialog dialog = alert.create();
 
-        buttonEnviarEsteticistaCancelarServicio.setOnClickListener(new View.OnClickListener()
-        {
+        buttonEnviarEsteticistaCancelarServicio.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 /*stopService(new Intent(getBaseContext(), ServiceActualizarUbicacionProveedor.class));
                 stopService(new Intent(getBaseContext(), ServiceObtenerUbicacionEsteticista.class));*/
                 sharedPreferences.remove("valorTotalServiciosTemporalSolicitarServicio");
@@ -816,11 +845,9 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                                 AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
                                 builder
                                         .setMessage(message)
-                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
-                                        {
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                                             @Override
-                                            public void onClick(DialogInterface dialog, int id)
-                                            {
+                                            public void onClick(DialogInterface dialog, int id) {
                                                 Intent intent = new Intent(SolitudServicioDetallada.this, Gestion.class);
                                                 startActivity(intent);
                                                 finish();
@@ -833,11 +860,9 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                                 AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
                                 builder
                                         .setMessage(message)
-                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
-                                        {
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                                             @Override
-                                            public void onClick(DialogInterface dialog, int id)
-                                            {
+                                            public void onClick(DialogInterface dialog, int id) {
                                                 //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
                                                 //startActivity(intent);
                                                 //finish();
@@ -1075,9 +1100,9 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                                             @Override
                                             public void onClick(DialogInterface dialog, int id)
                                             {
-                                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
-                                                //startActivity(intent);
-                                                //finish();
+                                                Intent intent = new Intent(SolitudServicioDetallada.this, Gestion.class);
+                                                startActivity(intent);
+                                                finish();
                                             }
                                         }).show();
                             }
@@ -1494,18 +1519,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
-        if (keyCode == KeyEvent.KEYCODE_BACK)
-        {
-            sharedPreferences.remove(keyCodigoSolicitudSeleccionado);
-            this.finish();
-            return true;
-        }
 
-        return super.onKeyDown(keyCode, event);
-    }
 
     private void updateUI()
     {

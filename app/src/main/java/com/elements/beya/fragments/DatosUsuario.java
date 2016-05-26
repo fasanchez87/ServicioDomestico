@@ -1,26 +1,17 @@
-package com.elements.beya.activities;
+package com.elements.beya.fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
+
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SwitchCompat;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
@@ -31,285 +22,101 @@ import com.android.volley.Response;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.elements.beya.CircularImageView.CircularNetworkImageView;
 import com.elements.beya.R;
-import com.elements.beya.adapters.ServiciosAceptacionAdapter;
-import com.elements.beya.adapters.ServiciosAdapter;
-import com.elements.beya.beans.Servicio;
-import com.elements.beya.beans.ValorServicio;
-import com.elements.beya.decorators.DividerItemDecoration;
-import com.elements.beya.services.ServiceObtenerUbicacionEsteticista;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Timer;
 
-public class ListaServiciosCliente extends AppCompatActivity
+
+public class DatosUsuario extends Fragment
 {
 
-    private ArrayList<Servicio> allServicesEsteticista;
-    private RecyclerView recyclerView;
-    private ServiciosAceptacionAdapter mAdapter;
-
-    private TextView textViewAvisoSinServiciosPantallaListarServiciosCliente;
-
     private String _urlWebService;
-
-    private String codigoSolicitud;
-    private String datosCliente;
-    private String codigoCliente;
-
-    AceptacionServicio aceptacionServicio;
-
-    private gestionSharedPreferences sharedPreferences;
-
-    public static TextView precioTemporalAceptacionServicios;
-
-    public static TextView valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios;
-    public static TextView valorTotalServiciosSeleccionados;
-
-    private String serviciosEscojidosListaServiciosCliente;
+    gestionSharedPreferences sharedPreferences;
+    ProgressBar progressBarConfiguracion;
+    Button botonGuardarCambios;
+    EditText nombreUsuario, apellidoUsuario, documentoUsuario, direccionUsuario,
+             ciudadUsuario, departamentoUsuario, telefonoUsuario;
+    TextView textViewEstadoCambios;
 
 
-    public static String serialUsuarioEsteticista;
+    private String direccion, ciudad, departamento, telefono;
 
+    public DatosUsuario()
+    {
+        // Required empty public constructor
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
+    public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lista_servicios_cliente);
+        sharedPreferences = new gestionSharedPreferences(getActivity());
 
-        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
+    }
 
-        sharedPreferences = new gestionSharedPreferences(this);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState)
+    {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_datos_usuario, container, false);
+    }
 
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
 
-        serviciosEscojidosListaServiciosCliente = sharedPreferences.getString("serviciosEscogidosEnSolicitarServicio");//almaceno los datos que escojio
-        sharedPreferences.putString("serviciosEscojidosListaServiciosCliente", serviciosEscojidosListaServiciosCliente);
+        nombreUsuario = (EditText) getActivity().findViewById(R.id.textViewNombresConfiguracion);
+        apellidoUsuario = (EditText) getActivity().findViewById(R.id.textViewApellidosConfiguracion);
+        documentoUsuario = (EditText) getActivity().findViewById(R.id.textViewDocumentoConfiguracion);
+        direccionUsuario = (EditText) getActivity().findViewById(R.id.textViewdireccion_direccion_configuracion);
+        ciudadUsuario = (EditText) getActivity().findViewById(R.id.textViewCiudadConfiguracion);
+        departamentoUsuario = (EditText) getActivity().findViewById(R.id.textViewDepartamentoConfiguracion);
+        telefonoUsuario = (EditText) getActivity().findViewById(R.id.textViewTelefonoConfiguracion);
 
+        botonGuardarCambios = (Button) getActivity().findViewById(R.id.buttonGuardarCambiosConfiguracion);
 
-        allServicesEsteticista = new ArrayList<Servicio>();
+        progressBarConfiguracion = (ProgressBar) getActivity().findViewById(R.id.progressBarConfiguracion);
 
-        aceptacionServicio = new AceptacionServicio();
+        textViewEstadoCambios = (TextView) getActivity().findViewById(R.id.textViewEstadoCambios);
 
-        recyclerView = (RecyclerView) this.findViewById(R.id.recycler_view_servicios_por_agregar_cliente);
-
-        valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios = (TextView) findViewById(R.id.valorTotalServiciosListarServiciosCliente);
-       /* valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.
-                setText("" + sharedPreferences.getInt("totalServiciosEscogidosEnSolicitarServicio"));*/
-
-        valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.
-                setText("" + AceptacionServicio.precioTemporalAceptacionServicios.getText());
-
-
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(this.getApplicationContext());
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(layoutManager);
-
-        mAdapter = new ServiciosAceptacionAdapter(allServicesEsteticista);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this.getApplicationContext());
-        recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
-        recyclerView.setAdapter(mAdapter);
-
-        textViewAvisoSinServiciosPantallaListarServiciosCliente = (TextView) findViewById(R.id.textViewAvisoSinServiciosPantallaListarServiciosCliente);
-
-
-        if (savedInstanceState == null)
+        botonGuardarCambios.setOnClickListener(new View.OnClickListener()
         {
-            Bundle extras = getIntent().getExtras();
-            if(extras == null)
+            @Override
+            public void onClick(View view)
             {
-                codigoSolicitud = null;
-                datosCliente = null;
+                String nombre = nombreUsuario.getText().toString();
+                String apellido = apellidoUsuario.getText().toString();
+                String documento = documentoUsuario.getText().toString();
+                direccion = direccionUsuario.getText().toString();
+                ciudad = ciudadUsuario.getText().toString();
+                departamento = departamentoUsuario.getText().toString();
+                telefono = telefonoUsuario.getText().toString();
+                String serialUsuario = sharedPreferences.getString("serialUsuario");
+
+                _webServiceSaveInfoUsuario(serialUsuario, nombre, apellido, documento, direccion, ciudad, departamento, telefono);
+
             }
-            else
-            {
-                codigoSolicitud = extras.getString("codigoSolicitud");
-                datosCliente = extras.getString("datosCliente");
-            }
-        }
-
-        else
-        {
-            codigoSolicitud = (String) savedInstanceState.getSerializable("codigoSolicitud");
-            datosCliente = (String) savedInstanceState.getSerializable("datosCliente");
-        }
+        });
 
 
-
-        try
-        {
-            JSONObject jsonObject = new JSONObject(datosCliente);
-
-
-                codigoCliente = jsonObject.getString("codigoCliente");
-
-                Log.i("ListaClientesServicios :: ", "code" + codigoCliente);
-
-
-
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-
-
-        _webServiceObtenerServiciosEsteticista();
-
-        mAdapter.notifyDataSetChanged();
-
+        _webServiceGetInfoUsuario(sharedPreferences.getString("serialUsuario"));
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
+    private void _webServiceGetInfoUsuario(final String serialUsuario)
     {
-        MenuInflater inflater=getMenuInflater();
-        inflater.inflate(R.menu.menu_lista_servicios_cliente, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
+        _urlWebService = "http://52.72.85.214/ws/getInfoUsuario";
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch (item.getItemId())
-        {
-            case R.id.action_agregar_servicios_esteticista:
-
-                String data = "";
-                List<Servicio> lista_servicios = ((ServiciosAceptacionAdapter) mAdapter).getServiciosList();
-                mAdapter.getItemCount();
-
-                for (int i = 0; i < lista_servicios.size(); i++)
-                {
-                    Servicio servicio = lista_servicios.get(i);
-
-                    if (servicio.isSelected() == true)
-                    {
-                        data = data+servicio.getId().toString()+",";
-                        lista_servicios.remove(servicio);
-                        //lista_servicios.notify();
-                        //mAdapter.notifyDataSetChanged();
-
-                        if(lista_servicios.isEmpty())
-                        {
-                            textViewAvisoSinServiciosPantallaListarServiciosCliente.setVisibility(View.VISIBLE);
-                            recyclerView.setVisibility(View.GONE);
-                        }
-
-                    }
-
-                    //mAdapter.notifyDataSetChanged();
-
-                }
-
-                mAdapter.notifyDataSetChanged();
-
-
-                if(data.isEmpty())
-                {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder
-                            .setMessage("Debe seleccionar al menos (1) Servicio.")
-                            .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int id) {
-                                    //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
-                                    //startActivity(intent);
-                                    //finish();
-                                }
-                            }).show();
-                }
-
-                else
-                {
-                    //BORRAR ULTIMA COMA Y SEPARARLOS POR DOS PUNTOS ':'
-                    String serviciosEscogidos = data.substring(0, data.lastIndexOf(","));
-                    sharedPreferences.putString("serviciosEscogidosEnListaServiciosCliente", serviciosEscogidos);
-
-                  /*  Toast.makeText(SolicitarServicio.this.getActivity(),
-                            "Selected Services: \n" + serviciosEscogidos+" "+sharedPreferences.getString("valorTotalServicios"), Toast.LENGTH_LONG)
-                            .show();*/
-
-                    AceptacionServicio.precioTemporalAceptacionServicios.setText(valorTotalServiciosSeleccionadosEsteticistaAceptacionServicios.getText());
-
-
-
-
-                    serviciosEscojidosListaServiciosCliente = sharedPreferences.getString("serviciosEscojidosListaServiciosCliente").
-                            concat("," + serviciosEscogidos);
-                    sharedPreferences.putString("serviciosEscojidosListaServiciosCliente",serviciosEscojidosListaServiciosCliente);
-
-
-                    Toast.makeText(this,
-                            "serviciosEscojidosListaServiciosCliente: \n" + " " + sharedPreferences.getString("serviciosEscojidosListaServiciosCliente"), Toast.LENGTH_LONG)
-                            .show();
-
-
-                    _webServiceEnviarServiciosAgregadosCliente(serviciosEscogidos);
-
-                }
-
-
-
-
-
-
-
-
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedState) {
-        super.onRestoreInstanceState(savedState);
-    }
-
-    public static String getSerialUsuarioEsteticista()
-    {
-        return serialUsuarioEsteticista;
-    }
-
-    public static void setSerialUsuarioEsteticista(String serialUsuarioEsteticista)
-    {
-        ListaServiciosCliente.serialUsuarioEsteticista = serialUsuarioEsteticista;
-    }
-
-    private void _webServiceObtenerServiciosEsteticista()
-    {
-        _urlWebService = "http://52.72.85.214/ws/ServiciosSolicitud";
-
+        progressBarConfiguracion.setVisibility(View.VISIBLE);
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET, _urlWebService, null,
                 new Response.Listener<JSONObject>()
@@ -319,55 +126,57 @@ public class ListaServiciosCliente extends AppCompatActivity
                     {
                         try
                         {
-
-                            boolean status = response.getBoolean("status");
+                            Boolean status = response.getBoolean("status");
                             String message = response.getString("message");
-                            JSONArray servicios = response.getJSONArray("result");
-                            JSONObject object;
+                            JSONObject object = response.getJSONObject("result");
 
-                            for (int i = 0; i <= servicios.length() - 1; i++)
+                            if(status)
                             {
-                                object = servicios.getJSONObject(i);
-
-                                Servicio servicio = new Servicio();
-                                servicio.setImagen(object.getString("imagenServicio"));
-                                servicio.setId(object.getString("codigoServicio"));
-                                servicio.setNombreServicio(object.getString("nombreServicio"));
-                                servicio.setDescripcionServicio(object.getString("descripcionServicio"));
-                                servicio.setValorServicio(object.getString("valorServicio"));
-                                servicio.setIndicaSolicitado(object.getString("indicaSolicitado"));
-
-                                if (servicio.getIndicaSolicitado().equals("0"))
-                                {
-                                    allServicesEsteticista.add(servicio);
-                                }
-
-
+                                nombreUsuario.setText(object.getString("nombresUsuario").toString());
+                                apellidoUsuario.setText(object.getString("apellidosUsuario").toString());
+                                documentoUsuario.setText(object.getString("documentoUsuario").toString());
+                                direccionUsuario.setText(object.getString("direccionUsuario").toString());
+                                direccion = object.getString("direccionUsuario").toString();
+                                ciudadUsuario.setText(object.getString("ciudadUsuario").toString());
+                                ciudad = object.getString("ciudadUsuario").toString();
+                                departamentoUsuario.setText(object.getString("dptoUsuario").toString());
+                                departamento = object.getString("dptoUsuario").toString();
+                                telefonoUsuario.setText(object.getString("telefonoUsuario").toString());
+                                telefono = object.getString("telefonoUsuario").toString();
+                                progressBarConfiguracion.setVisibility(View.GONE);
                             }
 
-                            if (allServicesEsteticista.isEmpty())
+                            else
                             {
-                                textViewAvisoSinServiciosPantallaListarServiciosCliente.setVisibility(View.VISIBLE);
-                                recyclerView.setVisibility(View.GONE);
+                                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                builder
+                                        .setMessage(message)
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                        {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int id)
+                                            {
+                                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                                //startActivity(intent);
+                                                //finish();
+                                            }
+                                        }).show();
                             }
-
-                             //progressBar.setVisibility(View.GONE);
-                            //buttonSeleccionarServicios.setVisibility(View.VISIBLE);
-                            mAdapter.notifyDataSetChanged();
-
                         }
+
                         catch (JSONException e)
                         {
+                            progressBarConfiguracion.setVisibility(View.GONE);
+                            progressBarConfiguracion.setVisibility(View.GONE);
 
-                            // progressBar.setVisibility(View.GONE);
-                            //buttonSeleccionarServicios.setVisibility(View.GONE);
-
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage(e.getMessage().toString())
-                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
                                         @Override
-                                        public void onClick(DialogInterface dialog, int id) {
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
                                             //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
                                             //startActivity(intent);
                                             //finish();
@@ -376,23 +185,20 @@ public class ListaServiciosCliente extends AppCompatActivity
 
                             e.printStackTrace();
                         }
-
-
                     }
-
                 },
-
 
                 new Response.ErrorListener()
                 {
+
+
                     @Override
                     public void onErrorResponse(VolleyError error)
                     {
-
                         if (error instanceof TimeoutError)
                         {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Error de conexión, sin respuesta del servidor.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -405,8 +211,6 @@ public class ListaServiciosCliente extends AppCompatActivity
                                             //finish();
                                         }
                                     }).show();
-
-
                         }
 
                         else
@@ -414,7 +218,7 @@ public class ListaServiciosCliente extends AppCompatActivity
                         if (error instanceof NoConnectionError)
                         {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Por favor, conectese a la red.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -427,7 +231,6 @@ public class ListaServiciosCliente extends AppCompatActivity
                                             //finish();
                                         }
                                     }).show();
-
                         }
 
                         else
@@ -435,7 +238,7 @@ public class ListaServiciosCliente extends AppCompatActivity
                         if (error instanceof AuthFailureError)
                         {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Error de autentificación en la red, favor contacte a su proveedor de servicios.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -448,17 +251,13 @@ public class ListaServiciosCliente extends AppCompatActivity
                                             //finish();
                                         }
                                     }).show();
-
-
-
                         }
 
                         else
 
                         if (error instanceof ServerError)
                         {
-
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Error server, sin respuesta del servidor.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -478,7 +277,7 @@ public class ListaServiciosCliente extends AppCompatActivity
                         if (error instanceof NetworkError)
                         {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Error de red, contacte a su proveedor de servicios.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -491,8 +290,6 @@ public class ListaServiciosCliente extends AppCompatActivity
                                             //finish();
                                         }
                                     }).show();
-
-
                         }
 
                         else
@@ -500,7 +297,7 @@ public class ListaServiciosCliente extends AppCompatActivity
                         if (error instanceof ParseError)
                         {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Error de conversión Parser, contacte a su proveedor de servicios.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -515,35 +312,38 @@ public class ListaServiciosCliente extends AppCompatActivity
                                     }).show();
                         }
 
-                        //progressBar.setVisibility(View.GONE);
-                        //buttonSeleccionarServicios.setVisibility(View.GONE);
+                        progressBarConfiguracion.setVisibility(View.GONE);
                     }
-
-
                 })
+
         {
+
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError
             {
                 HashMap<String, String> headers = new HashMap <String, String>();
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
-                headers.put("codigoSolicitud", codigoSolicitud);
+                headers.put("serialUsuario", serialUsuario);
                 headers.put("MyToken", sharedPreferences.getString("MyToken"));
                 return headers;
             }
-        };
 
+        };
         // jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
     }
 
-
-
-    private void _webServiceEnviarServiciosAgregadosCliente( final String serviciosEscogidos )
+    private void _webServiceSaveInfoUsuario(final String serialUsuario, final String nombreUsuario,
+                                            final String apellidoUsuario, final String documentoUsuario,
+                                            final String direccion, final String ciudad, final String departamento, final String telefono)
     {
-        _urlWebService = "http://52.72.85.214/ws/AgregarServiciosClienteOrdenServicio";
+
+
+
+
+        _urlWebService = "http://52.72.85.214/ws/saveInfoGeneral";
 
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, _urlWebService, null,
                 new Response.Listener<JSONObject>()
@@ -551,52 +351,59 @@ public class ListaServiciosCliente extends AppCompatActivity
                     @Override
                     public void onResponse(JSONObject response)
                     {
+
                         try
                         {
-                            JSONArray servicios = response.getJSONArray("result");
-                            boolean status = response.getBoolean("status");
+                            Boolean status = response.getBoolean("status");
+                            String message = response.getString("message");
 
-                            if (status)
+                            if(status)
                             {
-                                Log.i("status", ""+status);
+                                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                builder
+                                        .setMessage(message)
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                        {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int id)
+                                            {
+                                                textViewEstadoCambios.setVisibility(View.VISIBLE);
+
+                                            }
+                                        }).show();
                             }
 
                             else
                             {
-                                Log.i("status", "" + status);
-
+                                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                builder
+                                        .setMessage(message)
+                                        .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                        {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int id)
+                                            {
+                                                //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
+                                                //startActivity(intent);
+                                                //finish();
+                                            }
+                                        }).show();
                             }
-
-                          /*
-                            if( servicios.length() == 0)
-                            {
-
-                                Log.i("NULOS SERVICES", "servicios nulos");
-                                recyclerView.setVisibility(View.GONE);
-                                recyclerView.clearFocus();
-
-                                return;
-                            }
-
-*/
-
-                            //progressBar.setVisibility(View.GONE);
-                            //buttonSeleccionarServicios.setVisibility(View.VISIBLE);
-                            mAdapter.notifyDataSetChanged();
-
                         }
+
                         catch (JSONException e)
                         {
+                            progressBarConfiguracion.setVisibility(View.GONE);
+                            progressBarConfiguracion.setVisibility(View.GONE);
 
-                            // progressBar.setVisibility(View.GONE);
-                            //buttonSeleccionarServicios.setVisibility(View.GONE);
-
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage(e.getMessage().toString())
-                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
+                                    {
                                         @Override
-                                        public void onClick(DialogInterface dialog, int id) {
+                                        public void onClick(DialogInterface dialog, int id)
+                                        {
                                             //Intent intent = new Intent(Pago.this.getApplicationContext(), Registro.class);
                                             //startActivity(intent);
                                             //finish();
@@ -605,23 +412,20 @@ public class ListaServiciosCliente extends AppCompatActivity
 
                             e.printStackTrace();
                         }
-
-
                     }
-
                 },
-
 
                 new Response.ErrorListener()
                 {
+
+
                     @Override
                     public void onErrorResponse(VolleyError error)
                     {
-
                         if (error instanceof TimeoutError)
                         {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Error de conexión, sin respuesta del servidor.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -634,8 +438,6 @@ public class ListaServiciosCliente extends AppCompatActivity
                                             //finish();
                                         }
                                     }).show();
-
-
                         }
 
                         else
@@ -643,7 +445,7 @@ public class ListaServiciosCliente extends AppCompatActivity
                         if (error instanceof NoConnectionError)
                         {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Por favor, conectese a la red.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -656,7 +458,6 @@ public class ListaServiciosCliente extends AppCompatActivity
                                             //finish();
                                         }
                                     }).show();
-
                         }
 
                         else
@@ -664,7 +465,7 @@ public class ListaServiciosCliente extends AppCompatActivity
                         if (error instanceof AuthFailureError)
                         {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Error de autentificación en la red, favor contacte a su proveedor de servicios.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -677,17 +478,13 @@ public class ListaServiciosCliente extends AppCompatActivity
                                             //finish();
                                         }
                                     }).show();
-
-
-
                         }
 
                         else
 
                         if (error instanceof ServerError)
                         {
-
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Error server, sin respuesta del servidor.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -707,7 +504,7 @@ public class ListaServiciosCliente extends AppCompatActivity
                         if (error instanceof NetworkError)
                         {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Error de red, contacte a su proveedor de servicios.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -720,8 +517,6 @@ public class ListaServiciosCliente extends AppCompatActivity
                                             //finish();
                                         }
                                     }).show();
-
-
                         }
 
                         else
@@ -729,7 +524,7 @@ public class ListaServiciosCliente extends AppCompatActivity
                         if (error instanceof ParseError)
                         {
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ListaServiciosCliente.this.getApplicationContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder
                                     .setMessage("Error de conversión Parser, contacte a su proveedor de servicios.")
                                     .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -744,31 +539,37 @@ public class ListaServiciosCliente extends AppCompatActivity
                                     }).show();
                         }
 
-                        //progressBar.setVisibility(View.GONE);
-                        //buttonSeleccionarServicios.setVisibility(View.GONE);
+                        progressBarConfiguracion.setVisibility(View.GONE);
                     }
-
-
                 })
+
         {
+
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError
             {
                 HashMap<String, String> headers = new HashMap <String, String>();
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 headers.put("WWW-Authenticate", "xBasic realm=".concat(""));
-                headers.put("codigoSolicitud", codigoSolicitud);
-                headers.put("codigoServicios", serviciosEscogidos);
-                headers.put("codigoCliente", codigoCliente );
-                headers.put("totalValorServicio",  ""+ValorServicio.getValorServicio());
+                headers.put("serialUsuario", serialUsuario);
+                headers.put("nombresUsuario", nombreUsuario);
+                headers.put("apellidosUsuario", apellidoUsuario);
+                headers.put("documentoUsuario", documentoUsuario);
+                headers.put("direccionUsuario", direccion);
+                headers.put("ciudadUsuario", ciudad);
+                headers.put("dptoUsuario", departamento);
+                headers.put("telefonoUsuario", telefono);
                 headers.put("MyToken", sharedPreferences.getString("MyToken"));
                 return headers;
             }
-        };
 
+        };
         // jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
     }
+
+
+
 
 }

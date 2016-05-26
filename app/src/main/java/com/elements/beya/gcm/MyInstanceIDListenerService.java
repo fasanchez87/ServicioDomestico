@@ -1,7 +1,5 @@
 package com.elements.beya.gcm;
-
 /**
-
  * This service invokes onTokenRefresh() method whenever there is a change in gcm registration token.
  */
 import android.content.Intent;

@@ -287,16 +287,11 @@ public class Pago extends AppCompatActivity
         {
 
             numeroTarjetaCredito = EditTextNumeroTarjetaCreditoUser.getText().toString().replaceAll("\\s+", "");
-            MesTarjetaCredito = EditTextMesTarjetaCreditoUser.getText().toString();
-            AñoTarjetaCredito = EditTextAñoTarjetaCreditoUser.getText().toString();
             CVVTarjetaCredito = EditTextCVVTarjetaCreditoUser.getText().toString();
-
             fechaVigencia = EditTextAñoTarjetaCreditoUser.getText().toString()+"/"+EditTextMesTarjetaCreditoUser.getText().toString();
 
             Log.w("tokenGCM",""+tokenGCM);
             Log.w("numeroTarjetaCredito",numeroTarjetaCredito);
-            Log.w("MesTarjetaCredito",MesTarjetaCredito);
-            Log.w("AñoTarjetaCredito",AñoTarjetaCredito);
             Log.w("CVVTarjetaCredito",CVVTarjetaCredito);
             Log.w("fechaVigencia",fechaVigencia);
             Log.w("nombresUsuario", sharedPreferences.getString("nombresUsuario"));
@@ -314,15 +309,9 @@ public class Pago extends AppCompatActivity
                     sharedPreferences.getString("emailUsuario"), sharedPreferences.getString("documentoUsuario"),
                     sharedPreferences.getString("claveUsuario"), sharedPreferences.getString("direccionIp"),
                     sharedPreferences.getString("sistemaOperativo"), sharedPreferences.getString("tipoUsuario"), numeroTarjetaCredito,
-                    fechaVigencia, getNameFranquicia(),CVVTarjetaCredito, sharedPreferences.getString("telefonoUsuario"), sharedPreferences.getString("direccionUsuario"),
+                    fechaVigencia, CVVTarjetaCredito, getNameFranquicia(), sharedPreferences.getString("telefonoUsuario"),
+                    sharedPreferences.getString("direccionUsuario"),
                     sharedPreferences.getString("ciudadUsuario"), sharedPreferences.getString("departamentoUsuario"));
-
-
-
-
-
-
-
 
 
 
@@ -546,7 +535,7 @@ public class Pago extends AppCompatActivity
         String numberCard = EditTextNumeroTarjetaCreditoUser.getText().toString().replaceAll("\\s+", "");
         Log.w("Error Tarjeta: ", numberCard);
 
-        if ( !validateCardNumber(numberCard) )
+        if (!validateCardNumber(numberCard) )
         {
             textInputLayoutNumeroTarjetaCreditoUser.setHintAnimationEnabled(true);
             textInputLayoutNumeroTarjetaCreditoUser.setError("Número de tarjeta invalido");
@@ -715,12 +704,40 @@ public class Pago extends AppCompatActivity
                 }
 
                 else
+
+                if(EditTextNumeroTarjetaCreditoUser.getText().toString().length() > 1 &&
+                               (EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("30") ||
+                                EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("36")  ||
+                                EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("38")  ||
+                                EditTextNumeroTarjetaCreditoUser.getText().toString().substring(0, 2).equals("39")
+                        ))
                 {
+                    EditTextNumeroTarjetaCreditoUser.setCompoundDrawablesWithIntrinsicBounds( R.mipmap.ic_diners_club, 0, 0, 0);
+                    EditTextNumeroTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(17)});
+                    EditTextCVVTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
+                    // setNameFranquicia("");
+                    setNameFranquicia("DINERS");
+
+                }
+
+                else
+                {
+
+                   /* textInputLayoutNumeroTarjetaCreditoUser.setError("Franquicia no admitida");
+                    requestFocus(EditTextNumeroTarjetaCreditoUser);*/
                     EditTextNumeroTarjetaCreditoUser.setCompoundDrawablesWithIntrinsicBounds( R.mipmap.logo_tarjeta_x, 0, 0, 0);
-                    EditTextNumeroTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(19)});
+/*
+
+
+
+                    EditTextNumeroTarjetaCreditoUser.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.logo_tarjeta_x, 0, 0, 0);
+                    textInputLayoutNumeroTarjetaCreditoUser.setHintAnimationEnabled(true);
+                    EditTextNumeroTarjetaCreditoUser.setError("Franquicia no admitida");
+                    requestFocus(EditTextNumeroTarjetaCreditoUser);
+                   *//* EditTextNumeroTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(19)});
                     EditTextCVVTarjetaCreditoUser.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
                     //setNameFranquicia("");
-                    setNameFranquicia("GENERICA");
+                    setNameFranquicia("GENERICA");*/
 
                 }
 
@@ -773,15 +790,18 @@ public class Pago extends AppCompatActivity
 
     private void _webServiceRegistroUsuario(final String tokenGCM , String nombre, String apellido, String email, String documento,
                                             String clave, String direccionIP, String sistemaOperativo, String tipoUsuario,
-                                            final String numeroTarjetaCredito, final String fechaVigencia, final String CVVTarjetaCredito, String tipoTarjeta,
-                                            final String telefonoUsuario, final String direcionUsuario, final String ciudadUsuario,
-                                            final String departamentoUsuario)
+                                            final String numeroTarjetaCredito, final String fechaVigencia, final String CVVTarjetaCredito,
+                                            String tipoTarjeta, final String telefonoUsuario, final String direcionUsuario,
+                                            final String ciudadUsuario, final String departamentoUsuario)
+
 
 
 
     {
 
         _urlWebService = "http://52.72.85.214/ws/RegistroUsuario";
+
+        Log.d("CVVTarjetaCredito",""+CVVTarjetaCredito);
 
 
         progressBarRegistroUsuario.setVisibility(View.VISIBLE);
@@ -1108,10 +1128,11 @@ public class Pago extends AppCompatActivity
                 headers.put("direccionIp", sharedPreferences.getString("direccionIp"));
                 headers.put("sistemaOperativo", sharedPreferences.getString("sistemaOperativo"));
                 headers.put("tipoUsuario", sharedPreferences.getString("tipoUsuario"));
+
                 headers.put("numeroTarjeta", numeroTarjetaCredito);
                 headers.put("fechaVigencia", fechaVigencia);
                 headers.put("tipoTarjeta", getNameFranquicia());
-                headers.put("fechaVigencia", CVVTarjetaCredito);
+                headers.put("securityCode", CVVTarjetaCredito);
 
                 headers.put("telefonoUsuario", telefonoUsuario);
                 headers.put("direccionUsuario", direcionUsuario);
@@ -1125,7 +1146,7 @@ public class Pago extends AppCompatActivity
 
         };
 
-        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+       // jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(10000, 3, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         ControllerSingleton.getInstance().addToReqQueue(jsonObjReq, "");
 
     }

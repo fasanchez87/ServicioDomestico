@@ -44,9 +44,7 @@ public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosA
 
     SharedPreferences sharedPreferences;
 
-
-
-
+    final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
 
     public class MyViewHolder extends RecyclerView.ViewHolder
     {
@@ -90,7 +88,7 @@ public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosA
 
         holder.idServicio.setText(servicio.getId());
         holder.nombreServicio.setText(servicio.getNombreServicio());
-        holder.valorServicio.setText(servicio.getValorServicio());
+        holder.valorServicio.setText(nf.format(Integer.parseInt(servicio.getValorServicio())));
         holder.checkServicio.setChecked(servicio.isSelected());
         holder.checkServicio.setTag(servicio);
 
@@ -114,9 +112,8 @@ public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosA
                 serviciosList.get(position).setSelected(cb.isChecked());
                 Toast.makeText(v.getContext(), "Clicked on Checkbox: " + cb.getText() + " is "+ cb.isChecked(), Toast.LENGTH_LONG).show();
 
-                final NumberFormat nf = NumberFormat.getNumberInstance(Locale.GERMAN);
 
-                if(cb.isChecked())
+               /* if(cb.isChecked())
                 {
                     if(lastChecked != null)
                     {
@@ -128,7 +125,7 @@ public class ServiciosAceptacionAdapter extends RecyclerView.Adapter <ServiciosA
                     lastCheckedPos = position;
                 }
                 else
-                    lastChecked = null;
+                    lastChecked = null;*/
 
 
 

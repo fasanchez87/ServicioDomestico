@@ -44,6 +44,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.elements.beya.R;
 import com.elements.beya.app.Config;
 import com.elements.beya.fragments.Configuracion;
+import com.elements.beya.fragments.DatosUsuario;
 import com.elements.beya.fragments.Historial;
 import com.elements.beya.fragments.ServiciosDisponibles;
 import com.elements.beya.fragments.SolicitarServicio;
@@ -429,7 +430,17 @@ public class Gestion extends AppCompatActivity
                 break;
 
             case R.id.nav_configuracion:
-                fragmentClass = Configuracion.class;
+
+                if (tipoUsuario.equals("E"))
+                {
+                    fragmentClass = DatosUsuario.class;
+                }
+
+                else
+                {
+                    fragmentClass = Configuracion.class;
+                }
+
                 break;
 
             case R.id.nav_cerrar_sesion:
@@ -442,7 +453,6 @@ public class Gestion extends AppCompatActivity
                             @Override
                             public void onClick(DialogInterface dialog, int id)
                             {
-
                                 _webServiceCerrarSesionChangeStateOnLine(sharedPreferences.getString("serialUsuario"));
                                 sharedPreferences.putBoolean("GuardarSesion",false);
                                 sharedPreferences.clear();

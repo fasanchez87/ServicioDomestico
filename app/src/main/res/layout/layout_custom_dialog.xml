@@ -66,7 +66,22 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/css_buttons"
-            android:text="CONFIRMADO"
+            android:text="CONFIRMAR"
+            android:layout_weight="1"
+            android:textColor="@android:color/white" />
+
+        <Space
+            android:layout_width="7dp"
+            android:layout_height="0dp" />
+
+        <Button
+            android:id="@+id/btn_cancelar_domiclio"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/css_buttons"
+            android:text="CANCELAR"
+            android:layout_weight="1"
+
             android:textColor="@android:color/white" />
     </LinearLayout>
 

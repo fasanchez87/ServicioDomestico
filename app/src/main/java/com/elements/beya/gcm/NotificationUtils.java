@@ -1,10 +1,5 @@
 package com.elements.beya.gcm;
-/**
- * Created by FABiO on 23/02/2016.
- * This class is used to show the notification in notification tray.
- * This also contains major functions like checking app’s running state (background / foreground),
- * downloading notification image attachment from url, playing notification sound and clearing notification messages.
- */
+
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -40,16 +35,12 @@ import com.elements.beya.volley.ControllerSingleton;
 
 import com.elements.beya.R;
 
-
 /**
  * Created by Ravi on 01/06/15.
  * This class is used to show the notification in notification tray. This also contains major functions like checking app’s
  * running state (background / foreground),
  * downloading notification image attachment from url, playing notification sound and clearing notification messages.
  */
-
-
-
 public class NotificationUtils
 {
 

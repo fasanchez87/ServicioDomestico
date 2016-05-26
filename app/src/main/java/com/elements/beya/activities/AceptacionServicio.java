@@ -108,7 +108,8 @@ import me.leolin.shortcutbadger.ShortcutBadger;
 
 public class AceptacionServicio extends AppCompatActivity implements LocationListener, GoogleMap.OnMarkerClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener
+{
 
     TextView nombreEsteticista, apellidoEsteticista, kilometrosDistanciaEsteticista,
             tiempoLlegadaEsteticista, telefonoEsteticistaAceptacionServicios;
@@ -225,8 +226,6 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarAceptacionServicio);
         setSupportActionBar(toolbar);
 
-
-
         Log.d(TAG, "onCreate ...............................");
         if (!isGooglePlayServicesAvailable())
         {
@@ -302,6 +301,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
             }
         };
 
+
         linearCostoTotalDescuentoBono = (LinearLayout) findViewById(R.id.linearLayoutTotalDescuentoBono);
         valorTotalServicioConDescuentoBono = (TextView) findViewById(R.id.valorTotalServicioConDescuentoBono);
 
@@ -318,7 +318,6 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         recyclerView = (RecyclerView) this.findViewById(R.id.recycler_view_servicios_agregar_aceptacionServicios);
 
         imagenEsteticista = ((CircularNetworkImageView) findViewById(R.id.imagenClienteSolicitudServicioDetallada));
-
 
         nombreEsteticista = (TextView) this.findViewById(R.id.nombreEsteticistaAceptacionServicios);
         kilometrosDistanciaEsteticista = (TextView) this.findViewById(R.id.kilometrosEsteticistaAceptacionServicios);
@@ -437,7 +436,8 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
+    public void onConnected(Bundle bundle)
+    {
         Log.d(TAG, "onConnected - isConnected ...............: " + mGoogleApiClient.isConnected());
         startLocationUpdates();
     }
@@ -520,11 +520,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
     }
 
 
-    @Override
-    protected void onDestroy()
-    {
-        super.onDestroy();
-    }
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -535,11 +531,18 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
     protected void onRestoreInstanceState(Bundle savedState) {
         super.onRestoreInstanceState(savedState);
     }
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this.getApplicationContext()).unregisterReceiver(mRegistrationBroadcastReceiver);
+    }
+
 
     @Override
     public void onPause()
     {
-        LocalBroadcastManager.getInstance(this.getApplicationContext()).unregisterReceiver(mRegistrationBroadcastReceiver);
+        //LocalBroadcastManager.getInstance(this.getApplicationContext()).unregisterReceiver(mRegistrationBroadcastReceiver);
         //mTimer.cancel();
         super.onPause();
     }
@@ -860,12 +863,15 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         final RadioGroup RadioGroup = (RadioGroup) alertLayout.findViewById(R.id.radioGroupCalificacionEsteticista);
         final Button buttonEnviarCalificacionEsteticista = (Button) alertLayout.findViewById(R.id.buttonEnviarCalificacionEsteticista);
         final EditText editTextObservacionClienteFinalizarServicio = (EditText) alertLayout.findViewById(R.id.editTextObservacionClienteFinalizarServicio);
+        final TextView textViewValorTotalServicioCliente = (TextView) alertLayout.findViewById(R.id.textViewValorTotalServicioCliente);
 
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle("Calificación Servicio");
+        //alert.setTitle("Calificación Servicio");
         alert.setView(alertLayout);
         alert.setCancelable(false);
         final AlertDialog dialog = alert.create();
+
+        textViewValorTotalServicioCliente.setText("VALOR SERVICIO: "+precioTemporalAceptacionServicios.getText());
 
         buttonEnviarCalificacionEsteticista.setOnClickListener(new View.OnClickListener()
         {
@@ -1615,7 +1621,7 @@ public class AceptacionServicio extends AppCompatActivity implements LocationLis
         if (ifBack)
         {
             //DISABLED BUTTON BACK
-            Toast.makeText(this,"TRUE.", Toast.LENGTH_LONG).show();
+           // Toast.makeText(this,"TRUE.", Toast.LENGTH_LONG).show();
         }
 
         else
