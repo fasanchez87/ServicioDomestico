@@ -97,6 +97,8 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
     private String _urlWebServiceAceptarSolicitudServicio;
     private String _urlWebServiceCancelarSolicitudServicio;
 
+    private boolean ifBack = false;
+
 
     private String ubicacionEsteticista;
     Double latitud, longitud;
@@ -381,37 +383,37 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         recyclerView.setLayoutManager(layoutManager);
 
 
-            mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
-            mGoogleMap.getUiSettings().setCompassEnabled(true);
-            mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
-            mGoogleMap.setMyLocationEnabled(true);
+        mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
+        mGoogleMap.getUiSettings().setCompassEnabled(true);
+        mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        mGoogleMap.setMyLocationEnabled(true);
 
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) !=
-                    PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-            {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
 
-            }
+        }
 
-            ubicacionEsteticista = mLatitude+","+mLongitude;
-            setUbicacionEsteticista(ubicacionEsteticista);
+        ubicacionEsteticista = mLatitude+","+mLongitude;
+        setUbicacionEsteticista(ubicacionEsteticista);
 
-            markerOptions = new MarkerOptions();
-            LatLng latLng = new LatLng(latitud,longitud);
-            markerOptions.position(latLng);
-            markerOptions.title("Tu cliente aqui!");
+        markerOptions = new MarkerOptions();
+        LatLng latLng = new LatLng(latitud,longitud);
+        markerOptions.position(latLng);
+        markerOptions.title("Tu cliente aqui!");
 
-            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.beya_logo_on_map));
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.beya_logo_on_map));
 
-            mGoogleMap.addMarker(markerOptions);
+        mGoogleMap.addMarker(markerOptions);
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(17));
 
@@ -483,7 +485,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
     }
 
 
-    boolean ifBack = true;
+
 
     @Override
     public void onBackPressed()
@@ -496,8 +498,11 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
 
         else
         {
-            Toast.makeText(this,"false.", Toast.LENGTH_LONG).show();
+            ///Toast.makeText(this,"false.", Toast.LENGTH_LONG).show();
             super.onBackPressed(); // Process Back key  default behavior.
+            Intent intent = new Intent(SolitudServicioDetallada.this, Gestion.class);
+            startActivity(intent);
+            finish();
         }
 
     }
@@ -618,7 +623,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                         .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
                         {
                             @Override
-                             public void onClick(DialogInterface dialog, int id)
+                            public void onClick(DialogInterface dialog, int id)
                             {
                                 displayAlertDialogCancelarServicioEsteticista();
                             }
@@ -636,8 +641,8 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                 return true;
 
             case R.id.action_aceptar_servicio_aceptacion_servicio_detallado:
-            displayAlertDialog();
-            return true;
+                displayAlertDialog();
+                return true;
 
             case R.id.action_revisar_servicios_solicitud:
                 Intent intentRevisionServicios = new Intent(SolitudServicioDetallada.this, ListaServiciosRevisarEsteticista.class);
@@ -662,7 +667,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                 if (checked)
                     // Pirates are the best
                     tiempoLlegada = "10";
-                    break;
+                break;
             case R.id.radioButtonTreintaMinutos:
                 if (checked)
                     // Ninjas rule
@@ -706,6 +711,8 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
                 menuAceptarSolocitud.setVisible(false);
                 action_cancelar_aceptacion_servicio_esteticista.setVisible(true);
 
+                ifBack = true;
+
                 dialog.dismiss();
             }
         });
@@ -731,7 +738,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
 
         final Button buttonEnviarComentarioFinalizarServicio = (Button) alertLayout.findViewById(R.id.buttonEnviarComentarioFinalizarServicio);
         final EditText editTextComentariosServicioPrestadoEsteticista = (EditText)
-                         alertLayout.findViewById(R.id.editTextComentariosServicioPrestadoEsteticista);
+                alertLayout.findViewById(R.id.editTextComentariosServicioPrestadoEsteticista);
 
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Finalizar Servicio");
@@ -1092,7 +1099,7 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
 
                             else
                             {
-                               AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
+                                AlertDialog.Builder builder = new AlertDialog.Builder(SolitudServicioDetallada.this);
                                 builder
                                         .setMessage("Error Solicitud Esteticista: "+message)
                                         .setPositiveButton("Aceptar", new DialogInterface.OnClickListener()
@@ -1561,8 +1568,8 @@ public class SolitudServicioDetallada extends AppCompatActivity implements Locat
         mLatitude = mCurrentLocation.getLatitude();
         mLongitude = mCurrentLocation.getLongitude();
         LatLng latLng = new LatLng(mLatitude, mLongitude);
-       // mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-       // mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(100));
+        // mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        // mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(100));
         updateUI();
     }
 }

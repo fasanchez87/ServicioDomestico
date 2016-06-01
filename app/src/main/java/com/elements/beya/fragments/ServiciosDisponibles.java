@@ -119,16 +119,8 @@ public class ServiciosDisponibles extends Fragment
             {
                 if (intent.getAction().equals(Config.PUSH_NOTIFICATION))
                 {
-                    // new push notification is received
-
-                    Log.w("ALERTA", "Push notification is received!"+intent.getStringExtra("message"));
-
 
                     solicitudesServicios.clear();
-                    //data.addAll(datas);
-                    //notifyDataSetChanged();
-
-                   // progressBar.setVisibility(View.GONE);
                     textViewAvisoSinSolicitudesServicio.setVisibility(View.GONE);
                     recyclerViewServiciosDisponibles.setVisibility(View.VISIBLE);
                     _webServiceGetSolicitudesServicios();
@@ -163,9 +155,14 @@ public class ServiciosDisponibles extends Fragment
                     recyclerViewServiciosDisponibles.setVisibility(View.GONE);
                 }
 
-                solicitudesServicios.clear();
-                _webServiceGetSolicitudesServicios();
-                mAdapter.notifyDataSetChanged();
+                else
+                {
+                    solicitudesServicios.clear();
+                    _webServiceGetSolicitudesServicios();
+                    mAdapter.notifyDataSetChanged();
+                }
+
+
 
 
 
@@ -250,6 +247,8 @@ public class ServiciosDisponibles extends Fragment
                 intent.putExtra("costoSolicitud", solicitudServicio.getCostoSolicitud());
                 intent.putExtra("imgUsuario", solicitudServicio.getImagenClienteSolicitudServicio());
                 startActivity(intent);
+
+                getActivity().finish();
 
                 sharedPreferences.putHashMapObjectServicio(hashTableSolicitudDetallada);
 

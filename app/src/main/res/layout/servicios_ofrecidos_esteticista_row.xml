@@ -51,32 +51,25 @@
         android:layout_toEndOf="@+id/imageItemService"
         />
 
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:id="@+id/checkBoxServicio"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignBottom="@+id/textViewValorServicio" />
 
-   <!-- <ImageView
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+
+    <!-- <ImageView
+         android:layout_width="80dp"
+         android:layout_height="80dp"
+         android:scaleType="fitXY"
+         android:adjustViewBounds="true"
+         android:layout_gravity="center"
+         android:paddingRight="5dp"
+         android:id="@+id/imageView3"
+         android:src="@drawable/ic_blower"
+         android:layout_alignParentTop="true"
+         android:layout_alignBottom="@+id/textViewValorServicio"
+         android:layout_alignStart="@+id/textViewIDServicio" />-->
+
+    <!--
         android:scaleType="fitXY"
-        android:adjustViewBounds="true"
-        android:layout_gravity="center"
-        android:paddingRight="5dp"
-        android:id="@+id/imageView3"
-        android:src="@drawable/ic_blower"
-        android:layout_alignParentTop="true"
-        android:layout_alignBottom="@+id/textViewValorServicio"
-        android:layout_alignStart="@+id/textViewIDServicio" />-->
-
-<!--
-    android:scaleType="fitXY"
-    le quite esto al NetworkImageView abajo!
--->
+        le quite esto al NetworkImageView abajo!
+    -->
 
     <com.elements.beya.CircularImageView.CircularNetworkImageView
         android:id="@+id/imageItemService"
@@ -86,20 +79,7 @@
         android:src="@drawable/ic_blower"
         android:adjustViewBounds="true"
         android:layout_gravity="center"
-        android:layout_alignParentTop="true"
+        android:layout_alignParentTop="true"/>
 
-        />
-
-    <!--<com.android.volley.toolbox.NetworkImageView
-        android:id="@+id/imageItemService"
-        android:layout_width="100dp"
-        android:paddingRight="6dp"
-        android:layout_height="100dp"
-        android:src="@drawable/ic_blower"
-        android:adjustViewBounds="true"
-        android:layout_gravity="center"
-        android:layout_alignParentTop="true"
-        android:layout_alignBottom="@+id/textViewValorServicio"
-        android:layout_alignStart="@+id/textViewIDServicio"/>-->
 
 </RelativeLayout>

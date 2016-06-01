@@ -47,6 +47,7 @@ import com.elements.beya.fragments.Configuracion;
 import com.elements.beya.fragments.DatosUsuario;
 import com.elements.beya.fragments.Historial;
 import com.elements.beya.fragments.ServiciosDisponibles;
+import com.elements.beya.fragments.ServiciosEsteticista;
 import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.fragments.Soporte;
 import com.elements.beya.services.ServiceActualizarUbicacionProveedor;
@@ -227,14 +228,15 @@ public class Gestion extends AppCompatActivity
         if (!tipoUsuario.equals("E"))
         {
             menu.getItem(1).setVisible(false);
-            menu.getItem(0).getSubMenu().getItem(2).setVisible(false);
+            menu.getItem(0).getSubMenu().getItem(3).setVisible(false);
+            menu.getItem(0).getSubMenu().getItem(0).setVisible(false);
 
         }
 
         else if (tipoUsuario.equals("E"))
         {
-            menu.getItem(0).getSubMenu().getItem(2).setVisible(false);
-            menu.getItem(0).getSubMenu().getItem(0).setVisible(false);
+            menu.getItem(0).getSubMenu().getItem(3).setVisible(false);
+            menu.getItem(0).getSubMenu().getItem(1).setVisible(false);
             Log.e("LEA :::: ", menu.getItem(0).getTitle().toString());
         }
 
@@ -274,8 +276,6 @@ public class Gestion extends AppCompatActivity
 
             else
             {
-
-
                 //MOSTRAMOS POR DEFECTO EL NAV SOLICITAR SERVICIOS CUANDO ES CLIENTE
                 navigationView.setCheckedItem(R.id.nav_solicitar_servicio);
 
@@ -318,7 +318,8 @@ public class Gestion extends AppCompatActivity
         alertDialogBuilder.setMessage("Su GPS esta apagado, para que Beya funcione debe encenderlo, ¿desea hacerlo?")
                 .setCancelable(false)
                 .setPositiveButton("Encender GPS",
-                        new DialogInterface.OnClickListener(){
+                        new DialogInterface.OnClickListener()
+                        {
                             public void onClick(DialogInterface dialog, int id){
                                 Intent callGPSSettingIntent = new Intent(
                                         android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -411,6 +412,11 @@ public class Gestion extends AppCompatActivity
 
         switch (item.getItemId())
         {
+
+            case R.id.nav_mis_servicios:
+                fragmentClass = ServiciosEsteticista.class;
+                break;
+
             case R.id.nav_solicitar_servicio:
                 fragmentClass = SolicitarServicio.class;
                 break;

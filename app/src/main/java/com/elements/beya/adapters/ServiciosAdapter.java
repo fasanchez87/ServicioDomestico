@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.elements.beya.CircularImageView.CircularNetworkImageView;
 import com.elements.beya.R;
 import com.elements.beya.beans.Servicio;
 import com.elements.beya.beans.SolicitudServicio;
@@ -51,7 +52,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
     {
         public TextView idServicio,nombreServicio, descripcionServicio, valorServicio;
         public CheckBox checkServicio;
-        public NetworkImageView imagenServicio;
+        public CircularNetworkImageView imagenServicio;
 
         public MyViewHolder(View view)
         {
@@ -62,7 +63,7 @@ public class ServiciosAdapter extends RecyclerView.Adapter <ServiciosAdapter.MyV
             descripcionServicio = (TextView) view.findViewById(R.id.textViewDescServicio);
             valorServicio = (TextView) view.findViewById(R.id.textViewValorServicio);
             checkServicio = (CheckBox) view.findViewById(R.id.checkBoxServicio);
-            imagenServicio = (NetworkImageView) view.findViewById(R.id.imageItemService);
+            imagenServicio = (CircularNetworkImageView) view.findViewById(R.id.imageItemService);
 
         }
     }

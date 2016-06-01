@@ -5,22 +5,15 @@ package com.elements.beya.adapters;
  */
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.NetworkImageView;
 import com.elements.beya.CircularImageView.CircularNetworkImageView;
 import com.elements.beya.R;
 import com.elements.beya.beans.Servicio;
-import com.elements.beya.beans.SolicitudServicio;
-import com.elements.beya.fragments.SolicitarServicio;
 import com.elements.beya.sharedPreferences.gestionSharedPreferences;
 import com.elements.beya.volley.ControllerSingleton;
 
@@ -28,9 +21,7 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-import static com.google.android.gms.internal.zzir.runOnUiThread;
-
-public class ServicioDetalleHistorial extends RecyclerView.Adapter <ServicioDetalleHistorial.MyViewHolder>
+public class ServiciosEsteticistaAdapter extends RecyclerView.Adapter <ServiciosEsteticistaAdapter.MyViewHolder>
 {
 
     private List<Servicio> serviciosDetalle;
@@ -48,6 +39,7 @@ public class ServicioDetalleHistorial extends RecyclerView.Adapter <ServicioDeta
         public TextView idServicio,nombreServicio, descripcionServicio, valorServicio;
         public CircularNetworkImageView imagenServicio;
 
+
         public MyViewHolder(View view)
         {
             super(view);
@@ -61,7 +53,7 @@ public class ServicioDetalleHistorial extends RecyclerView.Adapter <ServicioDeta
     }
 
 
-    public ServicioDetalleHistorial(List<Servicio> serviciosList)
+    public ServiciosEsteticistaAdapter(List<Servicio> serviciosList)
     {
         this.serviciosDetalle = serviciosList;
 
@@ -71,7 +63,7 @@ public class ServicioDetalleHistorial extends RecyclerView.Adapter <ServicioDeta
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.servicio_detalle_historial_row, parent, false);
+                .inflate(R.layout.servicios_ofrecidos_esteticista_row, parent, false);
 
         return new MyViewHolder(itemView);
     }

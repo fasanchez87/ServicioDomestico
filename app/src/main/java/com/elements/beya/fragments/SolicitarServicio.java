@@ -340,7 +340,6 @@ public class SolicitarServicio extends Fragment
                             JSONObject object;
                             String status="";
 
-
                             //VERIFICAR SI EXISTEN PROVEEDORES DEL SERVICIO REST.
                             if(response.length() == 0)
                             {
@@ -375,10 +374,6 @@ public class SolicitarServicio extends Fragment
                                     proveedor.setLongitudUsuario(object.getString("longitudUsuario"));
                                     proveedor.setImgUsuario(object.getString("imgUsuario"));
                                     provedoresList.add(proveedor);
-
-
-
-
                                 }
 
                                 if (!provedoresList.isEmpty())

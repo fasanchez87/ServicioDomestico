@@ -760,7 +760,7 @@ public class MapFragmentUbicarProveedores extends Fragment implements LocationLi
                             {
 
 
-                                progressDialog = ProgressDialog.show(MapFragmentUbicarProveedores.this.getActivity(),
+                                progressDialog = ProgressDialog.show(getActivity(),
                                         "SOLICITUD DE SERVICIO.",
                                         "Por favor espere un momento, se está asigando un esteticista a su solicitud de servicio.");
                                 progressDialog.setCanceledOnTouchOutside(false);

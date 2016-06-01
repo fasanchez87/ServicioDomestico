@@ -162,7 +162,6 @@ public class ListaServiciosCliente extends AppCompatActivity
         {
             JSONObject jsonObject = new JSONObject(datosCliente);
 
-
                 codigoCliente = jsonObject.getString("codigoCliente");
 
                 Log.i("ListaClientesServicios :: ", "code" + codigoCliente);
